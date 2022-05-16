@@ -1,0 +1,21 @@
+﻿{
+  "events": [
+    {
+      "eid": "birth",
+      "type": "person.birth",
+      "chronotope": {},
+      "assertion": {},
+      "description": "John was born in a humble farm.",
+      "relatedEntities": [
+        {
+          "relation": "mother",
+          "id": "guys/mary_shelley"
+        },
+        {
+          "relation": "father",
+          "id": "guys/jeremy_stone"
+        }
+      ]
+    }
+  ]
+}
