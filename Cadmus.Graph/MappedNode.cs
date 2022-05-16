@@ -33,13 +33,13 @@ namespace Cadmus.Graph
             if (string.IsNullOrEmpty(text)) return null;
 
             Match m = Regex.Match(text,
-                @"^(?<u>[^ ]+)(?:\s*(?<l>[^\s]+))?(?:\s*\[(?<t>[^]]+)\])?");
+                @"^(?<u>[^ ]+)(?:\s+(?<l>[^[][^\s]*))?(?:\s+\[(?<t>[^]]+)\])?");
             return m.Success
                 ? new MappedNode
                 {
                     Uid = m.Groups["u"].Value,
-                    Label = m.Groups["l"].Value,
-                    Tag = m.Groups["t"].Value
+                    Label = m.Groups["l"].Value.Length == 0? null : m.Groups["l"].Value,
+                    Tag = m.Groups["t"].Value.Length == 0? null : m.Groups["t"].Value
                 }
                 : null;
         }
