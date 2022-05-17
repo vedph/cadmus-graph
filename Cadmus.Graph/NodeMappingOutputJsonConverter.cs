@@ -4,6 +4,10 @@ using System.Text.Json.Serialization;
 
 namespace Cadmus.Graph
 {
+    /// <summary>
+    /// JSON converter for <see cref="NodeMappingOutput"/>. This is used
+    /// to serialize and deserialize mappings using a more human-readable format.
+    /// </summary>
     public class NodeMappingOutputJsonConverter : JsonConverter<NodeMappingOutput>
     {
         private static void ReadNodes(ref Utf8JsonReader reader,
@@ -49,6 +53,14 @@ namespace Cadmus.Graph
             }
         }
 
+        /// <summary>
+        /// Read the object.
+        /// </summary>
+        /// <param name="reader">Reader.</param>
+        /// <param name="typeToConvert">Type to convert.</param>
+        /// <param name="options">Options.</param>
+        /// <returns>Object read or null.</returns>
+        /// <exception cref="JsonException">error</exception>
         public override NodeMappingOutput? Read(ref Utf8JsonReader reader,
             Type typeToConvert,
             JsonSerializerOptions options)
@@ -82,6 +94,12 @@ namespace Cadmus.Graph
             return output;
         }
 
+        /// <summary>
+        /// Write the object.
+        /// </summary>
+        /// <param name="writer">Writer.</param>
+        /// <param name="value">The value to write.</param>
+        /// <param name="options">Options.</param>
         public override void Write(Utf8JsonWriter writer,
             NodeMappingOutput value,
             JsonSerializerOptions options)

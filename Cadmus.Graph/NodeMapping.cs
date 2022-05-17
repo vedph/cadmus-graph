@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Text;
 
 namespace Cadmus.Graph
 {
@@ -73,5 +74,54 @@ namespace Cadmus.Graph
         /// True if this mapping has children.
         /// </summary>
         public bool HasChildren => _children?.Count > 0;
+
+        private static bool AppendFilter(string id, bool filter, StringBuilder sb,
+            string value)
+        {
+            if (!filter)
+            {
+                sb.Append('[');
+                filter = true;
+            }
+            else sb.Append(", ");
+
+            sb.Append(id).Append('=');
+            sb.Append(value);
+            return filter;
+        }
+
+        /// <summary>
+        /// Converts to string.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="string" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            StringBuilder sb = new();
+
+            sb.Append('@').Append(SourceType);
+            if (!string.IsNullOrEmpty(Id)) sb.Append(" #").Append(Id);
+
+            bool filter = false;
+            if (!string.IsNullOrEmpty(FacetFilter))
+                filter = AppendFilter("facet", filter, sb, FacetFilter);
+            if (!string.IsNullOrEmpty(GroupFilter))
+                filter = AppendFilter("group", filter, sb, GroupFilter);
+            if (FlagsFilter.HasValue)
+            {
+                filter = AppendFilter("flags", filter, sb,
+                    FlagsFilter.Value.ToString("X4"));
+            }
+            if (!string.IsNullOrEmpty(PartTypeFilter))
+                filter = AppendFilter("type", filter, sb, PartTypeFilter);
+            if (!string.IsNullOrEmpty(PartRoleFilter))
+                AppendFilter("role", filter, sb, PartRoleFilter);
+
+            sb.Append(": ").Append(Source);
+            if (Output != null) sb.Append(" -> ").Append(Output);
+
+            return sb.ToString();
+        }
     }
 }

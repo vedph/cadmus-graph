@@ -17,11 +17,22 @@ namespace Cadmus.Graph.Test
             "{ \"id\": \"g\", \"value\": \"green\" }, " +
             "{ \"id\": \"b\", \"value\": \"blue\" } ] } ";
 
+        private static Stream GetResourceStream(string name)
+        {
+            return Assembly.GetExecutingAssembly()!
+                .GetManifestResourceStream($"Cadmus.Graph.Test.Assets.{name}")!;
+        }
+
+        private static string LoadResourceText(string name)
+        {
+            using StreamReader reader = new(GetResourceStream(name),
+                Encoding.UTF8);
+            return reader.ReadToEnd();
+        }
+
         private static IList<NodeMapping> LoadMappings(string name)
         {
-            using StreamReader reader = new(
-                Assembly.GetExecutingAssembly()!
-                .GetManifestResourceStream($"Cadmus.Graph.Test.Assets.{name}.json")!,
+            using StreamReader reader = new(GetResourceStream(name),
                 Encoding.UTF8);
 
             JsonSerializerOptions options = new()
@@ -39,12 +50,13 @@ namespace Cadmus.Graph.Test
         [Fact]
         public void Map_Birth()
         {
-            NodeMapping mapping = LoadMappings("Mappings")
+            NodeMapping mapping = LoadMappings("Mappings.json")
                 .First(m => m.Id == "events.type=birth");
             GraphSet set = new();
 
             JsonNodeMapper mapper = new();
-            mapper.Map("sid", _json, mapping, set);
+            string json = LoadResourceText("Events.json");
+            mapper.Map("sid", json, mapping, set);
 
             // TODO add assertions like:
             Assert.Equal(2, set.Nodes.Count);
