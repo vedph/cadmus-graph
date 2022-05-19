@@ -101,6 +101,9 @@ namespace Cadmus.Graph
             // metadata
             string filled = TextTemplate.FillTemplate(template, Data, "${", "}");
 
+            // node keys
+            filled = TextTemplate.FillTemplate(filled, ContextNodes, "?{", "}");
+
             // macros
             filled = ResolveMacros(filled);
 

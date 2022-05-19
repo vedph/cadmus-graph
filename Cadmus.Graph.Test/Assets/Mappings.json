@@ -6,8 +6,8 @@
     "groupFilter": "correspondents",
     "flagsFilter": 2,
     "titleFilter": "title",
-    "partType": "it.vedph.historical-events",
-    "partRole": "role",
+    "partTypeFilter": "it.vedph.historical-events",
+    "partRoleFilter": "role",
     "description": "The description",
     "source": "events[?type=='person.birth']",
     "output": {
@@ -15,8 +15,8 @@
         "event": "x:events/@{eid}"
       },
       "triples": [
-        "?event a crm:E67_Birth",
-        "?event P98_brought_into_life ${item}"
+        "?{event} a crm:E67_Birth",
+        "?{event} P98_brought_into_life ${item}"
       ]
     },
     "children": [
@@ -26,7 +26,7 @@
           "nodes": {
             "note": "x:notes/n"
           },
-          "triples": [ "?event crm:P3_has_note \"@{.}\"" ]
+          "triples": [ "?{event} crm:P3_has_note \"@{.}\"" ]
         }
       },
       {
@@ -40,8 +40,8 @@
                 "place": "x:places/@{@.value}"
               },
               "triples": [
-                "?place a crm:E53_Place",
-                "?event P7_took_place_at ?place"
+                "?{place} a crm:E53_Place",
+                "?{event} P7_took_place_at ?{place}"
               ]
             }
           },
@@ -56,9 +56,9 @@
                 "timespan": "x:timespans/ts"
               },
               "triples": [
-                "?event crm:P4_has_time_span ?timespan",
-                "?timespan crm:P82_at_some_time_within \"?date_value\"^^xs:float",
-                "?timespan crm:P87_is_identified_by \"?date_text\"@en"
+                "?{event} crm:P4_has_time_span ?timespan",
+                "?{timespan} crm:P82_at_some_time_within \"?date_value\"^^xs:float",
+                "?{timespan} crm:P87_is_identified_by \"?date_text\"@en"
               ]
             }
           }
