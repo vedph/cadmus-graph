@@ -6,16 +6,19 @@ using System.Text;
 using System.Collections.Generic;
 using System;
 using System.Linq;
+using DevLab.JmesPath;
 
 namespace Cadmus.Graph.Test
 {
     public sealed class JsonNodeMapperTest
     {
         private readonly string _json =
-            "{ \"id\": \"colors\", \"entries\": " +
+            "{ \"id\": " +
+            "\"colors\", \"entries\": " +
             "[ { \"id\": \"r\", \"value\": \"red\" }, " +
             "{ \"id\": \"g\", \"value\": \"green\" }, " +
-            "{ \"id\": \"b\", \"value\": \"blue\" } ] } ";
+            "{ \"id\": \"b\", \"value\": \"blue\" } ], " +
+            "\"size\": { \"w\": 21, \"h\": 29.7 } } ";
 
         private static Stream GetResourceStream(string name)
         {
@@ -50,6 +53,16 @@ namespace Cadmus.Graph.Test
         [Fact]
         public void Map_Birth()
         {
+            // @@
+            JmesPath jmes = new();
+            string r = jmes.Transform(_json, "id");
+            r = jmes.Transform(_json, "entries");
+            r = jmes.Transform(_json, "entries[0].id");
+            r = jmes.Transform(_json, "size");
+            r = jmes.Transform(_json, "size.h");
+            r = jmes.Transform(_json, "x");
+            // @@
+
             NodeMapping mapping = LoadMappings("Mappings.json")
                 .First(m => m.Id == "events.type=birth");
             GraphSet set = new();

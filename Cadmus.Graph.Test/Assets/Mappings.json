@@ -10,16 +10,19 @@
     "partRoleFilter": "role",
     "description": "The description",
     "source": "events[?type=='person.birth']",
-    "output": {
-      "nodes": {
-        "event": "x:events/@{eid}"
-      },
-      "triples": [
-        "?{event} a crm:E67_Birth",
-        "?{event} P98_brought_into_life ${item}"
-      ]
-    },
     "children": [
+      {
+        "source": ".",
+        "output": {
+          "nodes": {
+            "event": "x:events/@{eid}"
+          },
+          "triples": [
+            "?{event} a crm:E67_Birth",
+            "?{event} P98_brought_into_life ${item}"
+          ]
+        }
+      },
       {
         "source": "note",
         "output": {

@@ -88,6 +88,36 @@ namespace Cadmus.Graph
             });
         }
 
+        private string ResolveNode(string template)
+        {
+            // - ?{node} or ?{node:uri} => uri
+            // - ?{node:label} => label
+            // - ?{node:sid} => sid
+            // - ?{node:src_type} => source type
+            string key;
+            string? prop = null;
+            int i = template.LastIndexOf(':');
+            if (i > -1)
+            {
+                key = template[..i];
+                prop = template[(i + 1)..];
+            }
+            else
+            {
+                key = template;
+            }
+            if (!ContextNodes.ContainsKey(key)) return "";
+            UriNode node = ContextNodes[key];
+
+            return prop switch
+            {
+                "label" => node.Label ?? "",
+                "sid" => node.Sid ?? "",
+                "src_type" => node.SourceType ?? "",
+                _ => node.Uri ?? "",
+            };
+        }
+
         /// <summary>
         /// Fill the specified template by resolving macros (<c>!{...}</c>),
         /// node placeholders (<c>?{...}</c>), metadata placeholders
@@ -102,11 +132,8 @@ namespace Cadmus.Graph
             string filled = ResolveDataExpressions(template);
 
             // node keys (?)
-            filled = TextTemplate.FillTemplate(filled, id =>
-            {
-                return ContextNodes.ContainsKey(id) ?
-                    ContextNodes[id].Uri : null;
-            }, "?{", "}");
+            filled = TextTemplate.FillTemplate(filled,
+                id => ResolveNode(id), "?{", "}");
 
             // metadata ($)
             filled = TextTemplate.FillTemplate(filled, Data, "${", "}");

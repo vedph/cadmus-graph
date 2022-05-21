@@ -3,6 +3,8 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Text.Json;
 using DevLab.JmesPath;
+using System.Diagnostics;
+using System.Text.Json.Nodes;
 
 namespace Cadmus.Graph
 {
@@ -79,24 +81,63 @@ namespace Cadmus.Graph
             }
         }
 
-        private void ApplyMapping(string sid, string json, NodeMapping mapping,
-            GraphSet target)
+        private void BuildOutput(string sid, NodeMapping mapping, GraphSet target)
         {
-            Logger?.LogDebug("Mapping " + mapping);
-            string? result = _jmes.Transform(json, mapping.Source);
+            if (mapping.Output == null) return;
 
-            if (mapping.Output != null)
+            // nodes
+            if (mapping.Output.HasNodes) AddNodes(sid, mapping, target);
+            // triples
+            if (mapping.Output.HasTriples) AddTriples(sid, mapping, target);
+        }
+
+        private void ApplyMapping(string sid, string json, NodeMapping mapping,
+            GraphSet target, int itemIndex = -1)
+        {
+            // if we're dealing with an array's item, we do not want to compute
+            // the mapping's expression, but just use the received json
+            // representing the item itself.
+            string? result;
+            if (itemIndex == -1)
             {
-                _doc = JsonDocument.Parse(result);
-
-                // nodes
-                if (mapping.Output.HasNodes) AddNodes(sid, mapping, target);
-
-                // triples
-                if (mapping.Output.HasTriples) AddTriples(sid, mapping, target);
-
-                _doc = null;
+                Logger?.LogDebug("Mapping " + mapping);
+                result = _jmes.Transform(json, mapping.Source);
             }
+            else result = json;
+
+            // get the result into the current document
+            _doc = JsonDocument.Parse(result);
+
+            // process it according to its root type:
+            switch (_doc.RootElement.ValueKind)
+            {
+                // null or undefined does not trigger output
+                case JsonValueKind.Null:
+                case JsonValueKind.Undefined:
+                    break;
+                case JsonValueKind.Object:
+                    BuildOutput(sid, mapping, target);
+                    break;
+                // an array does not trigger output, but applies its mapping
+                // to each of its items
+                case JsonValueKind.Array:
+                    int index = 0;
+                    foreach (JsonElement item in
+                        _doc.RootElement.EnumerateArray())
+                    {
+                        ApplyMapping(sid, item.GetRawText(),
+                            mapping, target, index++);
+                    }
+                    break;
+                // else it's a terminal, build output
+                default:
+                    // TODO set terminal variable
+                    BuildOutput(sid, mapping, target);
+                    break;
+            }
+            _doc = null;
+
+            // process this mapping's children recursively
             if (mapping.HasChildren)
             {
                 foreach (NodeMapping child in mapping.Children!)
