@@ -90,25 +90,29 @@ namespace Cadmus.Graph
 
         /// <summary>
         /// Fill the specified template by resolving macros (<c>!{...}</c>),
-        /// metadata placeholders (<c>${...}</c>), and data expression
-        /// placeholders <c>@{...}</c>.
+        /// node placeholders (<c>?{...}</c>), metadata placeholders
+        /// (<c>${...}</c>), and data expression placeholders <c>@{...}</c>.
         /// </summary>
         public string FillTemplate(string template)
         {
             if (template is null)
                 throw new ArgumentNullException(nameof(template));
 
-            // metadata
-            string filled = TextTemplate.FillTemplate(template, Data, "${", "}");
+            // expressions (@)
+            string filled = ResolveDataExpressions(template);
 
-            // node keys
-            filled = TextTemplate.FillTemplate(filled, ContextNodes, "?{", "}");
+            // node keys (?)
+            filled = TextTemplate.FillTemplate(filled, id =>
+            {
+                return ContextNodes.ContainsKey(id) ?
+                    ContextNodes[id].Uri : null;
+            }, "?{", "}");
 
-            // macros
-            filled = ResolveMacros(filled);
+            // metadata ($)
+            filled = TextTemplate.FillTemplate(filled, Data, "${", "}");
 
-            // data expressions
-            return ResolveDataExpressions(filled);
+            // macros (!)
+            return ResolveMacros(filled);
         }
     }
 }
