@@ -3,8 +3,6 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Text.Json;
 using DevLab.JmesPath;
-using System.Diagnostics;
-using System.Text.Json.Nodes;
 
 namespace Cadmus.Graph
 {
@@ -101,7 +99,9 @@ namespace Cadmus.Graph
             if (itemIndex == -1)
             {
                 Logger?.LogDebug("Mapping " + mapping);
-                result = _jmes.Transform(json, mapping.Source);
+                result = mapping.Source == "."
+                    ? json
+                    : _jmes.Transform(json, mapping.Source);
             }
             else result = json;
 
@@ -116,7 +116,8 @@ namespace Cadmus.Graph
                 case JsonValueKind.Undefined:
                     break;
                 case JsonValueKind.Object:
-                    BuildOutput(sid, mapping, target);
+                    if (mapping.Output != null)
+                        BuildOutput(sid, mapping, target);
                     break;
                 // an array does not trigger output, but applies its mapping
                 // to each of its items
@@ -131,8 +132,10 @@ namespace Cadmus.Graph
                     break;
                 // else it's a terminal, build output
                 default:
-                    // TODO set terminal variable
-                    BuildOutput(sid, mapping, target);
+                    // set current leaf variable
+                    Data["."] = _doc.RootElement.ToString();
+                    if (mapping.Output != null)
+                        BuildOutput(sid, mapping, target);
                     break;
             }
             _doc = null;

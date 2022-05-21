@@ -54,13 +54,13 @@ namespace Cadmus.Graph.Test
         public void Map_Birth()
         {
             // @@
-            JmesPath jmes = new();
-            string r = jmes.Transform(_json, "id");
-            r = jmes.Transform(_json, "entries");
-            r = jmes.Transform(_json, "entries[0].id");
-            r = jmes.Transform(_json, "size");
-            r = jmes.Transform(_json, "size.h");
-            r = jmes.Transform(_json, "x");
+            //JmesPath jmes = new();
+            //string r = jmes.Transform(_json, "id");
+            //r = jmes.Transform(_json, "entries");
+            //r = jmes.Transform(_json, "entries[0].id");
+            //r = jmes.Transform(_json, "size");
+            //r = jmes.Transform(_json, "size.h");
+            //r = jmes.Transform(_json, "x");
             // @@
 
             NodeMapping mapping = LoadMappings("Mappings.json")

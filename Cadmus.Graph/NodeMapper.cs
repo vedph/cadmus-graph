@@ -71,7 +71,7 @@ namespace Cadmus.Graph
 
         private string ResolveMacros(string template)
         {
-            return Regex.Replace(template, @"\${([^}]+)}", (Match m) =>
+            return Regex.Replace(template, @"!{([^}]+)}", (Match m) =>
             {
                 string id = m.Groups[0].Value;
                 return _macros.ContainsKey(id) ? _macros[id].Run(Context) ?? "" : "";
@@ -79,14 +79,6 @@ namespace Cadmus.Graph
         }
 
         protected abstract string ResolveDataExpression(string expression);
-
-        private string ResolveDataExpressions(string template)
-        {
-            return Regex.Replace(template, @"\@{(?<id>[^}]+)}", (Match m) =>
-            {
-                return ResolveDataExpression(m.Groups[1].Value);
-            });
-        }
 
         private string ResolveNode(string template)
         {
@@ -129,7 +121,8 @@ namespace Cadmus.Graph
                 throw new ArgumentNullException(nameof(template));
 
             // expressions (@)
-            string filled = ResolveDataExpressions(template);
+            string filled = TextTemplate.FillTemplate(template,
+                id => ResolveDataExpression(id), "@{", "}");
 
             // node keys (?)
             filled = TextTemplate.FillTemplate(filled,
