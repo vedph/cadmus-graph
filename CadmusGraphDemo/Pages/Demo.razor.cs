@@ -67,18 +67,16 @@ namespace CadmusGraphDemo.Pages
                 GraphSet set = new();
                 IList<NodeMapping> mappings = LoadMappings(Model.Mappings);
                 _mapper.Data.Clear();
-                _mapper.Data["item"] = new UriNode
-                {
-                    Id = 1,
-                    Label = "My item",
-                    Sid = Guid.NewGuid().ToString(),
-                    Uri = "x:items/my-item"
-                };
+
+                // mock metadata from item
                 _mapper.Data["item-id"] = Guid.NewGuid().ToString();
-                _mapper.Data["part-id"] = Guid.NewGuid().ToString();
+                _mapper.Data["item-uri"] = "x:items/my-item";
+                _mapper.Data["item-label"] = "Petrarch";
                 _mapper.Data["group-id"] = "group";
                 _mapper.Data["facet-id"] = "facet";
                 _mapper.Data["flags"] = "3";
+                // mock metada from part
+                _mapper.Data["part-id"] = Guid.NewGuid().ToString();
 
                 // apply mappings
                 foreach (NodeMapping mapping in mappings)
