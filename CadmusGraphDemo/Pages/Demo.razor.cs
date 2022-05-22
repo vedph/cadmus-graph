@@ -63,13 +63,19 @@ namespace CadmusGraphDemo.Pages
 
             try
             {
+                // setup context
                 GraphSet set = new();
                 IList<NodeMapping> mappings = LoadMappings(Model.Mappings);
-                int i = 0;
+                _mapper.Data.Clear();
+                _mapper.Data["item-id"] = Guid.NewGuid().ToString();
+                _mapper.Data["part-id"] = Guid.NewGuid().ToString();
+                _mapper.Data["group-id"] = "group";
+                _mapper.Data["facet-id"] = "facet";
+                _mapper.Data["flags"] = "3";
+
+                // apply mappings
                 foreach (NodeMapping mapping in mappings)
-                {
-                    _mapper.Map($"m_{i++}", Model.Input, mapping, set);
-                }
+                    _mapper.Map(Model.Input, mapping, set);
                 Model.Graph = set;
             }
             catch (Exception ex)

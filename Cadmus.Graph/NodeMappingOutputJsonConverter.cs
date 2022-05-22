@@ -53,6 +53,29 @@ namespace Cadmus.Graph
             }
         }
 
+        private static void ReadMetadata(ref Utf8JsonReader reader,
+            NodeMappingOutput output)
+        {
+            if (reader.TokenType != JsonTokenType.StartObject)
+                throw new JsonException("Expected object for output.metadata");
+
+            reader.Read();
+            while (reader.TokenType != JsonTokenType.EndObject)
+            {
+                string? name = reader.GetString();
+                if (reader.TokenType != JsonTokenType.PropertyName || name == null)
+                    throw new JsonException("Expected property for output.metadata object");
+
+                reader.Read();
+                string value = reader.GetString()
+                    ?? throw new JsonException(
+                        $"Expected string value after output.metadata['{name}']");
+
+                output.Metadata[name] = value;
+                reader.Read();
+            }
+        }
+
         /// <summary>
         /// Read the object.
         /// </summary>
@@ -86,6 +109,14 @@ namespace Cadmus.Graph
                             reader.Read();
                             ReadTriples(ref reader, output);
                             break;
+                        case "metadata":
+                            reader.Read();
+                            ReadMetadata(ref reader, output);
+                            break;
+                        default:
+                            throw new JsonException(
+                                "Unexpected property in output object: " +
+                                reader.GetString());
                     }
                 }
                 if (!reader.Read()) break;

@@ -89,16 +89,21 @@ namespace Cadmus.Graph
             if (mapping.Output.HasTriples) AddTriples(sid, mapping, target);
         }
 
-        private void ApplyMapping(string sid, string json, NodeMapping mapping,
+        private void ApplyMapping(string? sid, string json, NodeMapping mapping,
             GraphSet target, int itemIndex = -1)
         {
+            Logger?.LogDebug("Mapping " + mapping);
+
+            // generate SID if required
+            if (sid == null)
+                sid = FillTemplate(mapping.Sid!);
+
             // if we're dealing with an array's item, we do not want to compute
             // the mapping's expression, but just use the received json
             // representing the item itself.
             string? result;
             if (itemIndex == -1)
             {
-                Logger?.LogDebug("Mapping " + mapping);
                 try
                 {
                     result = mapping.Source == "."
@@ -134,9 +139,11 @@ namespace Cadmus.Graph
                     foreach (JsonElement item in
                         _doc.RootElement.EnumerateArray())
                     {
+                        Data["index"] = index;
                         ApplyMapping(sid, item.GetRawText(),
                             mapping, target, index++);
                     }
+                    Data.Remove("index");
                     break;
                 // else it's a terminal, build output
                 default:
@@ -159,17 +166,12 @@ namespace Cadmus.Graph
         /// <summary>
         /// Map the specified source into the <paramref name="target"/> graphset.
         /// </summary>
-        /// <param name="sid">The source SID.</param>
         /// <param name="source">The source object.</param>
         /// <param name="mapping">The mapping to apply.</param>
         /// <param name="target">The target graphset.</param>
-        /// <exception cref="ArgumentNullException">sid, mapping or target
-        /// </exception>
-        public void Map(string sid, object source, NodeMapping mapping,
-            GraphSet target)
+        /// <exception cref="ArgumentNullException">mapping or target</exception>
+        public void Map(object source, NodeMapping mapping, GraphSet target)
         {
-            if (sid is null)
-                throw new ArgumentNullException(nameof(sid));
             if (mapping is null)
                 throw new ArgumentNullException(nameof(mapping));
             if (target is null)
@@ -179,7 +181,7 @@ namespace Cadmus.Graph
             string? json = source as string;
             if (string.IsNullOrEmpty(json)) return;
 
-            ApplyMapping(sid, json, mapping, target);
+            ApplyMapping(null, json, mapping, target);
         }
     }
 }

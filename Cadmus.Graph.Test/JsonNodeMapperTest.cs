@@ -69,7 +69,7 @@ namespace Cadmus.Graph.Test
 
             JsonNodeMapper mapper = new();
             string json = LoadResourceText("Events.json");
-            mapper.Map("sid", json, mapping, set);
+            mapper.Map(json, mapping, set);
 
             // TODO add assertions like:
             Assert.Equal(2, set.Nodes.Count);

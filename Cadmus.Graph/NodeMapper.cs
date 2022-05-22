@@ -71,10 +71,29 @@ namespace Cadmus.Graph
 
         private string ResolveMacros(string template)
         {
-            return Regex.Replace(template, @"!{([^}]+)}", (Match m) =>
+            return Regex.Replace(template, "!{([^}]+)}", (Match m) =>
             {
-                string id = m.Groups[0].Value;
-                return _macros.ContainsKey(id) ? _macros[id].Run(Context) ?? "" : "";
+                // syntax of placeholder's value for macro is:
+                // id or id(space-delimited args)
+                string value = m.Groups[0].Value;
+                int i = value.IndexOf('(');
+
+                string id;
+                string[]? args = null;
+                if (i == -1)
+                {
+                    id = value;
+                }
+                else
+                {
+                    id = value[..i];
+                    if (value[^-1] == ')') value = value[..^1];
+                    args = value[(i + 1)..].Split(' ');
+                }
+
+                return _macros.ContainsKey(id)
+                    ? _macros[id].Run(Context, template, m.Index, args) ?? ""
+                    : "";
             });
         }
 

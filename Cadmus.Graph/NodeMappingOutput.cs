@@ -9,6 +9,7 @@ namespace Cadmus.Graph
     {
         private IDictionary<string, MappedNode>? _nodes;
         private IList<MappedTriple>? _triples;
+        private IDictionary<string, object>? _metadata;
 
         /// <summary>
         /// The nodes to emit, keyed under some mapping-scoped ID. This ID can
@@ -53,5 +54,23 @@ namespace Cadmus.Graph
         {
             return $"N={_nodes?.Count ?? 0}, T={_triples?.Count ?? 0}";
         }
+
+        /// <summary>
+        /// The metadata pushed into the mapping context.
+        /// </summary>
+        public IDictionary<string, object> Metadata
+        {
+            get
+            {
+                return _metadata ??= new Dictionary<string, object>();
+            }
+            set { _metadata = value; }
+        }
+
+        /// <summary>
+        /// True if this output has metadata.
+        /// </summary>
+        public bool HasMetadata { get => _metadata?.Count > 0; }
+
     }
 }

@@ -10,6 +10,7 @@
     "partRoleFilter": "role",
     "description": "The description",
     "source": "events[?type=='person.birth']",
+    "sid": "${part-id}/@{eid}",
     "children": [
       {
         "source": "eid",

@@ -13,6 +13,6 @@ namespace Cadmus.Graph
 
         void SetMacros(IList<INodeMappingMacro>? macros);
 
-        void Map(string sid, object source, NodeMapping mapping, GraphSet target);
+        void Map(object source, NodeMapping mapping, GraphSet target);
     }
 }
