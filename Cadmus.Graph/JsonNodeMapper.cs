@@ -17,6 +17,7 @@ namespace Cadmus.Graph
     {
         private readonly JmesPath _jmes;
         private JsonDocument? _doc;
+        private string _sourceType;
 
         public JsonNodeMapper()
         {
@@ -54,7 +55,7 @@ namespace Cadmus.Graph
                 UriNode node = new()
                 {
                     Uri = uri,
-                    SourceType = mapping.SourceType,
+                    SourceType = _sourceType,
                     Sid = sid,
                     Label = p.Value.Label ?? uri
                 };
@@ -65,14 +66,32 @@ namespace Cadmus.Graph
 
         private void AddTriples(string sid, NodeMapping mapping, GraphSet target)
         {
+            int n = 0;
             foreach (MappedTriple tripleSource in mapping.Output!.Triples)
             {
+                n++;
+                if (string.IsNullOrEmpty(tripleSource.S))
+                {
+                    throw new CadmusGraphException(
+                        $"Undefined triple subject at mapping #{n}: {mapping}");
+                }
+                if (string.IsNullOrEmpty(tripleSource.P))
+                {
+                    throw new CadmusGraphException(
+                        $"Undefined triple predicate at mapping #{n}: {mapping}");
+                }
+                if (string.IsNullOrEmpty(tripleSource.O) && tripleSource.OL == null)
+                {
+                    throw new CadmusGraphException(
+                        $"Undefined triple object at mapping #{n}: {mapping}");
+                }
+
                 UriTriple triple = new()
                 {
                     Sid = sid,
-                    SubjectUri = tripleSource.S,
-                    PredicateUri = tripleSource.P,
-                    ObjectUri = tripleSource.O,
+                    SubjectUri = FillTemplate(tripleSource.S!, true),
+                    PredicateUri = FillTemplate(tripleSource.P!, true),
+                    ObjectUri = FillTemplate(tripleSource.O!, true),
                     ObjectLiteral = tripleSource.OL != null
                         ? FillTemplate(tripleSource.OL, false)
                         : null
@@ -185,6 +204,11 @@ namespace Cadmus.Graph
             // source is JSON
             string? json = source as string;
             if (string.IsNullOrEmpty(json)) return;
+
+            // set source type once for all the descendants
+            _sourceType = mapping.SourceType
+                ?? throw new CadmusGraphException(
+                    "Source type not set for mapping " + mapping);
 
             ApplyMapping(null, json, mapping, target);
         }

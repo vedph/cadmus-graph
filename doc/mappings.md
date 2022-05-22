@@ -84,10 +84,12 @@ Templates are used in mappings to build node identifiers and triple values.
 
 A template has any number of placeholders conventionally delimited by `{}` and prefixed by a single character representing the placeholder type:
 
-- `@{...}` = expression: this represents the expression used to select some source data for the mapping.
-- `?{...}` = node key: the key for a previously emitted node, eventually suffixed.
-- `${...}` = metadata: any metadata set during the mapping process.
-- `!{...}` = macro: the output of a custom function, receiving the current data context from the source, and returning a string or null.
+1. `@{...}` = expression: this represents the expression used to select some source data for the mapping.
+2. `?{...}` = node key: the key for a previously emitted node, eventually suffixed.
+3. `${...}` = metadata: any metadata set during the mapping process.
+4. `!{...}` = macro: the output of a custom function, receiving the current data context from the source, and returning a string or null.
+
+These placeholders are resolved in the above order.
 
 ### Expressions (@)
 

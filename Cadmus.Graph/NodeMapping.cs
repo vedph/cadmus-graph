@@ -17,7 +17,7 @@ namespace Cadmus.Graph
 
         /// <summary>
         /// The type of the source object mapped by this mapping, like item,
-        /// part, or thesaurus.
+        /// part, or thesaurus. This is set for the root mapping only.
         /// </summary>
         public string? SourceType { get; set; }
 
