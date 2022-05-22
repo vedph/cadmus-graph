@@ -1,4 +1,5 @@
 ﻿using Cadmus.Graph;
+using Microsoft.AspNetCore.Components.Forms;
 using System.Diagnostics;
 using System.Reflection;
 using System.Text;
@@ -6,19 +7,23 @@ using System.Text.Json;
 
 namespace CadmusGraphDemo.Pages
 {
-    public partial class Counter
+    public partial class Demo
     {
         private readonly JsonNodeMapper _mapper;
-        public MappingModel Mapping { get; set; }
 
-        public Counter()
+        public DemoModel Model { get; }
+        public EditContext Context { get; }
+
+        public Demo()
         {
             _mapper = new();
-            Mapping = new()
+            Model = new DemoModel
             {
                 Input = LoadResourceText("Events.json"),
-                Mappings = LoadResourceText("Mappings.json")
+                Mappings = LoadResourceText("Mappings.json"),
+                Graph = new GraphSet()
             };
+            Context = new EditContext(Model);
         }
 
         private static Stream GetResourceStream(string name)
@@ -50,9 +55,9 @@ namespace CadmusGraphDemo.Pages
 
         private void Map()
         {
-            Mapping.Error = null;
-            if (string.IsNullOrEmpty(Mapping.Input) ||
-                string.IsNullOrEmpty(Mapping.Mappings))
+            Model.Error = null;
+            if (string.IsNullOrEmpty(Model.Input) ||
+                string.IsNullOrEmpty(Model.Mappings))
             {
                 return;
             }
@@ -60,18 +65,18 @@ namespace CadmusGraphDemo.Pages
             try
             {
                 GraphSet set = new();
-                IList<NodeMapping> mappings = LoadMappings(Mapping.Mappings);
+                IList<NodeMapping> mappings = LoadMappings(Model.Mappings);
                 int i = 0;
                 foreach (NodeMapping mapping in mappings)
                 {
-                    _mapper.Map($"m_{i++}", Mapping.Input, mapping, set);
+                    _mapper.Map($"m_{i++}", Model.Input, mapping, set);
                 }
-                Mapping.Graph = set;
+                Model.Graph = set;
             }
             catch (Exception ex)
             {
                 Debug.WriteLine(ex.ToString());
-                Mapping.Error = ex.Message;
+                Model.Error = ex.Message;
             }
         }
     }

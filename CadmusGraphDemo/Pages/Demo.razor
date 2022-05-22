@@ -1,0 +1,72 @@
+﻿@page "/demo"
+
+<PageTitle>Mapping Demo</PageTitle>
+
+<h1>Mapping</h1>
+<p class="text-danger">@Model.Error</p>
+
+<EditForm EditContext="@Context">
+    <div class="form-group">
+        <label for="input">input</label>
+        <InputTextArea class="form-control"
+            id="input"
+            @bind-Value="Model.Input"
+            placeholder="input"
+            rows="20"
+            spellcheck="false"></InputTextArea>
+    </div>
+    <div class="form-group">
+        <label for="mappings">mappings</label>
+        <InputTextArea class="form-control"
+            placeholder="mappings"
+            id="mappings"
+            @bind-Value="Model.Mappings"
+            rows="20"
+            spellcheck="false"></InputTextArea>
+    </div>
+</EditForm>
+<br />
+<button class="btn btn-primary" @onclick="Map">Apply</button>
+@if (Model.Graph != null)
+{
+    <hr />
+    <h3>Nodes</h3>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>label</th>
+                <th>URI</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach(var node in Model.Graph.Nodes)
+            {
+                <tr>
+                    <td>@node.Label</td>
+                    <td>@node.Uri</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <h3>Triples</h3>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>S</th>
+                <th>P</th>
+                <th>O</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach(var triple in Model.Graph.Triples)
+            {
+                <tr>
+                    <td>@triple.SubjectUri</td>
+                    <td>@triple.PredicateUri</td>
+                    <td>@triple.ObjectUri ?? triple.ObjectLiteral</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
