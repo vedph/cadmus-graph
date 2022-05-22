@@ -1,4 +1,5 @@
-﻿using Fusi.Tools;
+﻿using Cadmus.Graph.Macros;
+using Fusi.Tools;
 using Fusi.Tools.Text;
 using Microsoft.Extensions.Logging;
 using System;
@@ -57,14 +58,18 @@ namespace Cadmus.Graph
             ContextNodes = new Dictionary<string, UriNode>();
             // by default use a RAM-based builder
             UidBuilder = new RamUidBuilder();
+
+            // builtin macros
+            _macros["_hdate"] = new HistoricalDateMacro();
+            _macros["_smart-sep"] = new SmartSeparatorMacro();
         }
 
-        public void SetMacros(IList<INodeMappingMacro>? macros)
+        public void SetMacros(IDictionary<string, INodeMappingMacro>? macros)
         {
             _macros.Clear();
             if (macros != null)
             {
-                foreach (var p in macros) _macros[p.Id] = p;
+                foreach (var p in macros) _macros[p.Key] = p.Value;
             }
         }
 

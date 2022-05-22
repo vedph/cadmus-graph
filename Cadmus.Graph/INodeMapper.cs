@@ -11,7 +11,7 @@ namespace Cadmus.Graph
         /// </summary>
         ILogger? Logger { get; set; }
 
-        void SetMacros(IList<INodeMappingMacro>? macros);
+        void SetMacros(IDictionary<string, INodeMappingMacro>? macros);
 
         void Map(object source, NodeMapping mapping, GraphSet target);
     }

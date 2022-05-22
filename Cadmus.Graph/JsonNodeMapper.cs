@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Text.Json;
 using DevLab.JmesPath;
+using System.Collections.Generic;
 
 namespace Cadmus.Graph
 {

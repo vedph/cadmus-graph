@@ -3,17 +3,16 @@
     "id": "events.type=birth",
     "sourceType": "part",
     "facetFilter": "person",
-    "groupFilter": "correspondents",
-    "flagsFilter": 2,
-    "titleFilter": "title",
     "partTypeFilter": "it.vedph.historical-events",
-    "partRoleFilter": "role",
-    "description": "The description",
+    "description": "Map birth event",
     "source": "events[?type=='person.birth']",
+    "metadata": {
+      "eid-sid": "${part-id}/@{eid}"
+    },
     "children": [
       {
         "source": "eid",
-        "sid": "${part-id}/@{eid}",
+        "sid": "?{eid-sid}",
         "output": {
           "nodes": {
             "event": "x:events/${.}"
@@ -26,6 +25,7 @@
       },
       {
         "source": "note",
+        "sid": "?{eid-sid}/note",
         "output": {
           "nodes": {
             "note": "x:notes/n"
@@ -36,12 +36,13 @@
       {
         "id": "events.chronotope",
         "source": "chronotope",
+        "sid": "?{eid-sid}/chronotope",
         "children": [
           {
             "source": "place",
             "output": {
               "nodes": {
-                "place": "x:places/@{@.value}"
+                "place": "x:places/@{value}"
               },
               "triples": [
                 "?{place} a crm:E53_Place",
@@ -51,18 +52,18 @@
           },
           {
             "source": "date",
-            "macros": {
-              "date_value": "date-value(@{.})",
-              "date_text": "date-text(@{.})"
+            "metadata": {
+              "date_value": "!{_hdate(@{.} value)}",
+              "date_text": "!{_hdate(@{.} text)}"
             },
             "output": {
               "nodes": {
                 "timespan": "x:timespans/ts"
               },
               "triples": [
-                "?{event} crm:P4_has_time_span ?timespan",
-                "?{timespan} crm:P82_at_some_time_within \"?date_value\"^^xs:float",
-                "?{timespan} crm:P87_is_identified_by \"?date_text\"@en"
+                "?{event} crm:P4_has_time_span ?{timespan}",
+                "?{timespan} crm:P82_at_some_time_within \"?{date_value}\"^^xs:float",
+                "?{timespan} crm:P87_is_identified_by \"?{date_text}\"@en"
               ]
             }
           }
@@ -70,6 +71,7 @@
       },
       {
         "name": "events=birth/related=mother",
+        "sid": "?{eid-sid}/related",
         "source": "relatedEntities[?relation=='mother']",
         "output": {
           "nodes": {
@@ -80,6 +82,7 @@
       },
       {
         "name": "events=birth/related=father",
+        "sid": "?{eid-sid}/related",
         "source": "relatedEntities[?relation=='father']",
         "output": {
           "nodes": {

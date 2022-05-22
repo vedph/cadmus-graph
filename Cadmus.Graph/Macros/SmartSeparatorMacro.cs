@@ -1,4 +1,5 @@
 ﻿using Fusi.Tools.Config;
+using System;
 
 namespace Cadmus.Graph.Macros
 {
@@ -13,8 +14,6 @@ namespace Cadmus.Graph.Macros
     [Tag("node-mapping-macro.smart-separator")]
     public sealed class SmartSeparatorMacro : INodeMappingMacro
     {
-        public string Id => "_smart-sep";
-
         private static bool HasSeparatorAt(string text, string sep, int index)
         {
             if (index < sep.Length) return false;
@@ -23,9 +22,23 @@ namespace Cadmus.Graph.Macros
             return true;
         }
 
+        /// <summary>
+        /// Run the macro function.
+        /// </summary>
+        /// <param name="context">The data context of the macro function.</param>
+        /// <param name="template">The template being processed.</param>
+        /// <param name="index">The index to the macro placeholder in
+        /// <paramref name="template"/>.</param>
+        /// <param name="args">The optional arguments. This is a simple array
+        /// of tokens, whose meaning depends on the function implementation.</param>
+        /// <returns>Result or null.</returns>
+        /// <exception cref="ArgumentNullException">template</exception>
         public string? Run(object? context, string template, int index,
             string[]? args)
         {
+            if (template is null)
+                throw new ArgumentNullException(nameof(template));
+
             string sep = args == null || args.Length == 0? "/" : args[0];
             return HasSeparatorAt(template, sep, index) ? "" : sep;
         }

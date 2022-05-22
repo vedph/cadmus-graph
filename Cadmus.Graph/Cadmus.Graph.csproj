@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Fusi.Antiquity" Version="2.0.0" />
     <PackageReference Include="Fusi.Text" Version="2.0.0" />
     <PackageReference Include="Fusi.Tools" Version="2.1.1" />
     <PackageReference Include="Fusi.Tools.Config" Version="2.1.1" />
