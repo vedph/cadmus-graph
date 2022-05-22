@@ -99,9 +99,17 @@ namespace Cadmus.Graph
             if (itemIndex == -1)
             {
                 Logger?.LogDebug("Mapping " + mapping);
-                result = mapping.Source == "."
-                    ? json
-                    : _jmes.Transform(json, mapping.Source);
+                try
+                {
+                    result = mapping.Source == "."
+                        ? json
+                        : _jmes.Transform(json, mapping.Source);
+                }
+                catch (Exception ex)
+                {
+                    throw new AggregateException(
+                        $"Eval error \"{ex.Message}\" at mapping {mapping}", ex);
+                }
             }
             else result = json;
 

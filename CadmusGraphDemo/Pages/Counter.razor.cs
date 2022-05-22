@@ -66,21 +66,7 @@ namespace CadmusGraphDemo.Pages
                 {
                     _mapper.Map($"m_{i++}", Mapping.Input, mapping, set);
                 }
-                StringBuilder sb = new();
-
-                sb.AppendFormat("NODES={0}", set.Nodes.Count);
-                foreach (UriNode node in set.Nodes)
-                {
-                    sb.AppendLine(node.ToString());
-                }
-
-                sb.AppendFormat("TRIPLES={0}", set.Triples.Count);
-                foreach (UriTriple triple in set.Triples)
-                {
-                    sb.AppendLine(triple.ToString());
-                }
-
-                Mapping.Output = sb.ToString();
+                Mapping.Graph = set;
             }
             catch (Exception ex)
             {

@@ -69,7 +69,7 @@
       },
       {
         "name": "events=birth/related=mother",
-        "source": "relatedEntities[?relation='mother']",
+        "source": "relatedEntities[?relation=='mother']",
         "output": {
           "nodes": {
             "mother": "x:persons/@{id}"
@@ -79,7 +79,7 @@
       },
       {
         "name": "events=birth/related=father",
-        "source": "relatedEntities[?relation='father']",
+        "source": "relatedEntities[?relation=='father']",
         "output": {
           "nodes": {
             "father": "x:persons/@{id}"
