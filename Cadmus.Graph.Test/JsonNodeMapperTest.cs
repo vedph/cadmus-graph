@@ -53,6 +53,13 @@ namespace Cadmus.Graph.Test
         private static void ResetMapperMetadata(INodeMapper mapper)
         {
             mapper.Data.Clear();
+            mapper.Data["item"] = new UriNode
+            {
+                Id = 1,
+                Label = "My item",
+                Sid = Guid.NewGuid().ToString(),
+                Uri = "x:items/my-item"
+            };
             mapper.Data["item-id"] = Guid.NewGuid().ToString();
             mapper.Data["part-id"] = Guid.NewGuid().ToString();
             mapper.Data["group-id"] = "group";

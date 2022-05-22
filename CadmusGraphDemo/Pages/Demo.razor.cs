@@ -67,6 +67,13 @@ namespace CadmusGraphDemo.Pages
                 GraphSet set = new();
                 IList<NodeMapping> mappings = LoadMappings(Model.Mappings);
                 _mapper.Data.Clear();
+                _mapper.Data["item"] = new UriNode
+                {
+                    Id = 1,
+                    Label = "My item",
+                    Sid = Guid.NewGuid().ToString(),
+                    Uri = "x:items/my-item"
+                };
                 _mapper.Data["item-id"] = Guid.NewGuid().ToString();
                 _mapper.Data["part-id"] = Guid.NewGuid().ToString();
                 _mapper.Data["group-id"] = "group";

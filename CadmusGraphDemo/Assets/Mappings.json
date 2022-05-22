@@ -16,7 +16,7 @@
           },
           "triples": [
             "?{event} a crm:E67_Birth",
-            "?{event} P98_brought_into_life ${item}"
+            "?{event} crm:P98_brought_into_life ${item}"
           ]
         }
       },
@@ -41,7 +41,7 @@
               },
               "triples": [
                 "?{place} a crm:E53_Place",
-                "?{event} P7_took_place_at ?{place}"
+                "?{event} crm:P7_took_place_at ?{place}"
               ]
             }
           },

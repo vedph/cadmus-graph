@@ -17,7 +17,7 @@ namespace Cadmus.Graph
     {
         private readonly JmesPath _jmes;
         private JsonDocument? _doc;
-        private string _sourceType;
+        private string? _sourceType;
 
         public JsonNodeMapper()
         {
@@ -113,7 +113,7 @@ namespace Cadmus.Graph
         private void ApplyMapping(string? sid, string json, NodeMapping mapping,
             GraphSet target, int itemIndex = -1)
         {
-            Logger?.LogDebug("Mapping " + mapping);
+            Logger?.LogDebug($"Mapping {mapping}");
 
             // generate SID if required
             if (sid == null && mapping.Sid != null)
@@ -154,7 +154,14 @@ namespace Cadmus.Graph
                     break;
                 case JsonValueKind.Object:
                     if (mapping.Output != null)
+                    {
+                        if (sid == null)
+                        {
+                            throw new CadmusGraphException(
+                                $"Undefined SID for mapping {mapping}");
+                        }
                         BuildOutput(sid, mapping, target);
+                    }
                     break;
                 // an array does not trigger output, but applies its mapping
                 // to each of its items
@@ -174,7 +181,14 @@ namespace Cadmus.Graph
                     // set current leaf variable
                     Data["."] = _doc.RootElement.ToString();
                     if (mapping.Output != null)
+                    {
+                        if (sid == null)
+                        {
+                            throw new CadmusGraphException(
+                                $"Undefined SID for mapping {mapping}");
+                        }
                         BuildOutput(sid, mapping, target);
+                    }
                     break;
             }
             _doc = null;
