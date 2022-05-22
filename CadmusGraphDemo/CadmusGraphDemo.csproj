@@ -7,8 +7,22 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="Assets\Events.json" />
+    <Content Remove="Assets\Mappings.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\Events.json" />
+    <EmbeddedResource Include="Assets\Mappings.json" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.5" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.5" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Cadmus.Graph\Cadmus.Graph.csproj" />
   </ItemGroup>
 
 </Project>
