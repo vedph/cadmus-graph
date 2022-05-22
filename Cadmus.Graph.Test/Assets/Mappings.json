@@ -75,7 +75,7 @@
           "nodes": {
             "mother": "x:persons/@{id}"
           },
-          "triples": [ "?event P96_by_mother ?mother" ]
+          "triples": [ "?event crm:P96_by_mother ?mother" ]
         }
       },
       {
@@ -85,7 +85,7 @@
           "nodes": {
             "father": "x:persons/@{id}"
           },
-          "triples": [ "?event P97_by_father ?father" ]
+          "triples": [ "?event crm:P97_by_father ?father" ]
         }
       }
     ]

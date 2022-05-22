@@ -44,6 +44,7 @@ namespace Cadmus.Graph
             {
                 switch (c)
                 {
+                    case ':':
                     case '_':
                     case '-':
                     case '#':

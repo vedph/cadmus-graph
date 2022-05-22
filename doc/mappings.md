@@ -170,7 +170,7 @@ Some macros are built-in and conventionally their ID start with an underscore.
 Whenever a template represents a URI, i.e. in all the cases except for triple's object literals, once the template has been filled the result gets filtered as follows:
 
 - whitespaces are replaced with underscores;
-- only letters, digits 0-9, and characters `-_#/&%=.?` are preserved;
+- only letters, digits 0-9, and characters `:-_#/&%=.?` are preserved;
 - letters are all lowercased;
 - diacritics are removed.
 

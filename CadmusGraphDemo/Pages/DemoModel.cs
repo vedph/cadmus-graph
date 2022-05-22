@@ -11,5 +11,6 @@ namespace CadmusGraphDemo.Pages
         public string? Mappings { get; set; }
         public GraphSet? Graph { get; set; }
         public string? Error { get; set; }
+        public bool IsRunning { get; set; }
     }
 }
