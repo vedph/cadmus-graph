@@ -47,15 +47,6 @@ namespace Cadmus.Graph
         public bool HasTriples { get => _triples?.Count > 0; }
 
         /// <summary>
-        /// Return a string representing this object.
-        /// </summary>
-        /// <returns>String.</returns>
-        public override string ToString()
-        {
-            return $"N={_nodes?.Count ?? 0}, T={_triples?.Count ?? 0}";
-        }
-
-        /// <summary>
         /// The metadata pushed into the mapping context.
         /// </summary>
         public IDictionary<string, object> Metadata
@@ -72,5 +63,20 @@ namespace Cadmus.Graph
         /// </summary>
         public bool HasMetadata { get => _metadata?.Count > 0; }
 
+        /// <summary>
+        /// True if this output has no graph-related data, i.e. no nodes
+        /// and no entries.
+        /// </summary>
+        public bool HasNoGraph { get => !HasNodes && !HasTriples; }
+
+        /// <summary>
+        /// Return a string representing this object.
+        /// </summary>
+        /// <returns>String.</returns>
+        public override string ToString()
+        {
+            return $"N={_nodes?.Count ?? 0}, T={_triples?.Count ?? 0}, " +
+                $"M={_metadata?.Count ?? 0}";
+        }
     }
 }

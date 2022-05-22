@@ -6,13 +6,15 @@
     "partTypeFilter": "it.vedph.historical-events",
     "description": "Map birth event",
     "source": "events[?type=='person.birth']",
-    "metadata": {
-      "eid-sid": "${part-id}/@{eid}"
+    "output": {
+      "metadata": {
+        "eid-sid": "${part-id}/@{eid}"
+      }
     },
     "children": [
       {
         "source": "eid",
-        "sid": "?{eid-sid}",
+        "sid": "${eid-sid}",
         "output": {
           "nodes": {
             "event": "x:events/${.}"
@@ -25,7 +27,7 @@
       },
       {
         "source": "note",
-        "sid": "?{eid-sid}/note",
+        "sid": "${eid-sid}/note",
         "output": {
           "nodes": {
             "note": "x:notes/n"
@@ -36,7 +38,7 @@
       {
         "id": "events.chronotope",
         "source": "chronotope",
-        "sid": "?{eid-sid}/chronotope",
+        "sid": "${eid-sid}/chronotope",
         "children": [
           {
             "source": "place",
@@ -71,7 +73,7 @@
       },
       {
         "name": "events=birth/related=mother",
-        "sid": "?{eid-sid}/related",
+        "sid": "${eid-sid}/related",
         "source": "relatedEntities[?relation=='mother']",
         "output": {
           "nodes": {
@@ -82,7 +84,7 @@
       },
       {
         "name": "events=birth/related=father",
-        "sid": "?{eid-sid}/related",
+        "sid": "${eid-sid}/related",
         "source": "relatedEntities[?relation=='father']",
         "output": {
           "nodes": {

@@ -19,6 +19,7 @@ namespace Cadmus.Graph
         private readonly JmesPath _jmes;
         private JsonDocument? _doc;
         private string? _sourceType;
+        private string? _lastSid;
 
         public JsonNodeMapper()
         {
@@ -101,14 +102,24 @@ namespace Cadmus.Graph
             }
         }
 
-        private void BuildOutput(string sid, NodeMapping mapping, GraphSet target)
+        private void BuildOutput(string? sid, NodeMapping mapping, GraphSet target)
         {
             if (mapping.Output == null) return;
 
-            // nodes
-            if (mapping.Output.HasNodes) AddNodes(sid, mapping, target);
-            // triples
-            if (mapping.Output.HasTriples) AddTriples(sid, mapping, target);
+            // metadata
+            if (mapping.Output.HasMetadata)
+            {
+                foreach (var p in mapping.Output.Metadata)
+                    Data[p.Key] = FillTemplate(p.Value.ToString()!, false);
+            }
+
+            if (!string.IsNullOrEmpty(sid))
+            {
+                // nodes
+                if (mapping.Output.HasNodes) AddNodes(sid, mapping, target);
+                // triples
+                if (mapping.Output.HasTriples) AddTriples(sid, mapping, target);
+            }
         }
 
         private void ApplyMapping(string? sid, string json, NodeMapping mapping,
@@ -117,10 +128,11 @@ namespace Cadmus.Graph
             Logger?.LogDebug($"Mapping {mapping}");
 
             // generate SID if required
-            if (sid == null && mapping.Sid != null)
+            if (string.IsNullOrEmpty(sid) && mapping.Sid != null)
             {
                 _doc = JsonDocument.Parse(json);
                 sid = FillTemplate(mapping.Sid!, false);
+                if (!string.IsNullOrEmpty(sid)) _lastSid = sid;
             }
 
             // if we're dealing with an array's item, we do not want to compute
@@ -156,10 +168,14 @@ namespace Cadmus.Graph
                 case JsonValueKind.Object:
                     if (mapping.Output != null)
                     {
-                        if (sid == null)
+                        if (string.IsNullOrEmpty(sid))
                         {
-                            throw new CadmusGraphException(
-                                $"Undefined SID for mapping {mapping}");
+                            if (_lastSid == null && !mapping.Output.HasNoGraph)
+                            {
+                                throw new CadmusGraphException(
+                                    $"Undefined SID for mapping {mapping}");
+                            }
+                            sid = _lastSid;
                         }
                         BuildOutput(sid, mapping, target);
                     }
@@ -183,10 +199,14 @@ namespace Cadmus.Graph
                     Data["."] = _doc.RootElement.ToString();
                     if (mapping.Output != null)
                     {
-                        if (sid == null)
+                        if (string.IsNullOrEmpty(sid))
                         {
-                            throw new CadmusGraphException(
-                                $"Undefined SID for mapping {mapping}");
+                            if (_lastSid == null && !mapping.Output.HasNoGraph)
+                            {
+                                throw new CadmusGraphException(
+                                    $"Undefined SID for mapping {mapping}");
+                            }
+                            sid = _lastSid;
                         }
                         BuildOutput(sid, mapping, target);
                     }
@@ -215,6 +235,11 @@ namespace Cadmus.Graph
                 throw new ArgumentNullException(nameof(mapping));
             if (target is null)
                 throw new ArgumentNullException(nameof(target));
+
+            // reset state
+            _sourceType = null;
+            _lastSid = null;
+            _doc = null;
 
             // source is JSON
             string? json = source as string;
