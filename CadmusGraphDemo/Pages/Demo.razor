@@ -64,7 +64,16 @@
                 <tr>
                     <td>@triple.SubjectUri</td>
                     <td>@triple.PredicateUri</td>
-                    <td>@triple.ObjectUri ?? triple.ObjectLiteral</td>
+                    <td>
+                        @if (triple.ObjectUri != null)
+                        {
+                            @triple.ObjectUri
+                        }
+                        else
+                        {
+                            @triple.ObjectLiteral
+                        }
+                    </td>
                 </tr>
             }
         </tbody>

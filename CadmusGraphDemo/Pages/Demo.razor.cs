@@ -11,8 +11,8 @@ namespace CadmusGraphDemo.Pages
     {
         private readonly JsonNodeMapper _mapper;
 
-        public DemoModel Model { get; }
-        public EditContext Context { get; }
+        private DemoModel Model { get; }
+        private EditContext Context { get; }
 
         public Demo()
         {
@@ -21,7 +21,6 @@ namespace CadmusGraphDemo.Pages
             {
                 Input = LoadResourceText("Events.json"),
                 Mappings = LoadResourceText("Mappings.json"),
-                Graph = new GraphSet()
             };
             Context = new EditContext(Model);
         }
