@@ -41,7 +41,8 @@ namespace Cadmus.Graph
             string json = JsonSerializer.Serialize(_doc.RootElement);
             string? result = _jmes.Transform(json, expression);
             if (string.IsNullOrEmpty(result)) return "";
-            return JsonDocument.Parse(result).ToString() ?? "";
+
+            return JsonDocument.Parse(result).RootElement.ToString() ?? "";
         }
 
         private void AddNodes(string sid, NodeMapping mapping, GraphSet target)
@@ -96,7 +97,11 @@ namespace Cadmus.Graph
             Logger?.LogDebug("Mapping " + mapping);
 
             // generate SID if required
-            if (sid == null) sid = FillTemplate(mapping.Sid!, false);
+            if (sid == null && mapping.Sid != null)
+            {
+                _doc = JsonDocument.Parse(json);
+                sid = FillTemplate(mapping.Sid!, false);
+            }
 
             // if we're dealing with an array's item, we do not want to compute
             // the mapping's expression, but just use the received json

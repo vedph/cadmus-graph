@@ -10,10 +10,10 @@
     "partRoleFilter": "role",
     "description": "The description",
     "source": "events[?type=='person.birth']",
-    "sid": "${part-id}/@{eid}",
     "children": [
       {
         "source": "eid",
+        "sid": "${part-id}/@{eid}",
         "output": {
           "nodes": {
             "event": "x:events/${.}"

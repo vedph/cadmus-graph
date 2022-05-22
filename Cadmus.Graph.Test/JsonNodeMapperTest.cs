@@ -50,6 +50,16 @@ namespace Cadmus.Graph.Test
                 options) ?? Array.Empty<NodeMapping>();
         }
 
+        private static void ResetMapperMetadata(INodeMapper mapper)
+        {
+            mapper.Data.Clear();
+            mapper.Data["item-id"] = Guid.NewGuid().ToString();
+            mapper.Data["part-id"] = Guid.NewGuid().ToString();
+            mapper.Data["group-id"] = "group";
+            mapper.Data["facet-id"] = "facet";
+            mapper.Data["flags"] = "3";
+        }
+
         [Fact]
         public void Map_Birth()
         {
@@ -68,6 +78,7 @@ namespace Cadmus.Graph.Test
             GraphSet set = new();
 
             JsonNodeMapper mapper = new();
+            ResetMapperMetadata(mapper);
             string json = LoadResourceText("Events.json");
             mapper.Map(json, mapping, set);
 

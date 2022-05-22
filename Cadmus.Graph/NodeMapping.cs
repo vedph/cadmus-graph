@@ -57,8 +57,7 @@ namespace Cadmus.Graph
         public string? Source { get; set; }
 
         /// <summary>
-        /// The template for building the SID for this mapping. This property
-        /// is meaningful only for non-children mappings.
+        /// The template for building the SID for this mapping.
         /// </summary>
         public string? Sid { get; set; }
 
