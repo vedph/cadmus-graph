@@ -58,16 +58,19 @@
     </ShowAsCollectionAssociation>
   </Class>
   <Class Name="Cadmus.Graph.NodeMapper">
-    <Position X="3.25" Y="7" Width="1.75" />
+    <Position X="3.25" Y="7.25" Width="1.75" />
     <Members>
       <Method Name="NodeMapper" Hidden="true" />
-      <Method Name="ResolveDataExpressions" Hidden="true" />
       <Method Name="ResolveMacros" Hidden="true" />
+      <Method Name="ResolveNode" Hidden="true" />
     </Members>
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAgIAAAAAABQAAgAQQgAAAAAAAIAAAAAEAAA=</HashCode>
+      <HashCode>AAAAAAAAAiIAAAAAEBQAAAAQAgAAAAAAAIAAAAAEAAA=</HashCode>
       <FileName>NodeMapper.cs</FileName>
     </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="UidBuilder" />
+    </ShowAsAssociation>
     <ShowAsCollectionAssociation>
       <Field Name="_macros" />
     </ShowAsCollectionAssociation>
@@ -76,9 +79,10 @@
     <Position X="6" Y="1.25" Width="1.75" />
     <Compartments>
       <Compartment Name="Fields" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
     </Compartments>
     <TypeIdentifier>
-      <HashCode>AAAgABAAAAAAAAAGAAAAAAAAABAAAAEAAAAAAAQAAAA=</HashCode>
+      <HashCode>AQAgABAAAAAAAAAGAAIAAAAAABAAAAEAAAAAAAQEAAA=</HashCode>
       <FileName>NodeMappingOutput.cs</FileName>
     </TypeIdentifier>
     <ShowAsCollectionAssociation>
@@ -96,7 +100,7 @@
     </TypeIdentifier>
   </Class>
   <Class Name="Cadmus.Graph.JsonNodeMapper">
-    <Position X="3.25" Y="10.5" Width="1.75" />
+    <Position X="3.25" Y="10.75" Width="1.75" />
     <Members>
       <Method Name="AddNodes" Hidden="true" />
       <Method Name="AddTriples" Hidden="true" />
@@ -107,7 +111,7 @@
       <Compartment Name="Fields" Collapsed="true" />
     </Compartments>
     <TypeIdentifier>
-      <HashCode>QAAAAAAIABAAAAAAAAQAQAAAAAAAAAAAAAAAAAFAAAA=</HashCode>
+      <HashCode>QAAAAAAIABAAAAAAAAQAQAAAAAAAAAAAAIAAAAFAAAA=</HashCode>
       <FileName>JsonNodeMapper.cs</FileName>
     </TypeIdentifier>
     <Lollipop Position="0.2" />
@@ -128,24 +132,31 @@
     </ShowAsCollectionAssociation>
   </Class>
   <Class Name="Cadmus.Graph.NodeMappingOutputJsonConverter" Collapsed="true">
-    <Position X="6" Y="3.75" Width="2.75" />
+    <Position X="6" Y="4" Width="2.75" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAAAAEAAAABgAAAAAAAAAAAAAAEAAAA=</HashCode>
+      <HashCode>AAAAAAAAAAAEAAAAAEAAAABgAAAAAAAAAAAAAAEAAAA=</HashCode>
       <FileName>NodeMappingOutputJsonConverter.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Interface Name="Cadmus.Graph.INodeMapper">
-    <Position X="3.25" Y="4.75" Width="1.75" />
+    <Position X="3.25" Y="5" Width="1.75" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAhIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>INodeMapper.cs</FileName>
     </TypeIdentifier>
   </Interface>
   <Interface Name="Cadmus.Graph.INodeMappingMacro">
-    <Position X="0.5" Y="7" Width="1.75" />
+    <Position X="0.5" Y="7.25" Width="1.75" />
     <TypeIdentifier>
       <HashCode>AAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAI=</HashCode>
       <FileName>INodeMappingMacro.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="Cadmus.Graph.IUidBuilder">
+    <Position X="0.5" Y="9" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAA=</HashCode>
+      <FileName>IUidBuilder.cs</FileName>
     </TypeIdentifier>
   </Interface>
   <Font Name="Segoe UI" Size="9" />

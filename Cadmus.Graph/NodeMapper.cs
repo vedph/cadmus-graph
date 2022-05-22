@@ -23,7 +23,7 @@ namespace Cadmus.Graph
         /// Gets or sets the URI builder function. This is used to build URIs
         /// from SID and UID.
         /// </summary>
-        public Func<string, string, string> UriBuilder { get; set; }
+        public IUidBuilder UidBuilder { get; set; }
 
         /// <summary>
         /// Gets or sets the optional macro functions eventually used to resolve
@@ -55,9 +55,8 @@ namespace Cadmus.Graph
         {
             _macros = new Dictionary<string, INodeMappingMacro>();
             ContextNodes = new Dictionary<string, UriNode>();
-
-            UriBuilder = new Func<string, string, string>(
-                (string uid, string sid) => sid + "/" + uid);
+            // by default use a RAM-based builder
+            UidBuilder = new RamUidBuilder();
         }
 
         public void SetMacros(IList<INodeMappingMacro>? macros)
@@ -134,7 +133,10 @@ namespace Cadmus.Graph
         /// node placeholders (<c>?{...}</c>), metadata placeholders
         /// (<c>${...}</c>), and data expression placeholders <c>@{...}</c>.
         /// </summary>
-        public string FillTemplate(string template)
+        /// <param name="template">The template.</param>
+        /// <param name="uidFilter">True to apply <see cref="UidFilter"/> to
+        /// the result before returning it.</param>
+        public string FillTemplate(string template, bool uidFilter)
         {
             if (template is null)
                 throw new ArgumentNullException(nameof(template));
@@ -151,7 +153,9 @@ namespace Cadmus.Graph
             filled = TextTemplate.FillTemplate(filled, Data, "${", "}");
 
             // macros (!)
-            return ResolveMacros(filled);
+            filled = ResolveMacros(filled);
+
+            return uidFilter ? UidFilter.Apply(filled) : filled;
         }
     }
 }

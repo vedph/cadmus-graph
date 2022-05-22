@@ -28,7 +28,7 @@ This association allows re-creating the same UID whenever adding the same entity
 
 Consider this example:
 
-1. you save an entry with EID=`angel-1v` in the context given by SID `bf849795-375e-4deb-9f91-3b03630ea2fa`. Say the generated UID for this entry (as specified by mapping) is e.g. `x:ms-decorations/angel-1v`. We now want to be sure that this UID is unique.
+1. you save an entry with EID=`angel-1v` in the context given by SID `bf849795-375e-4deb-9f91-3b03630ea2fa/eid/angel-1v`. Say the generated UID for this entry (as specified by mapping) is e.g. `x:ms-decorations/angel-1v`. We now want to be sure that this UID is unique.
 
 2. we search the UID table for records having an unsuffixed UID equal to the generated one (`x:ms-decorations/angel-1v`), and you find one (or more). So, you get from the database a numeric suffix, say 23, and append it to this decoration. The trick for getting this numeric value is just that this table's PK is an autoincremented number. So, whenever we add a new record to it, we get this number. If required, this will be used as the UID's suffix.
 

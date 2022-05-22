@@ -43,12 +43,12 @@ Examples:
 b) for **parts**:
 
 1. the _GUID_ of the source (part).
-2. if the part has a role ID, the _role ID_ preceded by `:`.
+2. if the part has a role ID, the _role ID_ preceded by `#`.
 
 Examples:
 
 - `76066733-6f81-48dd-a653-284d5be54cfb`: an entity derived from a part.
-- `76066733-6f81-48dd-a653-284d5be54cfb:some-role`: an entity derived from a part with a role.
+- `76066733-6f81-48dd-a653-284d5be54cfb#some-role`: an entity derived from a part with a role.
 
 ### Entity ID (UID)
 
@@ -169,8 +169,9 @@ Some macros are built-in and conventionally their ID start with an underscore.
 
 Whenever a template represents a URI, i.e. in all the cases except for triple's object literals, once the template has been filled the result gets filtered as follows:
 
-- whitespaces are normalized and replaced with underscores;
-- the result is trimmed;
-- only letters, digits, and characters `/#_-` are preserved;
+- whitespaces are replaced with underscores;
+- only letters, digits 0-9, and characters `-_#/&%=.?` are preserved;
 - letters are all lowercased;
 - diacritics are removed.
+
+Should you want to disable this filtering, start the template with `!`, which being a preprocessing directive will be discarded from the template itself.

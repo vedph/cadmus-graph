@@ -48,7 +48,8 @@ namespace Cadmus.Graph
         {
             foreach (var p in mapping.Output!.Nodes)
             {
-                string uri = UriBuilder(sid, FillTemplate(p.Value.Uid!));
+                string uri = UidBuilder.Build(sid,
+                    FillTemplate(p.Value.Uid!, true));
                 UriNode node = new()
                 {
                     Uri = uri,
@@ -72,7 +73,7 @@ namespace Cadmus.Graph
                     PredicateUri = tripleSource.P,
                     ObjectUri = tripleSource.O,
                     ObjectLiteral = tripleSource.OL != null
-                        ? FillTemplate(tripleSource.OL)
+                        ? FillTemplate(tripleSource.OL, false)
                         : null
                 };
                 target.Triples.Add(triple);
@@ -95,8 +96,7 @@ namespace Cadmus.Graph
             Logger?.LogDebug("Mapping " + mapping);
 
             // generate SID if required
-            if (sid == null)
-                sid = FillTemplate(mapping.Sid!);
+            if (sid == null) sid = FillTemplate(mapping.Sid!, false);
 
             // if we're dealing with an array's item, we do not want to compute
             // the mapping's expression, but just use the received json
