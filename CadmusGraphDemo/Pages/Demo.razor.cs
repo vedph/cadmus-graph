@@ -10,6 +10,7 @@ namespace CadmusGraphDemo.Pages
     public partial class Demo
     {
         private readonly JsonNodeMapper _mapper;
+        private readonly List<NodeMapping> _mappings;
 
         private DemoModel Model { get; }
         private EditContext Context { get; }
@@ -17,6 +18,7 @@ namespace CadmusGraphDemo.Pages
         public Demo()
         {
             _mapper = new();
+            _mappings = new();
             Model = new DemoModel
             {
                 Input = LoadResourceText("Events.json"),
@@ -38,21 +40,30 @@ namespace CadmusGraphDemo.Pages
             return reader.ReadToEnd();
         }
 
-        private static IList<NodeMapping> LoadMappings(string json)
+        private void LoadMappings()
         {
-            JsonSerializerOptions options = new()
+            try
             {
-                AllowTrailingCommas = true,
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                PropertyNameCaseInsensitive = true
-            };
-            options.Converters.Add(new NodeMappingOutputJsonConverter());
+                _mappings.Clear();
+                JsonSerializerOptions options = new()
+                {
+                    AllowTrailingCommas = true,
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                    PropertyNameCaseInsensitive = true
+                };
+                options.Converters.Add(new NodeMappingOutputJsonConverter());
 
-            return JsonSerializer.Deserialize<IList<NodeMapping>>(json,
-                options) ?? Array.Empty<NodeMapping>();
+                _mappings.AddRange(JsonSerializer.Deserialize<IList<NodeMapping>>(
+                    Model.Mappings ?? "{}",
+                    options) ?? Array.Empty<NodeMapping>());
+            }
+            catch (Exception ex)
+            {
+                Model.Error = ex.Message;
+            }
         }
 
-        private void Map()
+        private async Task Map()
         {
             Model.Error = null;
             if (string.IsNullOrEmpty(Model.Input) ||
@@ -63,9 +74,14 @@ namespace CadmusGraphDemo.Pages
 
             try
             {
+                if (_mappings.Count == 0) LoadMappings();
+
+                Model.IsRunning = true;
+                // https://stackoverflow.com/questions/56604886/blazor-display-wait-or-spinner-on-api-call
+                await Task.Delay(1);
+
                 // setup context
                 GraphSet set = new();
-                IList<NodeMapping> mappings = LoadMappings(Model.Mappings);
                 _mapper.Data.Clear();
 
                 // mock metadata from item
@@ -79,14 +95,22 @@ namespace CadmusGraphDemo.Pages
                 _mapper.Data["part-id"] = Guid.NewGuid().ToString();
 
                 // apply mappings
-                foreach (NodeMapping mapping in mappings)
-                    _mapper.Map(Model.Input, mapping, set);
+                await Task.Run(() =>
+                {
+                    foreach (NodeMapping mapping in _mappings)
+                        _mapper.Map(Model.Input, mapping, set);
+                });
                 Model.Graph = set;
             }
             catch (Exception ex)
             {
                 Debug.WriteLine(ex.ToString());
                 Model.Error = ex.Message;
+            }
+            finally
+            {
+                Model.IsRunning = false;
+                await Task.Delay(1);
             }
         }
     }

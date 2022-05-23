@@ -26,14 +26,13 @@
     </div>
 </EditForm>
 <br />
-<div style="display: flex; gap:8px">
+<div style="display: flex; gap:8px; flex-flow: row nowrap; align-items: center">
+    <button style="flex: 0 0 auto" class="btn btn-primary" @onclick="LoadMappings">Load</button>
     <button style="flex: 0 0 auto" class="btn btn-primary" @onclick="Map">Apply</button>
     @if (Model.IsRunning)
     {
         <span style="flex: 0 0 auto">running...</span>
-        <svg class="spinner" style="flex: 0 0 auto" viewBox="0 0 50 50">
-            <circle class="path" cx="20" cy="20" r="15" fill="none" stroke-width="5"></circle>
-        </svg>
+        <div style="flex: 0 0 auto" class="spinner"></div>
     }
 </div>
 

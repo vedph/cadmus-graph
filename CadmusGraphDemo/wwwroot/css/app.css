@@ -64,46 +64,26 @@ a, .btn-link {
     }
 
 /* spinner begin */
-/* https://glennmccomb.com/articles/building-a-pure-css-animated-svg-spinner */
-svg.spinner {
-    animation: 2s linear infinite svg-animation;
-    max-width: 100px;
+/* https://www.pragimtech.com/blog/blazor/blazor-loading-indicator/ */
+.spinner {
+    border: 16px solid silver;
+    border-top: 16px solid #337AB7;
+    border-radius: 50%;
+    width: 80px;
+    height: 80px;
+    animation: spin 700ms linear infinite;
+    top: 40%;
+    left: 55%;
+    position: absolute;
 }
 
-@keyframes svg-animation {
-    0%
-    {
-        transform: rotateZ(0deg);
+@keyframes spin {
+    0% {
+        transform: rotate(0deg)
     }
-    100% {
-        transform: rotateZ(360deg)
-    }
-}
-svg.spinner circle {
-    animation: 1.4s ease-in-out infinite both circle-animation;
-    display: block;
-    fill: transparent;
-    stroke: #2f3d4c;
-    stroke-linecap: round;
-    stroke-dasharray: 283;
-    stroke-dashoffset: 280;
-    stroke-width: 10px;
-    transform-origin: 50% 50%;
-}
 
-@keyframes circle-animation {
-    0%, 25% {
-        stroke-dashoffset: 280;
-        transform: rotate(0);
-    }
-    50%,
-    75% {
-        stroke-dashoffset: 75;
-        transform: rotate(45deg);
-    }
     100% {
-    stroke-dashoffset: 280;
-    transform: rotate(360deg);
+        transform: rotate(360deg)
     }
 }
 /* spinner end */
