@@ -93,7 +93,8 @@ namespace Cadmus.Graph
                     Sid = sid,
                     SubjectUri = FillTemplate(tripleSource.S!, true),
                     PredicateUri = FillTemplate(tripleSource.P!, true),
-                    ObjectUri = FillTemplate(tripleSource.O!, true),
+                    ObjectUri = tripleSource.O != null
+                        ? FillTemplate(tripleSource.O!, true) : null,
                     ObjectLiteral = tripleSource.OL != null
                         ? FillTemplate(tripleSource.OL, false)
                         : null

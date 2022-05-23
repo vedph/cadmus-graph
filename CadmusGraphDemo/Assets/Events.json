@@ -6,6 +6,11 @@
       "chronotope": {
         "place": {
           "value": "Arezzo"
+        },
+        "date": {
+          "a": {
+            "value": 1304
+          }
         }
       },
       "assertion": {},

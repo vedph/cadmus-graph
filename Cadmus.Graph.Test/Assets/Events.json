@@ -3,17 +3,26 @@
     {
       "eid": "birth",
       "type": "person.birth",
-      "chronotope": {},
+      "chronotope": {
+        "place": {
+          "value": "Arezzo"
+        },
+        "date": {
+          "a": {
+            "value": 1304
+          }
+        }
+      },
       "assertion": {},
-      "description": "John was born in a humble farm.",
+      "description": "Petrarch was born in 1304 at Arezzo from ser Petracco and Eletta Cangiani.",
       "relatedEntities": [
         {
           "relation": "mother",
-          "id": "guys/mary_shelley"
+          "id": "x:guys/eletta_cangiani"
         },
         {
           "relation": "father",
-          "id": "guys/jeremy_stone"
+          "id": "x:guys/ser_petracco"
         }
       ]
     }

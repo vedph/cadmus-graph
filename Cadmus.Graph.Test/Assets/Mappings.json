@@ -54,11 +54,11 @@
           },
           {
             "source": "date",
-            "metadata": {
-              "date_value": "!{_hdate(@{.} value)}",
-              "date_text": "!{_hdate(@{.} text)}"
-            },
             "output": {
+              "metadata": {
+                "date_value": "!{_hdate(@{.} value)}",
+                "date_text": "!{_hdate(@{.} text)}"
+              },
               "nodes": {
                 "timespan": "x:timespans/ts"
               },
