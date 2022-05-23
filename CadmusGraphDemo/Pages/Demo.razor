@@ -28,6 +28,7 @@
 <br />
 <div style="display: flex; gap:8px; flex-flow: row nowrap; align-items: center">
     <button style="flex: 0 0 auto" class="btn btn-primary" @onclick="LoadMappings">Load</button>
+    <span style="flex: 0 0 auto">@Model.MappingCount</span>
     <button style="flex: 0 0 auto" class="btn btn-primary" @onclick="Map">Apply</button>
     @if (Model.IsRunning)
     {

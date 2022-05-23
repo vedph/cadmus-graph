@@ -56,6 +56,8 @@ namespace CadmusGraphDemo.Pages
                 _mappings.AddRange(JsonSerializer.Deserialize<IList<NodeMapping>>(
                     Model.Mappings ?? "{}",
                     options) ?? Array.Empty<NodeMapping>());
+
+                Model.MappingCount = _mappings.Count;
             }
             catch (Exception ex)
             {
