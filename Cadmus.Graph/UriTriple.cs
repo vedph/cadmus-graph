@@ -30,7 +30,7 @@
         public override string ToString()
         {
             return $"{SubjectUri} - #{PredicateUri} - " +
-                (ObjectId == 0 ? ObjectLiteral : ObjectUri);
+                (ObjectUri ?? $"{ObjectLiteral}");
         }
     }
 }

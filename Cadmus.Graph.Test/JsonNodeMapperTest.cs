@@ -89,6 +89,7 @@ namespace Cadmus.Graph.Test
 
             // TODO add assertions like:
             Assert.Equal(5, set.Nodes.Count);
+            Assert.Equal(9, set.Triples.Count);
 
             //JmesPath jmes = new();
             //string? x = jmes.Transform(_json, "id");

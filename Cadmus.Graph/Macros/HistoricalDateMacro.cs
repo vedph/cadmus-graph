@@ -40,19 +40,25 @@ namespace Cadmus.Graph.Macros
         /// Run the macro function.
         /// </summary>
         /// <param name="context">The data context of the macro function.</param>
-        /// <param name="args">The optional arguments. This is a simple array
-        /// of tokens, whose meaning depends on the function implementation.</param>
+        /// <param name="args">The arguments: 0*=JSON representing the date,
+        /// 1=the property of the date to return: <c>value</c> (default) or
+        /// <c>text</c>.</param>
         /// <returns>Result or null.</returns>
         /// <exception cref="ArgumentNullException">template</exception>
         public string? Run(object? context, string[]? args)
         {
-            HistoricalDate? date = ParseDate(context as string ?? "{}");
-            if (args == null || args.Length == 0 || args[0] == "value")
+            if (args == null || args.Length == 0) return null;
+
+            HistoricalDate? date = ParseDate(args[0] ?? "{}");
+            if (date is null) return null;
+
+            if (args.Length > 1 && args[1] == "text")
             {
-                return date?.GetSortValue()
-                    .ToString(CultureInfo.InvariantCulture) ?? "0";
+                return date?.ToString() ?? "";
             }
-            return date?.ToString() ?? "";
+
+            return date?.GetSortValue()
+                .ToString(CultureInfo.InvariantCulture) ?? "0";
         }
     }
 }

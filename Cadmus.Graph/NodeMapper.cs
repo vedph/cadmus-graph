@@ -76,7 +76,7 @@ namespace Cadmus.Graph
         private string ResolveMacro(string macro)
         {
             // syntax of placeholder's value for macro is:
-            // id or id(space-delimited args)
+            // id or id(" & "-delimited args)
             int i = macro.IndexOf('(');
 
             string id;
@@ -89,7 +89,7 @@ namespace Cadmus.Graph
             {
                 id = macro[..i];
                 if (macro[^1] == ')') macro = macro[..^1];
-                args = macro[(i + 1)..].Split(' ');
+                args = macro[(i + 1)..].Split(" & ");
             }
 
             return _macros.ContainsKey(id)

@@ -56,16 +56,16 @@
             "source": "date",
             "output": {
               "metadata": {
-                "date_value": "{!_hdate({@.} value)}",
-                "date_text": "{!_hdate({@.} text)}"
+                "date_value": "{!_hdate({@.} & value)}",
+                "date_text": "{!_hdate({@.} & text)}"
               },
               "nodes": {
                 "timespan": "x:timespans/ts"
               },
               "triples": [
                 "{?event} crm:P4_has_time_span {?timespan}",
-                "{?timespan} crm:P82_at_some_time_within \"{?date_value}\"^^xs:float",
-                "{?timespan} crm:P87_is_identified_by \"{?date_text}\"@en"
+                "{?timespan} crm:P82_at_some_time_within \"{$date_value}\"^^xs:float",
+                "{?timespan} crm:P87_is_identified_by \"{$date_text}\"@en"
               ]
             }
           }
