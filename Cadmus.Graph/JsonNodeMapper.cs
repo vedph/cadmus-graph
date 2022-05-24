@@ -53,7 +53,7 @@ namespace Cadmus.Graph
             foreach (var p in mapping.Output!.Nodes)
             {
                 string uri = UidBuilder.Build(sid,
-                    FillTemplate(p.Value.Uid!, true));
+                    ResolveTemplate(p.Value.Uid!, true));
                 UriNode node = new()
                 {
                     Uri = uri,
@@ -91,12 +91,12 @@ namespace Cadmus.Graph
                 UriTriple triple = new()
                 {
                     Sid = sid,
-                    SubjectUri = FillTemplate(tripleSource.S!, true),
-                    PredicateUri = FillTemplate(tripleSource.P!, true),
+                    SubjectUri = ResolveTemplate(tripleSource.S!, true),
+                    PredicateUri = ResolveTemplate(tripleSource.P!, true),
                     ObjectUri = tripleSource.O != null
-                        ? FillTemplate(tripleSource.O!, true) : null,
+                        ? ResolveTemplate(tripleSource.O!, true) : null,
                     ObjectLiteral = tripleSource.OL != null
-                        ? FillTemplate(tripleSource.OL, false)
+                        ? ResolveTemplate(tripleSource.OL, false)
                         : null
                 };
                 target.Triples.Add(triple);
@@ -111,7 +111,7 @@ namespace Cadmus.Graph
             if (mapping.Output.HasMetadata)
             {
                 foreach (var p in mapping.Output.Metadata)
-                    Data[p.Key] = FillTemplate(p.Value.ToString()!, false);
+                    Data[p.Key] = ResolveTemplate(p.Value.ToString()!, false);
             }
 
             if (!string.IsNullOrEmpty(sid))
@@ -132,7 +132,7 @@ namespace Cadmus.Graph
             if (string.IsNullOrEmpty(sid) && mapping.Sid != null)
             {
                 _doc = JsonDocument.Parse(json);
-                sid = FillTemplate(mapping.Sid!, false);
+                sid = ResolveTemplate(mapping.Sid!, false);
                 if (!string.IsNullOrEmpty(sid)) _lastSid = sid;
             }
 

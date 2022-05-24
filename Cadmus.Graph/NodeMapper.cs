@@ -1,10 +1,11 @@
 ﻿using Cadmus.Graph.Macros;
 using Fusi.Tools;
-using Fusi.Tools.Text;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Text.RegularExpressions;
+using System.Linq;
 
 namespace Cadmus.Graph
 {
@@ -61,7 +62,6 @@ namespace Cadmus.Graph
 
             // builtin macros
             _macros["_hdate"] = new HistoricalDateMacro();
-            _macros["_smart-sep"] = new SmartSeparatorMacro();
         }
 
         public void SetMacros(IDictionary<string, INodeMappingMacro>? macros)
@@ -73,32 +73,28 @@ namespace Cadmus.Graph
             }
         }
 
-        private string ResolveMacros(string template)
+        private string ResolveMacro(string macro)
         {
-            return Regex.Replace(template, "!{([^}]+)}", (Match m) =>
+            // syntax of placeholder's value for macro is:
+            // id or id(space-delimited args)
+            int i = macro.IndexOf('(');
+
+            string id;
+            string[]? args = null;
+            if (i == -1)
             {
-                // syntax of placeholder's value for macro is:
-                // id or id(space-delimited args)
-                string value = m.Groups[0].Value;
-                int i = value.IndexOf('(');
+                id = macro;
+            }
+            else
+            {
+                id = macro[..i];
+                if (macro[^1] == ')') macro = macro[..^1];
+                args = macro[(i + 1)..].Split(' ');
+            }
 
-                string id;
-                string[]? args = null;
-                if (i == -1)
-                {
-                    id = value;
-                }
-                else
-                {
-                    id = value[..i];
-                    if (value[^-1] == ')') value = value[..^1];
-                    args = value[(i + 1)..].Split(' ');
-                }
-
-                return _macros.ContainsKey(id)
-                    ? _macros[id].Run(Context, template, m.Index, args) ?? ""
-                    : "";
-            });
+            return _macros.ContainsKey(id)
+                ? _macros[id].Run(Context, args) ?? ""
+                : "";
         }
 
         protected abstract string ResolveDataExpression(string expression);
@@ -133,6 +129,37 @@ namespace Cadmus.Graph
             };
         }
 
+        private string ResolveNode(TemplateNode node)
+        {
+            if (node.ChildrenCount == 0) return "";
+
+            StringBuilder sb = new();
+            foreach (TemplateNode child in node.Children
+                .Where(child => child.Value != null))
+            {
+                sb.Append(child.Value);
+            }
+
+            string value = sb.ToString();
+            switch (node.Type)
+            {
+                case TemplateNodeType.Node:
+                    return ResolveNode(value);
+
+                case TemplateNodeType.Metadatum:
+                    if (Data.ContainsKey(value))
+                        return Data[value]?.ToString() ?? "";
+                    break;
+
+                case TemplateNodeType.Expression:
+                    return ResolveDataExpression(value);
+
+                case TemplateNodeType.Macro:
+                    return ResolveMacro(value);
+            }
+            return "";
+        }
+
         /// <summary>
         /// Fill the specified template by resolving macros (<c>!{...}</c>),
         /// node placeholders (<c>?{...}</c>), metadata placeholders
@@ -141,26 +168,14 @@ namespace Cadmus.Graph
         /// <param name="template">The template.</param>
         /// <param name="uidFilter">True to apply <see cref="UidFilter"/> to
         /// the result before returning it.</param>
-        public string FillTemplate(string template, bool uidFilter)
+        public string ResolveTemplate(string template, bool uidFilter)
         {
             if (template is null)
                 throw new ArgumentNullException(nameof(template));
 
-            // expressions (@)
-            string filled = TextTemplate.FillTemplate(template,
-                id => ResolveDataExpression(id), "@{", "}");
-
-            // node keys (?)
-            filled = TextTemplate.FillTemplate(filled,
-                id => ResolveNode(id), "?{", "}");
-
-            // metadata ($)
-            filled = TextTemplate.FillTemplate(filled, Data, "${", "}");
-
-            // macros (!)
-            filled = ResolveMacros(filled);
-
-            return uidFilter ? UidFilter.Apply(filled) : filled;
+            TemplateTree tree = TemplateTree.Create(template);
+            string resolved = tree.Resolve(ResolveNode);
+            return uidFilter ? UidFilter.Apply(resolved) : resolved;
         }
     }
 }

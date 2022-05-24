@@ -88,7 +88,7 @@ namespace Cadmus.Graph.Test
             mapper.Map(json, mapping, set);
 
             // TODO add assertions like:
-            Assert.Equal(2, set.Nodes.Count);
+            Assert.Equal(5, set.Nodes.Count);
 
             //JmesPath jmes = new();
             //string? x = jmes.Transform(_json, "id");

@@ -8,64 +8,64 @@
     "source": "events[?type=='person.birth']",
     "output": {
       "metadata": {
-        "eid-sid": "${part-id}/@{eid}"
+        "eid-sid": "{$part-id}/{@eid}"
       }
     },
     "children": [
       {
         "source": "eid",
-        "sid": "${eid-sid}",
+        "sid": "{$eid-sid}",
         "output": {
           "nodes": {
-            "event": "x:events/${.}"
+            "event": "x:events/{$.}"
           },
           "triples": [
-            "?{event} a crm:E67_Birth",
-            "?{event} crm:P98_brought_into_life ${item-uri}"
+            "{?event} a crm:E67_Birth",
+            "{?event} crm:P98_brought_into_life {$item-uri}"
           ]
         }
       },
       {
         "source": "note",
-        "sid": "${eid-sid}/note",
+        "sid": "{$eid-sid}/note",
         "output": {
           "nodes": {
             "note": "x:notes/n"
           },
-          "triples": [ "?{event} crm:P3_has_note \"${.}\"" ]
+          "triples": [ "{?event} crm:P3_has_note \"{$.}\"" ]
         }
       },
       {
         "id": "events.chronotope",
         "source": "chronotope",
-        "sid": "${eid-sid}/chronotope",
+        "sid": "{$eid-sid}/chronotope",
         "children": [
           {
             "source": "place",
             "output": {
               "nodes": {
-                "place": "x:places/@{value}"
+                "place": "x:places/{@value}"
               },
               "triples": [
-                "?{place} a crm:E53_Place",
-                "?{event} crm:P7_took_place_at ?{place}"
+                "{?place} a crm:E53_Place",
+                "{?event} crm:P7_took_place_at {?place}"
               ]
             }
           },
           {
             "source": "date",
-            "metadata": {
-              "date_value": "!{_hdate(@{.} value)}",
-              "date_text": "!{_hdate(@{.} text)}"
-            },
             "output": {
+              "metadata": {
+                "date_value": "{!_hdate({@.} value)}",
+                "date_text": "{!_hdate({@.} text)}"
+              },
               "nodes": {
                 "timespan": "x:timespans/ts"
               },
               "triples": [
-                "?{event} crm:P4_has_time_span ?{timespan}",
-                "?{timespan} crm:P82_at_some_time_within \"?{date_value}\"^^xs:float",
-                "?{timespan} crm:P87_is_identified_by \"?{date_text}\"@en"
+                "{?event} crm:P4_has_time_span {?timespan}",
+                "{?timespan} crm:P82_at_some_time_within \"{?date_value}\"^^xs:float",
+                "{?timespan} crm:P87_is_identified_by \"{?date_text}\"@en"
               ]
             }
           }
@@ -73,24 +73,24 @@
       },
       {
         "name": "events=birth/related=mother",
-        "sid": "${eid-sid}/related",
+        "sid": "{$eid-sid}/related",
         "source": "relatedEntities[?relation=='mother']",
         "output": {
           "nodes": {
-            "mother": "x:persons/@{id}"
+            "mother": "x:persons/{@id}"
           },
-          "triples": [ "?{event} crm:P96_by_mother ?{mother}" ]
+          "triples": [ "{?event} crm:P96_by_mother {?mother}" ]
         }
       },
       {
         "name": "events=birth/related=father",
-        "sid": "${eid-sid}/related",
+        "sid": "{$eid-sid}/related",
         "source": "relatedEntities[?relation=='father']",
         "output": {
           "nodes": {
-            "father": "x:persons/@{id}"
+            "father": "x:persons/{@id}"
           },
-          "triples": [ "?{event} crm:P97_by_father ?{father}" ]
+          "triples": [ "{?event} crm:P97_by_father {?father}" ]
         }
       }
     ]
