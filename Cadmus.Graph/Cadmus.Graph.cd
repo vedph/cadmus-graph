@@ -61,11 +61,10 @@
     <Position X="3.25" Y="7.25" Width="1.75" />
     <Members>
       <Method Name="NodeMapper" Hidden="true" />
-      <Method Name="ResolveMacros" Hidden="true" />
       <Method Name="ResolveNode" Hidden="true" />
     </Members>
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAiIAAAAAEBQAAAAQAgAAAAAAAIAAAAAEAAA=</HashCode>
+      <HashCode>CAAAAAAAAiIAAAAgEBQAAAAAAgAAAAAAAAAAAAAEAAA=</HashCode>
       <FileName>NodeMapper.cs</FileName>
     </TypeIdentifier>
     <ShowAsAssociation>
@@ -82,7 +81,7 @@
       <Compartment Name="Methods" Collapsed="true" />
     </Compartments>
     <TypeIdentifier>
-      <HashCode>AQAgABAAAAAAAAAGAAIAAAAAABAAAAEAAAAAAAQEAAA=</HashCode>
+      <HashCode>AQAgABAAAAAAAAAGAAoAAAAAABAAAAEAAAAAAAQEAAA=</HashCode>
       <FileName>NodeMappingOutput.cs</FileName>
     </TypeIdentifier>
     <ShowAsCollectionAssociation>
@@ -111,7 +110,7 @@
       <Compartment Name="Fields" Collapsed="true" />
     </Compartments>
     <TypeIdentifier>
-      <HashCode>QAAAAAAIABAAAAAAAAQAQAAAAAAAAAAAAIAAAAFAAAA=</HashCode>
+      <HashCode>QAAAIAAIABAAAAAAAAQAYAAAAAAAAAAAAIAAAAFAAAA=</HashCode>
       <FileName>JsonNodeMapper.cs</FileName>
     </TypeIdentifier>
     <Lollipop Position="0.2" />
@@ -138,6 +137,52 @@
       <FileName>NodeMappingOutputJsonConverter.cs</FileName>
     </TypeIdentifier>
   </Class>
+  <Class Name="Cadmus.Graph.TemplateTree">
+    <Position X="6" Y="11.75" Width="1.5" />
+    <Members>
+      <Method Name="AddFnNode" Hidden="true" />
+      <Method Name="ConsumeLiteral" Hidden="true" />
+      <Method Name="TemplateTree" Hidden="true" />
+    </Members>
+    <Compartments>
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAQAAAAAACAACAAAAAAAAAAABAAAEAAAABAAIAAAAA=</HashCode>
+      <FileName>TemplateTree.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="Root" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="Cadmus.Graph.TemplateNode">
+    <Position X="8.5" Y="11.25" Width="1.75" />
+    <Members>
+      <Method Name="TemplateNode" Hidden="true" />
+      <Method Name="ToString" Hidden="true" />
+    </Members>
+    <Compartments>
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAQAAAAAAAAEAQEAAAEwAAAAAAAQAAgAwAgAAAAAAA=</HashCode>
+      <FileName>TemplateNode.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsCollectionAssociation>
+      <Property Name="Children" />
+    </ShowAsCollectionAssociation>
+  </Class>
+  <Class Name="Cadmus.Graph.RamUidBuilder">
+    <Position X="0.5" Y="10.5" Width="1.5" />
+    <Compartments>
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAgAAAAAAAAAAAABAAIAAgAAAAAAAAAAAAAA=</HashCode>
+      <FileName>RamUidBuilder.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
   <Interface Name="Cadmus.Graph.INodeMapper">
     <Position X="3.25" Y="5" Width="1.75" />
     <TypeIdentifier>
@@ -148,7 +193,7 @@
   <Interface Name="Cadmus.Graph.INodeMappingMacro">
     <Position X="0.5" Y="7.25" Width="1.75" />
     <TypeIdentifier>
-      <HashCode>AAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAI=</HashCode>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAI=</HashCode>
       <FileName>INodeMappingMacro.cs</FileName>
     </TypeIdentifier>
   </Interface>

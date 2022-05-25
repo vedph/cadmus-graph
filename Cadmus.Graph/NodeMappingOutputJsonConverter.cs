@@ -67,11 +67,9 @@ namespace Cadmus.Graph
                     throw new JsonException("Expected property for output.metadata object");
 
                 reader.Read();
-                string value = reader.GetString()
+                output.Metadata[name] = reader.GetString()
                     ?? throw new JsonException(
                         $"Expected string value after output.metadata['{name}']");
-
-                output.Metadata[name] = value;
                 reader.Read();
             }
         }

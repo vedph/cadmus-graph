@@ -24,7 +24,9 @@ namespace Cadmus.Graph
         public string? Tag { get; set; }
 
         /// <summary>
-        /// Parse the text representing a <see cref="MappedNode"/>.
+        /// Parse the text representing a <see cref="MappedNode"/>. This consists
+        /// of a URI, optionally followed by space plus a label, and/or a tag
+        /// between square brackets.
         /// </summary>
         /// <param name="text">Text or null.</param>
         /// <returns>Node or null.</returns>
