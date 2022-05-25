@@ -1,5 +1,24 @@
 # Mappings
 
+- [Mappings](#mappings)
+  - [Sources](#sources)
+  - [Identifiers](#identifiers)
+    - [Source ID (SID)](#source-id-sid)
+    - [Entry ID (EID)](#entry-id-eid)
+    - [Entity ID (UID)](#entity-id-uid)
+      - [UID Builder](#uid-builder)
+  - [Mapping Rule](#mapping-rule)
+  - [Templates](#templates)
+    - [Expressions (@)](#expressions-)
+    - [Node Keys (?)](#node-keys-)
+    - [Metadata ($)](#metadata-)
+    - [Macros (!)](#macros-)
+    - [Filters](#filters)
+  - [Sample](#sample)
+    - [Sample Data](#sample-data)
+    - [Sample Mappings](#sample-mappings)
+    - [Sample Results](#sample-results)
+
 The mapping between Cadmus source data (items and parts) and nodes is defined by a number of node mappings.
 
 It should be stressed that the nodes produced from mapping are not intended to fully represent all the data from each Cadmus part. This is not the purpose of the relationships editing system, but rather a publishing task. The nodes mapped here are only those which need to be connected by users while editing, together with all the linked nodes considered useful for this purpose.

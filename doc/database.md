@@ -1,5 +1,15 @@
 # Database
 
+- [Database](#database)
+  - [Namespace Lookup Table](#namespace-lookup-table)
+  - [UID Lookup Table](#uid-lookup-table)
+  - [URI Lookup Table](#uri-lookup-table)
+  - [Node Table](#node-table)
+  - [Node Class Table](#node-class-table)
+  - [Property Table](#property-table)
+  - [Node Mapping Table](#node-mapping-table)
+  - [Triple Table](#triple-table)
+
 The database model is designed to be integrated in the existing Cadmus index, while being minimalist and performance-wise. Its main purpose is providing editable RDF-like data, mostly automatically generated.
 
 To this end:
