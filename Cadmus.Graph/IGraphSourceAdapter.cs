@@ -1,4 +1,5 @@
 ﻿using Fusi.Tools;
+using System.Collections.Generic;
 
 namespace Cadmus.Graph
 {
@@ -14,7 +15,7 @@ namespace Cadmus.Graph
         /// <param name="source">The source.</param>
         /// <param name="metadata">The target dictionary for metadata generated
         /// by the adapter.</param>
-        /// <returns>The adaptation result.</returns>
-        object Adapt(object source, IHasDataDictionary metadata);
+        /// <returns>The adaptation result, or null.</returns>
+        object? Adapt(object source, IDictionary<string, object> metadata);
     }
 }

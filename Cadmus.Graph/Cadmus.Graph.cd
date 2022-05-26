@@ -62,6 +62,7 @@
     <Position X="3.25" Y="7" Width="1.75" />
     <Members>
       <Method Name="NodeMapper" Hidden="true" />
+      <Method Name="ResolveMacro" Hidden="true" />
       <Method Name="ResolveNode" Hidden="true" />
     </Members>
     <TypeIdentifier>
@@ -106,6 +107,7 @@
       <Method Name="AddNodes" Hidden="true" />
       <Method Name="AddTriples" Hidden="true" />
       <Method Name="ApplyMapping" Hidden="true" />
+      <Method Name="BuildOutput" Hidden="true" />
       <Method Name="JsonNodeMapper" Hidden="true" />
     </Members>
     <Compartments>
@@ -284,6 +286,13 @@
     <TypeIdentifier>
       <HashCode>sAgACIAohAEABAAAEAAAAAQEHAAAAAQZAQgBgBBMBQA=</HashCode>
       <FileName>IGraphRepository.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="Cadmus.Graph.IGraphSourceAdapter">
+    <Position X="0.5" Y="0.5" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAA=</HashCode>
+      <FileName>IGraphSourceAdapter.cs</FileName>
     </TypeIdentifier>
   </Interface>
   <Font Name="Segoe UI" Size="9" />

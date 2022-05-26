@@ -7,7 +7,7 @@
   - [Node Table](#node-table)
   - [Node Class Table](#node-class-table)
   - [Property Table](#property-table)
-  - [Node Mapping Table](#node-mapping-table)
+  - [Node Mapping Tables](#node-mapping-tables)
   - [Triple Table](#triple-table)
 
 The database model is designed to be integrated in the existing Cadmus index, while being minimalist and performance-wise. Its main purpose is providing editable RDF-like data, mostly automatically generated.
@@ -153,20 +153,53 @@ These are the results of the anchor query. Then, the recursive query finds all t
 ## Property Table
 
 - `property`: in RDF a property is an entity which _can_ be used as predicate (e.g. `dbo:birthDate`). The practical purpose of adding property-related data to a node is providing a list of predicates to pick from when building a triple, or applying some restrictions to it.
-
   - `id` (int) PK FK. The numeric ID got from mapping the property node UID to a number in `uri_lookup`. This establishes a 1:1 relationship between a node and its metadata as a property.
   - `data_type` (string): for literals objects, this defines the allowed data type.
   - `lit_editor` (string): an optional key representing the special literal value editor to use (when available) in the editor. This can be used to offer a special editor when editing the property's literal value. For instance, if the property is a historical date, you might want to use a historical date editor to aid users in entering it. Editing value as a string always remains the default, but an option can be offered to edit in an easier way when the value editor is specified and available in the frontend.
   - `description` (string): an optional human-readable description.
 
-## Node Mapping Table
+## Node Mapping Tables
 
-The model of table `node_mapping` is specified in [node mapping](#node-mapping).
+A node mapping is modeled with 4 tables:
+
+- `mapping`:
+  - `id` PK AI
+  - `parent_id` FK
+  - `name`
+  - `source_type`
+  - `facet_filter`
+  - `group_filter`
+  - `flags_filter`
+  - `part_type_filter`
+  - `part_role_filter`
+  - `description`
+  - `source`
+  - `sid`
+
+- `mapping_out_node`:
+  - `id` PK AI
+  - `mapping_id` FK
+  - `uid`
+  - `label`
+  - `tag`
+
+- `mapping_out_triple`:
+  - `id` PK AI
+  - `mapping_id` FK
+  - `s`
+  - `p`
+  - `o`
+  - `ol`
+
+- `mapping_out_meta`:
+  - `id` PK AI
+  - `mapping_id` FK
+  - `name`
+  - `value`
 
 ## Triple Table
 
 - `triple`: a triple.
-
   - `id` (int) PK AI.
   - `s_id` (int): FK. Subject, linked to a node.
   - `p_id` (int): FK. Predicate, linked to a property.

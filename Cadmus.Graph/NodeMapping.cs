@@ -12,9 +12,21 @@ namespace Cadmus.Graph
 
         /// <summary>
         /// Gets or sets a numeric identifier for this mapping. This is
-        /// usually assigned when the mapping is archived in a database.
+        /// assigned when the mapping is archived in a database.
         /// </summary>
         public int Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets the parent mapping's identifier. This is assigned
+        /// when the mapping is archived in a database.
+        /// </summary>
+        public int ParentId { get; set; }
+
+        /// <summary>
+        /// Gets or sets an optional ordinal value used to define the order
+        /// of application of sibling mappings. Default is 0.
+        /// </summary>
+        public int Ordinal { get; set; }
 
         /// <summary>
         /// Gets or sets the mapping's human friendly name.
