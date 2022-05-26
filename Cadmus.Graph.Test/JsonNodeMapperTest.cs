@@ -79,7 +79,7 @@ namespace Cadmus.Graph.Test
             // @@
 
             NodeMapping mapping = LoadMappings("Mappings.json")
-                .First(m => m.Id == "events.type=birth");
+                .First(m => m.Name == "birth event");
             GraphSet set = new();
 
             JsonNodeMapper mapper = new();

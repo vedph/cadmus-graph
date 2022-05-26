@@ -1,6 +1,5 @@
 ﻿[
   {
-    "id": "events.type=birth",
     "sourceType": "part",
     "facetFilter": "person",
     "partTypeFilter": "it.vedph.historical-events",
@@ -36,7 +35,6 @@
         }
       },
       {
-        "id": "events.chronotope",
         "source": "chronotope",
         "sid": "{$eid-sid}/chronotope",
         "children": [

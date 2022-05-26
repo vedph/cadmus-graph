@@ -6,14 +6,20 @@ namespace Cadmus.Graph
     /// <summary>
     /// Node mapping.
     /// </summary>
-    public sealed class NodeMapping
+    public class NodeMapping
     {
         private IList<NodeMapping>? _children;
 
         /// <summary>
-        /// The mapping's ID.
+        /// Gets or sets a numeric identifier for this mapping. This is
+        /// usually assigned when the mapping is archived in a database.
         /// </summary>
-        public string? Id { get; set; }
+        public int Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets the mapping's human friendly name.
+        /// </summary>
+        public string? Name { get; set; }
 
         /// <summary>
         /// The type of the source object mapped by this mapping, like item,
@@ -54,7 +60,7 @@ namespace Cadmus.Graph
         /// <summary>
         /// The source expression representing the data selected by this mapping.
         /// </summary>
-        public string? Source { get; set; }
+        public string Source { get; set; }
 
         /// <summary>
         /// The template for building the SID for this mapping.
@@ -79,6 +85,14 @@ namespace Cadmus.Graph
         /// True if this mapping has children.
         /// </summary>
         public bool HasChildren => _children?.Count > 0;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="NodeMapping"/> class.
+        /// </summary>
+        public NodeMapping()
+        {
+            Source = "";
+        }
 
         private static bool AppendFilter(string id, bool filter, StringBuilder sb,
             string value)
@@ -105,8 +119,7 @@ namespace Cadmus.Graph
         {
             StringBuilder sb = new();
 
-            sb.Append('@').Append(SourceType);
-            if (!string.IsNullOrEmpty(Id)) sb.Append(" #").Append(Id);
+            sb.Append('#').Append(Id).Append(" @").Append(SourceType);
 
             bool filter = false;
             if (!string.IsNullOrEmpty(FacetFilter))
