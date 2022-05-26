@@ -1,13 +1,19 @@
 ﻿namespace Cadmus.Graph
 {
     /// <summary>
-    /// A property with a URI.
+    /// An entry in the namespaces lookup set.
+    /// This set is used in the <see cref="IGraphRepository"/> to lookup
+    /// namespaces from their prefixes.
     /// </summary>
-    /// <seealso cref="Property" />
-    public class UriProperty : Property
+    public class NamespaceEntry
     {
         /// <summary>
-        /// Gets or sets the property URI.
+        /// Gets or sets the prefix.
+        /// </summary>
+        public string? Prefix { get; set; }
+
+        /// <summary>
+        /// Gets or sets the URI.
         /// </summary>
         public string? Uri { get; set; }
 
@@ -19,7 +25,7 @@
         /// </returns>
         public override string ToString()
         {
-            return Uri ?? base.ToString()!;
+            return $"{Prefix}={Uri}";
         }
     }
 }

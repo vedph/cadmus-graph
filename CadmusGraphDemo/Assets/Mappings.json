@@ -1,5 +1,6 @@
 ﻿[
   {
+    "name": "birth event",
     "sourceType": "part",
     "facetFilter": "person",
     "partTypeFilter": "it.vedph.historical-events",
@@ -12,6 +13,7 @@
     },
     "children": [
       {
+        "name": "birth event - eid",
         "source": "eid",
         "sid": "{$eid-sid}",
         "output": {
@@ -25,6 +27,7 @@
         }
       },
       {
+        "name": "birth event - note",
         "source": "note",
         "sid": "{$eid-sid}/note",
         "output": {
@@ -35,6 +38,7 @@
         }
       },
       {
+        "name": "birth event - chronotope",
         "source": "chronotope",
         "sid": "{$eid-sid}/chronotope",
         "children": [
@@ -51,6 +55,7 @@
             }
           },
           {
+            "name": "birth event - chronotope - date",
             "source": "date",
             "output": {
               "metadata": {
@@ -70,7 +75,7 @@
         ]
       },
       {
-        "name": "events=birth/related=mother",
+        "name": "birth event - related - mother",
         "sid": "{$eid-sid}/related",
         "source": "relatedEntities[?relation=='mother']",
         "output": {
@@ -81,7 +86,7 @@
         }
       },
       {
-        "name": "events=birth/related=father",
+        "name": "birth event - related - father",
         "sid": "{$eid-sid}/related",
         "source": "relatedEntities[?relation=='father']",
         "output": {

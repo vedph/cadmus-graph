@@ -45,9 +45,10 @@
     <Position X="3.25" Y="0.5" Width="1.75" />
     <Compartments>
       <Compartment Name="Fields" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
     </Compartments>
     <TypeIdentifier>
-      <HashCode>AAASBAAAAggkABAEEAEMAAAAAAAAAAEAAAAACAAAAAA=</HashCode>
+      <HashCode>AAASBAAAAggkABAEEAEMAAQAAAAAAAEAAAAACAAAAAA=</HashCode>
       <FileName>NodeMapping.cs</FileName>
     </TypeIdentifier>
     <ShowAsAssociation>
@@ -58,7 +59,7 @@
     </ShowAsCollectionAssociation>
   </Class>
   <Class Name="Cadmus.Graph.NodeMapper">
-    <Position X="3.25" Y="7.25" Width="1.75" />
+    <Position X="3.25" Y="7" Width="1.75" />
     <Members>
       <Method Name="NodeMapper" Hidden="true" />
       <Method Name="ResolveNode" Hidden="true" />
@@ -75,7 +76,7 @@
     </ShowAsCollectionAssociation>
   </Class>
   <Class Name="Cadmus.Graph.NodeMappingOutput">
-    <Position X="6" Y="1.25" Width="1.75" />
+    <Position X="6" Y="1.5" Width="1.75" />
     <Compartments>
       <Compartment Name="Fields" Collapsed="true" />
       <Compartment Name="Methods" Collapsed="true" />
@@ -86,6 +87,7 @@
     </TypeIdentifier>
     <ShowAsCollectionAssociation>
       <Property Name="Triples" />
+      <Property Name="Nodes" />
     </ShowAsCollectionAssociation>
   </Class>
   <Class Name="Cadmus.Graph.MappedTriple">
@@ -99,7 +101,7 @@
     </TypeIdentifier>
   </Class>
   <Class Name="Cadmus.Graph.JsonNodeMapper">
-    <Position X="3.25" Y="10.75" Width="1.75" />
+    <Position X="3.25" Y="10.5" Width="1.75" />
     <Members>
       <Method Name="AddNodes" Hidden="true" />
       <Method Name="AddTriples" Hidden="true" />
@@ -131,7 +133,7 @@
     </ShowAsCollectionAssociation>
   </Class>
   <Class Name="Cadmus.Graph.NodeMappingOutputJsonConverter" Collapsed="true">
-    <Position X="6" Y="4" Width="2.75" />
+    <Position X="6" Y="0.5" Width="2.75" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAEAAAAAEAAAABgAAAAAAAAAAAAAAEAAAA=</HashCode>
       <FileName>NodeMappingOutputJsonConverter.cs</FileName>
@@ -156,7 +158,7 @@
     </ShowAsAssociation>
   </Class>
   <Class Name="Cadmus.Graph.TemplateNode">
-    <Position X="8.5" Y="11.25" Width="1.75" />
+    <Position X="8.25" Y="11.25" Width="1.75" />
     <Members>
       <Method Name="TemplateNode" Hidden="true" />
       <Method Name="ToString" Hidden="true" />
@@ -173,7 +175,7 @@
     </ShowAsCollectionAssociation>
   </Class>
   <Class Name="Cadmus.Graph.RamUidBuilder">
-    <Position X="0.5" Y="10.5" Width="1.5" />
+    <Position X="0.5" Y="10.25" Width="1.5" />
     <Compartments>
       <Compartment Name="Fields" Collapsed="true" />
     </Compartments>
@@ -183,25 +185,105 @@
     </TypeIdentifier>
     <Lollipop Position="0.2" />
   </Class>
+  <Class Name="Cadmus.Graph.JsonGraphPresetReader">
+    <Position X="13.25" Y="2.5" Width="2" />
+    <Members>
+      <Method Name="JsonGraphPresetReader" Hidden="true" />
+      <Method Name="Read" Hidden="true" />
+    </Members>
+    <Compartments>
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAQAAAAAAAEAAAABgAAAAAAAAAAAAAAAAACA=</HashCode>
+      <FileName>JsonGraphPresetReader.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="Cadmus.Graph.Property">
+    <Position X="13.25" Y="6.25" Width="1.5" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAACAAAAAAJgAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Property.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Cadmus.Graph.PropertyFilter">
+    <Position X="15" Y="9.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAJAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>PropertyFilter.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Cadmus.Graph.TripleFilter">
+    <Position X="13.25" Y="9.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QAIAAAAAEAAgAAAAAAAEAAAAAAgAAAAAAAAAAAAAAIA=</HashCode>
+      <FileName>TripleFilter.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Cadmus.Graph.UidEntry">
+    <Position X="15" Y="6.25" Width="1.5" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAADAAAAAAAAAAAEAAAGAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>UidEntry.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Cadmus.Graph.UriProperty" Collapsed="true">
+    <Position X="13.25" Y="8.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAACAAAAAAAAAA=</HashCode>
+      <FileName>UriProperty.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Cadmus.Graph.MappedNode">
+    <Position X="8.75" Y="3.5" Width="1.75" />
+    <Members>
+      <Method Name="ToString" Hidden="true" />
+    </Members>
+    <TypeIdentifier>
+      <HashCode>AAAgAAAAEAAgAAAEABAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>MappedNode.cs</FileName>
+    </TypeIdentifier>
+  </Class>
   <Interface Name="Cadmus.Graph.INodeMapper">
-    <Position X="3.25" Y="5" Width="1.75" />
+    <Position X="3.25" Y="4.75" Width="1.75" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAhIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>INodeMapper.cs</FileName>
     </TypeIdentifier>
   </Interface>
   <Interface Name="Cadmus.Graph.INodeMappingMacro">
-    <Position X="0.5" Y="7.25" Width="1.75" />
+    <Position X="0.5" Y="7" Width="1.75" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAI=</HashCode>
       <FileName>INodeMappingMacro.cs</FileName>
     </TypeIdentifier>
   </Interface>
   <Interface Name="Cadmus.Graph.IUidBuilder">
-    <Position X="0.5" Y="9" Width="1.5" />
+    <Position X="0.5" Y="8.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAA=</HashCode>
       <FileName>IUidBuilder.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="Cadmus.Graph.IGraphPresetReader">
+    <Position X="13.25" Y="0.5" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAEAAAABAAAAAAAAAAAAAAAAAACA=</HashCode>
+      <FileName>IGraphPresetReader.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="Cadmus.Graph.IGraphRepository">
+    <Position X="17.25" Y="0.5" Width="2" />
+    <TypeIdentifier>
+      <HashCode>sAgACIAohAEABAAAEAAAAAQEHAAAAAQZAQgBgBBMBQA=</HashCode>
+      <FileName>IGraphRepository.cs</FileName>
     </TypeIdentifier>
   </Interface>
   <Font Name="Segoe UI" Size="9" />

@@ -325,7 +325,7 @@ Here is the full code for those mappings:
 ```json
 [
   {
-    "id": "events.type=birth",
+    "name": "birth event",
     "sourceType": "part",
     "facetFilter": "person",
     "partTypeFilter": "it.vedph.historical-events",
@@ -338,6 +338,7 @@ Here is the full code for those mappings:
     },
     "children": [
       {
+        "name": "birth event - eid",
         "source": "eid",
         "sid": "{$eid-sid}",
         "output": {
@@ -351,6 +352,7 @@ Here is the full code for those mappings:
         }
       },
       {
+        "name": "birth event - note",
         "source": "note",
         "sid": "{$eid-sid}/note",
         "output": {
@@ -361,7 +363,7 @@ Here is the full code for those mappings:
         }
       },
       {
-        "id": "events.chronotope",
+        "name": "birth event - chronotope",
         "source": "chronotope",
         "sid": "{$eid-sid}/chronotope",
         "children": [
@@ -378,6 +380,7 @@ Here is the full code for those mappings:
             }
           },
           {
+            "name": "birth event - chronotope - date",
             "source": "date",
             "output": {
               "metadata": {
@@ -397,7 +400,7 @@ Here is the full code for those mappings:
         ]
       },
       {
-        "name": "events=birth/related=mother",
+        "name": "birth event - related - mother",
         "sid": "{$eid-sid}/related",
         "source": "relatedEntities[?relation=='mother']",
         "output": {
@@ -408,7 +411,7 @@ Here is the full code for those mappings:
         }
       },
       {
-        "name": "events=birth/related=father",
+        "name": "birth event - related - father",
         "sid": "{$eid-sid}/related",
         "source": "relatedEntities[?relation=='father']",
         "output": {
