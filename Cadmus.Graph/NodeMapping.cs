@@ -55,6 +55,11 @@ namespace Cadmus.Graph
         public int? FlagsFilter { get; set; }
 
         /// <summary>
+        /// The optional item's title filter.
+        /// </summary>
+        public string? TitleFilter { get; set; }
+
+        /// <summary>
         /// The optional part's type ID filter.
         /// </summary>
         public string? PartTypeFilter { get; set; }
@@ -87,7 +92,7 @@ namespace Cadmus.Graph
         /// <summary>
         /// The optional children mappings of this mapping.
         /// </summary>
-        public IList<NodeMapping>? Children
+        public IList<NodeMapping> Children
         {
             get { return _children ??= new List<NodeMapping>(); }
             set { _children = value; }
@@ -143,6 +148,8 @@ namespace Cadmus.Graph
                 filter = AppendFilter("flags", filter, sb,
                     FlagsFilter.Value.ToString("X4"));
             }
+            if (!string.IsNullOrEmpty(TitleFilter))
+                filter = AppendFilter("title", filter, sb, TitleFilter);
             if (!string.IsNullOrEmpty(PartTypeFilter))
                 filter = AppendFilter("type", filter, sb, PartTypeFilter);
             if (!string.IsNullOrEmpty(PartRoleFilter))

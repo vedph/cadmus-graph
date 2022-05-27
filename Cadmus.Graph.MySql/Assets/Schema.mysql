@@ -1,0 +1,49 @@
+﻿-- mapping
+CREATE TABLE mapping (
+	id int auto_increment NOT NULL,
+	parent_id int NULL,
+	ordinal int NOT NULL,
+	name varchar(100) NOT NULL,
+	source_type varchar(20) NOT NULL,
+	facet_filter varchar(100) NULL,
+	group_filter varchar(100) NULL,
+	title_filter varchar(100) NULL,
+	flags_filter int NOT NULL,
+	part_type_filter varchar(100) NULL,
+	part_role_filter varchar(100) NULL,
+	description varchar(1000) NULL,
+	source varchar(500) NOT NULL,
+	sid varchar(500) NULL,
+	CONSTRAINT mapping_PK PRIMARY KEY (id),
+	CONSTRAINT mapping_FK FOREIGN KEY (parent_id) REFERENCES `cadmus-index-test`.mapping(id) ON DELETE SET NULL ON UPDATE CASCADE
+)
+ENGINE=InnoDB
+DEFAULT CHARSET=utf8mb4
+COLLATE=utf8mb4_0900_ai_ci;
+
+-- mapping_out_node
+CREATE TABLE mapping_out_node (
+	id int auto_increment NOT NULL,
+	mapping_id int NOT NULL,
+	uid varchar(1000) NOT NULL,
+	label varchar(1000) NULL,
+	tag varchar(100) NULL,
+	CONSTRAINT mapping_out_node_PK PRIMARY KEY (id),
+	CONSTRAINT mapping_out_node_FK FOREIGN KEY (mapping_id) REFERENCES `cadmus-index-test`.mapping(id) ON DELETE CASCADE ON UPDATE CASCADE
+)
+ENGINE=InnoDB
+DEFAULT CHARSET=utf8mb4
+COLLATE=utf8mb4_0900_ai_ci;
+
+-- mapping_out_triple
+CREATE TABLE mapping_out_triple (
+	id int auto_increment NOT NULL,
+	mapping_id int NOT NULL,
+	name varchar(100) NOT NULL,
+	value varchar(10000) NOT NULL,
+	CONSTRAINT mapping_out_triple_PK PRIMARY KEY (id),
+	CONSTRAINT mapping_out_triple_FK FOREIGN KEY (mapping_id) REFERENCES `cadmus-index-test`.mapping(id) ON DELETE CASCADE ON UPDATE CASCADE
+)
+ENGINE=InnoDB
+DEFAULT CHARSET=utf8mb4
+COLLATE=utf8mb4_0900_ai_ci;

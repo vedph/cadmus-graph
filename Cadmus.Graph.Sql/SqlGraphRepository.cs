@@ -17,7 +17,6 @@ using System.Threading.Tasks;
 
 namespace Cadmus.Graph.Sql
 {
-    /*
     /// <summary>
     /// Base class for SQL-based graph repositories.
     /// </summary>
@@ -721,8 +720,8 @@ namespace Cadmus.Graph.Sql
         #region Node Mapping
         private void ApplyNodeMappingFilter(NodeMappingFilter filter, Query query)
         {
-            if (filter.ParentId > 0)
-                query.Where("parent_id", filter.ParentId);
+            if (filter.ParentId != null)
+                query.Where("parent_id", filter.ParentId.Value);
 
             if (filter.SourceTypes?.Count > 0)
                 query.WhereIn("source_type", filter.SourceTypes);
@@ -752,6 +751,28 @@ namespace Cadmus.Graph.Sql
                 query.Where("part_role", filter.PartRole);
         }
 
+        private static NodeMapping? GetNodeMapping(dynamic? d)
+        {
+            if (d == null) return null;
+            return new NodeMapping()
+            {
+                Id = d.id,
+                ParentId = d.parent_id ?? 0,
+                Ordinal = d.ordinal,
+                SourceType = d.source_type,
+                Name = d.name,
+                FacetFilter = d.facet_filter,
+                GroupFilter = d.group_filter,
+                FlagsFilter = d.flags_filter,
+                TitleFilter = d.title_filter,
+                PartTypeFilter = d.part_type_filter,
+                PartRoleFilter = d.part_role_filter,
+                Description = d.description,
+                Source = d.source,
+                Sid = d.sid,
+            };
+        }
+
         /// <summary>
         /// Gets the specified page of node mappings.
         /// </summary>
@@ -764,7 +785,7 @@ namespace Cadmus.Graph.Sql
             if (filter == null) throw new ArgumentNullException(nameof(filter));
 
             using QueryFactory qf = GetQueryFactory();
-            Query query = qf.Query("node_mapping");
+            Query query = qf.Query("mapping");
             ApplyNodeMappingFilter(filter, query);
 
             // get total
@@ -777,83 +798,68 @@ namespace Cadmus.Graph.Sql
             }
 
             // complete query and get page
-            query.Select("id", "parent_id", "source_type", "name", "ordinal",
+            query.Select("id", "parent_id", "ordinal", "name", "source_type",
                 "facet_filter", "group_filter", "flags_filter", "title_filter",
-                "part_type", "part_role", "pin_name", "prefix", "label_template",
-                "triple_s", "triple_p", "triple_o", "triple_o_prefix", "reversed",
-                "slot", "description")
-                .OrderBy("ul.uri", "id");
+                "part_type_filter", "part_role_filter", "description",
+                "source", "sid")
+                .OrderBy("name", "id");
             List<NodeMapping> mappings = new();
             foreach (var d in query.Get())
-            {
-                mappings.Add(new NodeMapping
-                {
-                    Id = d.id,
-                    ParentId = d.parent_id ?? 0,
-                    SourceType = (NodeSourceType)d.source_type,
-                    Name = d.name,
-                    Ordinal = d.ordinal,
-                    FacetFilter = d.facet_filter,
-                    GroupFilter = d.group_filter,
-                    FlagsFilter = d.flags_filter,
-                    TitleFilter = d.title_filter,
-                    PartType = d.part_type,
-                    PartRole = d.part_role,
-                    PinName = d.pin_name,
-                    Prefix = d.prefix,
-                    LabelTemplate = d.label_template,
-                    TripleS = d.triple_s,
-                    TripleP = d.triple_p,
-                    TripleO = d.triple_o,
-                    TripleOPrefix = d.triple_o_prefix,
-                    IsReversed = Convert.ToBoolean(d.reversed),
-                    Slot = d.slot,
-                    Description = d.description
-                });
-            }
+                mappings.Add(GetNodeMapping(d));
 
             return new DataPage<NodeMapping>(filter.PageNumber,
                 filter.PageSize, total, mappings);
         }
 
+        private void PopulateMappingDescendants(NodeMapping mapping, QueryFactory qf)
+        {
+            Query query = qf.Query("mapping").Where("parent_id", mapping.Id);
+            foreach (var d in query.Get())
+            {
+                NodeMapping child = GetNodeMapping(d);
+                mapping.Children.Add(child);
+                PopulateMappingDescendants(child, qf);
+            }
+        }
+
         /// <summary>
-        /// Gets the node mapping witht the specified ID.
+        /// Gets the node mapping with the specified ID, including all its
+        /// descendant mappings.
         /// </summary>
         /// <param name="id">The identifier.</param>
         /// <returns>The mapping or null if not found.</returns>
         public NodeMapping? GetMapping(int id)
         {
             using QueryFactory qf = GetQueryFactory();
-            Query query = qf.Query("node_mapping").Where("id", id);
+            Query query = qf.Query("mapping").Where("id", id);
             var d = query.Get().FirstOrDefault();
-            return d == null ? null : new NodeMapping
+            if (d == null) return null;
+
+            NodeMapping mapping = new()
             {
                 Id = d.id,
                 ParentId = d.parent_id ?? 0,
-                SourceType = (NodeSourceType)d.source_type,
-                Name = d.name,
                 Ordinal = d.ordinal,
+                Name = d.name,
+                SourceType = d.source_type,
                 FacetFilter = d.facet_filter,
                 GroupFilter = d.group_filter,
                 FlagsFilter = (int)d.flags_filter,
                 TitleFilter = d.title_filter,
-                PartType = d.part_type,
-                PartRole = d.part_role,
-                PinName = d.pin_name,
-                Prefix = d.prefix,
-                LabelTemplate = d.label_template,
-                TripleS = d.triple_s,
-                TripleP = d.triple_p,
-                TripleO = d.triple_o,
-                TripleOPrefix = d.triple_o_prefix,
-                IsReversed = Convert.ToBoolean(d.reversed),
-                Slot = d.slot,
-                Description = d.description
+                PartTypeFilter = d.part_type_filter,
+                PartRoleFilter = d.part_role_filter,
+                Description = d.description,
+                Source = d.source,
+                Sid = d.sid,
             };
+
+            PopulateMappingDescendants(mapping, qf);
+
+            return mapping;
         }
 
         /// <summary>
-        /// Adds the specified node mapping.
+        /// Adds the specified node mapping with all its descendants.
         /// When <paramref name="mapping"/> has ID=0 (=new mapping), its
         /// <see cref="NodeMapping.Id"/> property gets updated by this method
         /// after insertion.
@@ -866,9 +872,9 @@ namespace Cadmus.Graph.Sql
 
             using QueryFactory qf = GetQueryFactory();
             if (mapping.Id > 0
-                && qf.Query("node_mapping").Where("id", mapping.Id).Exists())
+                && qf.Query("mapping").Where("id", mapping.Id).Exists())
             {
-                qf.Query("node_mapping").Where("id", mapping.Id).Update(new
+                qf.Query("mapping").Where("id", mapping.Id).Update(new
                 {
                     id = mapping.Id,
                     parent_Id = mapping.ParentId == 0
@@ -896,7 +902,7 @@ namespace Cadmus.Graph.Sql
             }
             else
             {
-                mapping.Id = qf.Query("node_mapping").InsertGetId<int>(new
+                mapping.Id = qf.Query("mapping").InsertGetId<int>(new
                 {
                     parent_Id = mapping.ParentId == 0
                         ? null : (int?)mapping.ParentId,
@@ -930,7 +936,7 @@ namespace Cadmus.Graph.Sql
         public void DeleteMapping(int id)
         {
             using QueryFactory qf = GetQueryFactory();
-            qf.Query("node_mapping").Where("id", id).Delete();
+            qf.Query("mapping").Where("id", id).Delete();
         }
 
         private void ApplyMappingFilter(IItem item, IPart part, string pin,
@@ -1025,7 +1031,7 @@ namespace Cadmus.Graph.Sql
             int parentId)
         {
             using QueryFactory qf = GetQueryFactory();
-            Query query = qf.Query("node_mapping");
+            Query query = qf.Query("mapping");
             ApplyMappingFilter(item, part, pin, parentId, query);
             query.Select("id", "parent_id", "source_type", "name", "ordinal",
                 "facet_filter", "group_filter", "flags_filter", "title_filter",
@@ -1720,5 +1726,4 @@ namespace Cadmus.Graph.Sql
             }
         }
     }
-    */
 }

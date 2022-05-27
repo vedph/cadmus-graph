@@ -9,9 +9,10 @@ namespace Cadmus.Graph
     public class NodeMappingFilter : PagingOptions
     {
         /// <summary>
-        /// Gets or sets the parent mapping's identifier.
+        /// Gets or sets the parent mapping's identifier. Set to 0 to get
+        /// only top level mappings; set to null to avoid filtering at all.
         /// </summary>
-        public int ParentId { get; set; }
+        public int? ParentId { get; set; }
 
         /// <summary>
         /// Gets or sets the source types. Any of the specified types must
