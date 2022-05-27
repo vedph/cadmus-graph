@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
+    <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
@@ -12,6 +12,10 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Assets\Schema.mysql" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Cadmus.Graph.Sql\Cadmus.Graph.Sql.csproj" />
   </ItemGroup>
 
 </Project>

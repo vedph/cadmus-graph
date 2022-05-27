@@ -150,8 +150,12 @@ namespace Cadmus.Graph
         /// </summary>
         /// <param name="filter">The filter. Set page size=0 to get all
         /// the mappings at once.</param>
+        /// <param name="descendants">True to populate all the mappings with their
+        /// descendants.
+        /// </param>
         /// <returns>The page.</returns>
-        DataPage<NodeMapping> GetMappings(NodeMappingFilter filter);
+        DataPage<NodeMapping> GetMappings(NodeMappingFilter filter,
+            bool descendants);
 
         /// <summary>
         /// Gets the node mapping witht the specified ID.
@@ -171,15 +175,6 @@ namespace Cadmus.Graph
         /// </summary>
         /// <param name="id">The mapping identifier.</param>
         void DeleteMapping(int id);
-
-        /// <summary>
-        /// Finds all the mappings applicable to the specified item.
-        /// </summary>
-        /// <param name="sourceType">The source type.</param>
-        /// <param name="metadata">The metadata to filter mappings.</param>
-        /// <returns>Mappings.</returns>
-        IList<NodeMapping> FindMappingsFor(string sourceType,
-            IDictionary<string, object> metadata);
 
         /// <summary>
         /// Gets the specified page of triples.

@@ -132,6 +132,22 @@ namespace Cadmus.Graph.Sql
         }
 
         /// <summary>
+        /// Looks up the namespace from its prefix.
+        /// </summary>
+        /// <param name="prefix">The prefix.</param>
+        /// <returns>The namespace, or null if not found.</returns>
+        /// <exception cref="ArgumentNullException">prefix</exception>
+        public string? LookupNamespace(string prefix)
+        {
+            if (prefix == null) throw new ArgumentNullException(nameof(prefix));
+
+            using QueryFactory qf = GetQueryFactory();
+            return qf.Query("namespace_lookup")
+                     .Where("id", prefix)
+                     .Select("uri").Get<string>().FirstOrDefault();
+        }
+
+        /// <summary>
         /// Adds or updates the specified namespace prefix.
         /// </summary>
         /// <param name="prefix">The namespace prefix.</param>
@@ -161,22 +177,6 @@ namespace Cadmus.Graph.Sql
                     uri
                 });
             }
-        }
-
-        /// <summary>
-        /// Looks up the namespace from its prefix.
-        /// </summary>
-        /// <param name="prefix">The prefix.</param>
-        /// <returns>The namespace, or null if not found.</returns>
-        /// <exception cref="ArgumentNullException">prefix</exception>
-        public string? LookupNamespace(string prefix)
-        {
-            if (prefix == null) throw new ArgumentNullException(nameof(prefix));
-
-            using QueryFactory qf = GetQueryFactory();
-            return qf.Query("namespace_lookup")
-                     .Where("id", prefix)
-                     .Select("uri").Get<string>().FirstOrDefault();
         }
 
         /// <summary>
@@ -771,6 +771,51 @@ namespace Cadmus.Graph.Sql
             };
         }
 
+        private static void PopulateMappingOutput(NodeMapping mapping,
+            QueryFactory qf)
+        {
+            mapping.Output = new();
+
+            // nodes
+            Query query = qf.Query("mapping_out_node")
+                .Select("ordinal", "name", "uid", "label", "tag")
+                .Where("mapping_id", mapping.Id)
+                .OrderBy("ordinal");
+            foreach (var d in query.Get())
+            {
+                mapping.Output.Nodes[d.name] = new MappedNode
+                {
+                    Uid = d.uid,
+                    Label = d.label,
+                    Tag = d.tag
+                };
+            }
+
+            // triples
+            query = qf.Query("mapping_out_triple")
+                .Select("ordinal", "s", "p", "o", "ol")
+                .Where("mapping_id", mapping.Id)
+                .OrderBy("ordinal");
+            foreach (var d in query.Get())
+            {
+                mapping.Output.Triples.Add(new MappedTriple
+                {
+                    S = d.s,
+                    P = d.p,
+                    O = d.o,
+                    OL = d.ol
+                });
+            }
+
+            // metadata
+            query = qf.Query("mapping_out_meta")
+                .Select("ordinal", "name", "value")
+                .Where("mapping_id", mapping.Id)
+                .OrderBy("ordinal");
+            foreach (var d in query.Get())
+                mapping.Output.Metadata[d.name] = d.value;
+        }
+
         /// <summary>
         /// Gets the specified page of node mappings.
         /// </summary>
@@ -812,7 +857,7 @@ namespace Cadmus.Graph.Sql
             foreach (var d in query.Get())
             {
                 var mapping = DataToMapping(d);
-                // TODO output
+                PopulateMappingOutput(mapping, qf);
                 if (descendants) PopulateMappingDescendants(mapping, qf);
                 mappings.Add(mapping);
             }
@@ -846,7 +891,7 @@ namespace Cadmus.Graph.Sql
             if (d == null) return null;
 
             NodeMapping mapping = DataToMapping(d);
-            // TODO output
+            PopulateMappingOutput(mapping, qf);
             PopulateMappingDescendants(mapping, qf);
 
             return mapping;
@@ -863,40 +908,53 @@ namespace Cadmus.Graph.Sql
         private static void AddMappingOutput(NodeMapping mapping, QueryFactory qf,
             IDbTransaction trans)
         {
+            List<object?[]> data = new();
+
             if (mapping.Output?.HasNodes == true)
             {
-                var data = new[]
+                int n = 0;
+                foreach (var p in mapping.Output.Nodes)
                 {
-                        from node in mapping.Output.Nodes.Values
-                        select new object?[]
-                            { mapping.Id, node.Uid, node.Label, node.Tag }
-                    };
+                    MappedNode node = p.Value;
+                    data.Add(new object?[]
+                    {
+                        mapping.Id, ++n, p.Key, node.Uid, node.Label, node.Tag
+                    });
+                }
                 qf.Query("mapping_out_node")
-                  .Insert(new[] { "mapping_id", "uid", "label", "tag" },
+                  .Insert(new[] { "mapping_id", "ordinal", "name", "uid", "label", "tag" },
                           data, trans);
             }
+
             if (mapping.Output?.HasTriples == true)
             {
-                var data = new[]
+                data.Clear();
+                int n = 0;
+                foreach (MappedTriple triple in mapping.Output.Triples)
                 {
-                        from triple in mapping.Output.Triples
-                        select new object?[]
-                            { mapping.Id, triple.S, triple.P, triple.O, triple.OL }
-                    };
+                    data.Add(new object?[]
+                    {
+                        mapping.Id, ++n, triple.S, triple.P, triple.O, triple.OL
+                    });
+                }
                 qf.Query("mapping_out_triple")
-                  .Insert(new[] { "mapping_id", "s", "p", "o", "ol" },
+                  .Insert(new[] { "mapping_id", "ordinal", "s", "p", "o", "ol" },
                           data, trans);
             }
+
             if (mapping.Output?.HasMetadata == true)
             {
-                var data = new[]
+                data.Clear();
+                int n = 0;
+                foreach (var p in mapping.Output.Metadata)
                 {
-                        from p in mapping.Output.Metadata
-                        select new object?[]
-                            { mapping.Id, p.Key, p.Value }
-                    };
+                    data.Add(new object?[]
+                    {
+                        mapping.Id, ++n, p.Key, p.Value
+                    });
+                }
                 qf.Query("mapping_out_meta")
-                  .Insert(new[] { "mapping_id", "name", "value" },
+                  .Insert(new[] { "mapping_id", "ordinal", "name", "value" },
                           data, trans);
             }
         }
