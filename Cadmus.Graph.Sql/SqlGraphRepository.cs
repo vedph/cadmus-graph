@@ -1,6 +1,4 @@
-﻿using Cadmus.Core;
-using Cadmus.Core.Config;
-using Cadmus.Index.Sql;
+﻿using Cadmus.Index.Sql;
 using Fusi.Tools;
 using Fusi.Tools.Config;
 using Fusi.Tools.Data;
@@ -459,7 +457,7 @@ namespace Cadmus.Graph.Sql
                 };
         }
 
-        private UriNode? GetNodeByUri(string uri, QueryFactory qf)
+        private static UriNode? GetNodeByUri(string uri, QueryFactory qf)
         {
             var d = qf.Query("node")
               .Join("uri_lookup AS ul", "node.id", "ul.id")
@@ -751,7 +749,7 @@ namespace Cadmus.Graph.Sql
                 query.Where("part_role", filter.PartRole);
         }
 
-        private static NodeMapping? GetNodeMapping(dynamic? d)
+        private static NodeMapping? DataToMapping(dynamic? d)
         {
             if (d == null) return null;
             return new NodeMapping()
@@ -778,9 +776,13 @@ namespace Cadmus.Graph.Sql
         /// </summary>
         /// <param name="filter">The filter. Set page size=0 to get all
         /// the mappings at once.</param>
+        /// <param name="descendants">True to populate all the mappings with their
+        /// descendants.
+        /// </param>
         /// <returns>The page.</returns>
         /// <exception cref="ArgumentNullException">filter</exception>
-        public DataPage<NodeMapping> GetMappings(NodeMappingFilter filter)
+        public DataPage<NodeMapping> GetMappings(NodeMappingFilter filter,
+            bool descendants)
         {
             if (filter == null) throw new ArgumentNullException(nameof(filter));
 
@@ -802,10 +804,17 @@ namespace Cadmus.Graph.Sql
                 "facet_filter", "group_filter", "flags_filter", "title_filter",
                 "part_type_filter", "part_role_filter", "description",
                 "source", "sid")
+                .Skip(filter.GetSkipCount())
                 .OrderBy("name", "id");
+            if (filter.PageSize > 0) query.Limit(filter.PageSize);
+
             List<NodeMapping> mappings = new();
             foreach (var d in query.Get())
-                mappings.Add(GetNodeMapping(d));
+            {
+                var mapping = DataToMapping(d);
+                if (descendants) PopulateMappingDescendants(mapping, qf);
+                mappings.Add(mapping);
+            }
 
             return new DataPage<NodeMapping>(filter.PageNumber,
                 filter.PageSize, total, mappings);
@@ -816,7 +825,7 @@ namespace Cadmus.Graph.Sql
             Query query = qf.Query("mapping").Where("parent_id", mapping.Id);
             foreach (var d in query.Get())
             {
-                NodeMapping child = GetNodeMapping(d);
+                NodeMapping child = DataToMapping(d);
                 mapping.Children.Add(child);
                 PopulateMappingDescendants(child, qf);
             }
@@ -835,27 +844,48 @@ namespace Cadmus.Graph.Sql
             var d = query.Get().FirstOrDefault();
             if (d == null) return null;
 
-            NodeMapping mapping = new()
-            {
-                Id = d.id,
-                ParentId = d.parent_id ?? 0,
-                Ordinal = d.ordinal,
-                Name = d.name,
-                SourceType = d.source_type,
-                FacetFilter = d.facet_filter,
-                GroupFilter = d.group_filter,
-                FlagsFilter = (int)d.flags_filter,
-                TitleFilter = d.title_filter,
-                PartTypeFilter = d.part_type_filter,
-                PartRoleFilter = d.part_role_filter,
-                Description = d.description,
-                Source = d.source,
-                Sid = d.sid,
-            };
-
+            NodeMapping mapping = DataToMapping(d);
             PopulateMappingDescendants(mapping, qf);
 
             return mapping;
+        }
+
+        private void AddMapping(NodeMapping mapping, QueryFactory qf,
+            IDbTransaction trans)
+        {
+            var newMapping = new
+            {
+                id = mapping.Id,
+                parent_id = mapping.ParentId == 0
+                        ? null : (int?)mapping.ParentId,
+                ordinal = mapping.Ordinal,
+                name = mapping.Name,
+                source_type = mapping.SourceType,
+                facet_filter = mapping.FacetFilter,
+                group_filter = mapping.GroupFilter,
+                flags_filter = mapping.FlagsFilter,
+                title_filter = mapping.TitleFilter,
+                part_type_filter = mapping.PartTypeFilter,
+                part_role_filter = mapping.PartRoleFilter,
+                description = mapping.Description,
+                source = mapping.Source,
+                sid = mapping.Sid
+            };
+
+            if (mapping.Id > 0
+                && qf.Query("mapping").Where("id", mapping.Id).Exists())
+            {
+                qf.Query("mapping").Where("id", mapping.Id)
+                    .Update(newMapping, trans);
+            }
+            else
+            {
+                mapping.Id = qf.Query("mapping")
+                    .InsertGetId<int>(newMapping, trans);
+            }
+
+            foreach (NodeMapping child in mapping.Children)
+                AddMapping(child, qf, trans);
         }
 
         /// <summary>
@@ -871,61 +901,17 @@ namespace Cadmus.Graph.Sql
             if (mapping == null) throw new ArgumentNullException(nameof(mapping));
 
             using QueryFactory qf = GetQueryFactory();
-            if (mapping.Id > 0
-                && qf.Query("mapping").Where("id", mapping.Id).Exists())
+            IDbTransaction trans = qf.Connection.BeginTransaction();
+
+            try
             {
-                qf.Query("mapping").Where("id", mapping.Id).Update(new
-                {
-                    id = mapping.Id,
-                    parent_Id = mapping.ParentId == 0
-                        ? null : (int?)mapping.ParentId,
-                    source_type = (int)mapping.SourceType,
-                    name = mapping.Name,
-                    ordinal = mapping.Ordinal,
-                    facet_filter = mapping.FacetFilter,
-                    group_filter = mapping.GroupFilter,
-                    flags_filter = mapping.FlagsFilter,
-                    title_filter = mapping.TitleFilter,
-                    part_type = mapping.PartType,
-                    part_role = mapping.PartRole,
-                    pin_name = mapping.PinName,
-                    prefix = mapping.Prefix,
-                    label_template = mapping.LabelTemplate,
-                    triple_s = mapping.TripleS,
-                    triple_p = mapping.TripleP,
-                    triple_o = mapping.TripleO,
-                    triple_o_prefix = mapping.TripleOPrefix,
-                    reversed = mapping.IsReversed,
-                    slot = mapping.Slot,
-                    description = mapping.Description
-                });
+                AddMapping(mapping, qf, trans);
+                trans.Commit();
             }
-            else
+            catch (Exception)
             {
-                mapping.Id = qf.Query("mapping").InsertGetId<int>(new
-                {
-                    parent_Id = mapping.ParentId == 0
-                        ? null : (int?)mapping.ParentId,
-                    source_type = (int)mapping.SourceType,
-                    name = mapping.Name,
-                    ordinal = mapping.Ordinal,
-                    facet_filter = mapping.FacetFilter,
-                    group_filter = mapping.GroupFilter,
-                    flags_filter = mapping.FlagsFilter,
-                    title_filter = mapping.TitleFilter,
-                    part_type = mapping.PartType,
-                    part_role = mapping.PartRole,
-                    pin_name = mapping.PinName,
-                    prefix = mapping.Prefix,
-                    label_template = mapping.LabelTemplate,
-                    triple_s = mapping.TripleS,
-                    triple_p = mapping.TripleP,
-                    triple_o = mapping.TripleO,
-                    triple_o_prefix = mapping.TripleOPrefix,
-                    reversed = mapping.IsReversed,
-                    slot = mapping.Slot,
-                    description = mapping.Description
-                });
+                trans.Rollback();
+                throw;
             }
         }
 
@@ -937,174 +923,6 @@ namespace Cadmus.Graph.Sql
         {
             using QueryFactory qf = GetQueryFactory();
             qf.Query("mapping").Where("id", id).Delete();
-        }
-
-        private void ApplyMappingFilter(IItem item, IPart part, string pin,
-            int parentId, Query query)
-        {
-            if (parentId != 0) query.Where("parent_id", parentId);
-            else query.WhereNull("parent_id");
-
-            // source_type IN(1,2,3) for items or =4 for parts
-            if (part == null)
-            {
-                query.WhereIn("source_type", new[]
-                    {
-                        NodeSourceType.Item,
-                        NodeSourceType.ItemFacet,
-                        NodeSourceType.ItemGroup
-                    });
-            }
-            else
-            {
-                query.Where("source_type", (int)NodeSourceType.Pin);
-            }
-
-            // facet: a mapping with no facet filter applies to any facet.
-            // A mapping with it applies only to the specified facet.
-            if (item.FacetId != null)
-            {
-                query.Where(q =>
-                    q.WhereNull("facet_filter").OrWhere("facet_filter", item.FacetId));
-            }
-            else query.WhereNull("facet_filter");
-
-            // flags: a mapping with 0 flags filter applies to any flags.
-            // A mapping with non-0 applies only to the specified flags.
-            if (item.Flags != 0)
-            {
-                query.Where(q =>
-                    q.Where("flags_filter", 0)
-                     .OrWhereRaw($"(flags_filter & {item.Flags})={item.Flags}"));
-            }
-            else query.Where("flags_filter", 0);
-
-            // group: a mapping without group ID filter applies to any groups.
-            // A mapping with it applies only to the specified group ID.
-            if (item.GroupId != null)
-            {
-                query.Where(q =>
-                    q.WhereNull("group_filter")
-                     .OrWhereRaw(SqlHelper.BuildRegexMatch("group_filter",
-                     SqlHelper.SqlEncode(item.GroupId, false, true, false))));
-            }
-            else query.WhereNull("group_filter");
-
-            // title
-            if (item.Title != null)
-            {
-                query.Where(q =>
-                    q.WhereNull("title_filter")
-                     .OrWhereRaw(SqlHelper.BuildRegexMatch("title_filter",
-                       SqlHelper.SqlEncode(item.Title, false, true, false)))
-                );
-            }
-            else query.WhereNull("title_filter");
-
-            if (part != null)
-            {
-                // part_type
-                query.Where(q =>
-                    q.WhereNull("part_type").OrWhere("part_type", part.TypeId));
-
-                // part_role
-                query.Where(q =>
-                    q.WhereNull("part_role").OrWhere("part_role", part.RoleId));
-
-                // pin
-                if (pin != null)
-                {
-                    string pf = SqlHelper.SqlEncode(pin, false, true, false);
-                    query.Where(q =>
-                        q.OrWhere("pin_name", pin)
-                         .OrWhereRaw("(INSTR(pin_name, '@*') > 0 " +
-                           $"AND {pf} LIKE REPLACE(pin_name, '*', '%') " +
-                           $"AND LENGTH({pf}) - LENGTH(REPLACE({pf}, '@', '')) = " +
-                           "LENGTH(pin_name) - LENGTH(REPLACE(pin_name, '@', '')))")
-                    );
-                }
-                else query.WhereNull("pin_name");
-            }
-        }
-
-        private IList<NodeMapping> FindMappings(IItem item, IPart part, string pin,
-            int parentId)
-        {
-            using QueryFactory qf = GetQueryFactory();
-            Query query = qf.Query("mapping");
-            ApplyMappingFilter(item, part, pin, parentId, query);
-            query.Select("id", "parent_id", "source_type", "name", "ordinal",
-                "facet_filter", "group_filter", "flags_filter", "title_filter",
-                "part_type", "part_role", "pin_name", "prefix", "label_template",
-                "triple_s", "triple_p", "triple_o", "triple_o_prefix",
-                "reversed", "slot")
-                .OrderBy("source_type", "ordinal", "part_type", "part_role",
-                    "pin_name", "name");
-
-            List<NodeMapping> mappings = new();
-            foreach (var d in query.Get())
-            {
-                mappings.Add(new NodeMapping
-                {
-                    Id = d.id,
-                    ParentId = d.parent_id ?? 0,
-                    SourceType = (NodeSourceType)d.source_type,
-                    Name = d.name,
-                    Ordinal = d.ordinal,
-                    FacetFilter = d.facet_filter,
-                    GroupFilter = d.group_filter,
-                    FlagsFilter = (int)d.flags_filter,
-                    TitleFilter = d.title_filter,
-                    PartType = d.part_type,
-                    PartRole = d.part_role,
-                    PinName = d.pin_name,
-                    Prefix = d.prefix,
-                    LabelTemplate = d.label_template,
-                    TripleS = d.triple_s,
-                    TripleP = d.triple_p,
-                    TripleO = d.triple_o,
-                    TripleOPrefix = d.triple_o_prefix,
-                    IsReversed = Convert.ToBoolean(d.reversed),
-                    Slot = d.slot,
-                    // Description = d.description
-                });
-            }
-            return mappings;
-        }
-
-        /// <summary>
-        /// Finds all the mappings applicable to the specified item.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="parentId">The parent mapping identifier, or 0 to
-        /// get root mappings.</param>
-        /// <returns>Mappings.</returns>
-        /// <exception cref="ArgumentNullException">item</exception>
-        public IList<NodeMapping> FindMappingsFor(IItem item, int parentId = 0)
-        {
-            if (item == null) throw new ArgumentNullException(nameof(item));
-
-            return FindMappings(item, null, null, parentId);
-        }
-
-        /// <summary>
-        /// Finds all the mappings applicable to the specified part's pin.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="part">The part.</param>
-        /// <param name="pin">The pin name.</param>
-        /// <param name="parentId">The parent mapping identifier, or 0 to
-        /// get root mappings.</param>
-        /// <returns>Mappings.</returns>
-        /// <exception cref="ArgumentNullException">item or part or pin</exception>
-        public IList<NodeMapping> FindMappingsFor(IItem item, IPart part, string pin,
-            int parentId = 0)
-        {
-            if (item == null) throw new ArgumentNullException(nameof(item));
-            if (part == null) throw new ArgumentNullException(nameof(part));
-            if (pin == null) throw new ArgumentNullException(nameof(pin));
-
-            return FindMappings(item, part, pin, parentId);
         }
         #endregion
 
@@ -1217,7 +1035,7 @@ namespace Cadmus.Graph.Sql
                 Id = id,
                 SubjectId = d.s_id,
                 PredicateId = d.p_id,
-                ObjectId = d.o_id == null ? 0 : d.o_id,
+                ObjectId = d.o_id ?? 0,
                 ObjectLiteral = d.o_lit,
                 Sid = d.sid,
                 Tag = d.tag,
@@ -1430,7 +1248,7 @@ namespace Cadmus.Graph.Sql
 
                 while (reader.Read())
                 {
-                    ((DbParameter)updCmd.Parameters[0]).Value
+                    ((DbParameter)updCmd.Parameters[0]!).Value
                         = reader.GetInt32(0);
                     updCmd.ExecuteNonQuery();
 
@@ -1451,115 +1269,10 @@ namespace Cadmus.Graph.Sql
                 {
                     report.Percent = 100;
                     report.Count = total;
-                    progress.Report(report);
+                    progress!.Report(report);
                 }
             }
             return Task.CompletedTask;
-        }
-
-        /// <summary>
-        /// Adds the specified thesaurus as a set of class nodes.
-        /// </summary>
-        /// <param name="thesaurus">The thesaurus.</param>
-        /// <param name="includeRoot">If set to <c>true</c>, include a root node
-        /// corresponding to the thesaurus ID. This typically happens for
-        /// non-hierarchic thesauri, where a flat list of entries is grouped
-        /// under a single root.</param>
-        /// <param name="prefix">The optional prefix to prepend to each ID.</param>
-        /// <exception cref="ArgumentNullException">thesaurus</exception>
-        public void AddThesaurus(Thesaurus thesaurus, bool includeRoot,
-            string? prefix = null)
-        {
-            if (thesaurus is null)
-                throw new ArgumentNullException(nameof(thesaurus));
-
-            // nothing to do for aliases
-            if (thesaurus.TargetId != null) return;
-
-            using QueryFactory qf = GetQueryFactory();
-            IDbTransaction trans = qf.Connection.BeginTransaction();
-
-            try
-            {
-                // ensure that we have rdfs:subClassOf
-                Node? sub = GetNodeByUri("rdfs:subClassOf", qf);
-                if (sub == null)
-                {
-                    AddNode(sub = new Node
-                    {
-                        Id = AddUri("rdfs:subClassOf", qf),
-                        Label = "subclass-of",
-                        IsClass = true
-                    }, true, qf);
-                }
-
-                // include root if requested
-                Node? root = null;
-                if (includeRoot)
-                {
-                    int atIndex = thesaurus.Id.LastIndexOf('@');
-                    string id = atIndex > -1
-                        ? thesaurus.Id.Substring(0, atIndex)
-                        : thesaurus.Id;
-                    string uri = string.IsNullOrEmpty(prefix)
-                        ? id : prefix + id;
-
-                    AddNode(root = new Node
-                    {
-                        Id = AddUri(uri, qf),
-                        IsClass = true,
-                        Label = id,
-                        SourceType = NodeSourceType.User,
-                        Tag = "thesaurus"
-                    }, true, qf);
-                }
-
-                Dictionary<string, int> ids = new();
-                thesaurus.VisitByLevel(entry =>
-                {
-                    string uri = string.IsNullOrEmpty(prefix)
-                        ? entry.Id : prefix + entry.Id;
-                    Node node = new()
-                    {
-                        Id = AddUri(uri, qf),
-                        IsClass = true,
-                        Label = entry.Id,
-                        SourceType = NodeSourceType.User,
-                        Tag = "thesaurus"
-                    };
-                    AddNode(node, true, qf);
-                    ids[entry.Id] = node.Id;
-
-                    // triple
-                    if (entry.Parent != null)
-                    {
-                        AddTriple(new Triple
-                        {
-                            SubjectId = node.Id,
-                            PredicateId = sub.Id,
-                            ObjectId = ids[entry.Parent.Id]
-                        }, qf);
-                    }
-                    else if (root != null)
-                    {
-                        AddTriple(new Triple
-                        {
-                            SubjectId = node.Id,
-                            PredicateId = sub.Id,
-                            ObjectId = root.Id
-                        }, qf);
-                    }
-
-                    return true;
-                });
-
-                trans.Commit();
-            }
-            catch
-            {
-                trans.Rollback();
-                throw;
-            }
         }
         #endregion
 
@@ -1593,7 +1306,7 @@ namespace Cadmus.Graph.Sql
                     IsClass = Convert.ToBoolean(d.is_class),
                     Tag = d.tag,
                     Label = d.label,
-                    SourceType = (NodeSourceType)d.source_type,
+                    SourceType = d.source_type,
                     Sid = d.sid,
                     Uri = d.uri
                 });

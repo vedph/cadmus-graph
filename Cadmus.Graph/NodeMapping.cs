@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Text;
 
 namespace Cadmus.Graph
@@ -9,6 +10,19 @@ namespace Cadmus.Graph
     public class NodeMapping
     {
         private IList<NodeMapping>? _children;
+
+        /// <summary>
+        /// The item source type.
+        /// </summary>
+        public const string SOURCE_TYPE_ITEM = "item";
+        /// <summary>
+        /// The part source type.
+        /// </summary>
+        public const string SOURCE_TYPE_PART = "part";
+        /// <summary>
+        /// The thesaurus source type.
+        /// </summary>
+        public const string SOURCE_TYPE_THESAURUS = "thesaurus";
 
         /// <summary>
         /// Gets or sets a numeric identifier for this mapping. This is
@@ -124,6 +138,25 @@ namespace Cadmus.Graph
             sb.Append(id).Append('=');
             sb.Append(value);
             return filter;
+        }
+
+        /// <summary>
+        /// Visits this mapping and all its descendants.
+        /// </summary>
+        /// <param name="visitor">The visitor function to call for each
+        /// mapping. This receives the mapping, and return true to continue,
+        /// false to stop.</param>
+        /// <exception cref="ArgumentNullException">visitor</exception>
+        public void Visit(Func<NodeMapping, bool> visitor)
+        {
+            if (visitor is null) throw new ArgumentNullException(nameof(visitor));
+
+            if (!visitor(this)) return;
+            if (HasChildren)
+            {
+                foreach (NodeMapping child in Children)
+                    child.Visit(visitor);
+            }
         }
 
         /// <summary>
