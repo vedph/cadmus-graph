@@ -812,6 +812,7 @@ namespace Cadmus.Graph.Sql
             foreach (var d in query.Get())
             {
                 var mapping = DataToMapping(d);
+                // TODO output
                 if (descendants) PopulateMappingDescendants(mapping, qf);
                 mappings.Add(mapping);
             }
@@ -845,14 +846,65 @@ namespace Cadmus.Graph.Sql
             if (d == null) return null;
 
             NodeMapping mapping = DataToMapping(d);
+            // TODO output
             PopulateMappingDescendants(mapping, qf);
 
             return mapping;
         }
 
+        private static void DeleteMappingOutput(int id, QueryFactory qf,
+            IDbTransaction trans)
+        {
+            qf.Query("mapping_out_node").Where("mapping_id", id).Delete(trans);
+            qf.Query("mapping_out_triple").Where("mapping_id", id).Delete(trans);
+            qf.Query("mapping_out_meta").Where("mapping_id", id).Delete(trans);
+        }
+
+        private static void AddMappingOutput(NodeMapping mapping, QueryFactory qf,
+            IDbTransaction trans)
+        {
+            if (mapping.Output?.HasNodes == true)
+            {
+                var data = new[]
+                {
+                        from node in mapping.Output.Nodes.Values
+                        select new object?[]
+                            { mapping.Id, node.Uid, node.Label, node.Tag }
+                    };
+                qf.Query("mapping_out_node")
+                  .Insert(new[] { "mapping_id", "uid", "label", "tag" },
+                          data, trans);
+            }
+            if (mapping.Output?.HasTriples == true)
+            {
+                var data = new[]
+                {
+                        from triple in mapping.Output.Triples
+                        select new object?[]
+                            { mapping.Id, triple.S, triple.P, triple.O, triple.OL }
+                    };
+                qf.Query("mapping_out_triple")
+                  .Insert(new[] { "mapping_id", "s", "p", "o", "ol" },
+                          data, trans);
+            }
+            if (mapping.Output?.HasMetadata == true)
+            {
+                var data = new[]
+                {
+                        from p in mapping.Output.Metadata
+                        select new object?[]
+                            { mapping.Id, p.Key, p.Value }
+                    };
+                qf.Query("mapping_out_meta")
+                  .Insert(new[] { "mapping_id", "name", "value" },
+                          data, trans);
+            }
+        }
+
         private void AddMapping(NodeMapping mapping, QueryFactory qf,
             IDbTransaction trans)
         {
+            // insert or update the mapping
             var newMapping = new
             {
                 id = mapping.Id,
@@ -877,6 +929,7 @@ namespace Cadmus.Graph.Sql
             {
                 qf.Query("mapping").Where("id", mapping.Id)
                     .Update(newMapping, trans);
+                DeleteMappingOutput(mapping.Id, qf, trans);
             }
             else
             {
@@ -884,6 +937,10 @@ namespace Cadmus.Graph.Sql
                     .InsertGetId<int>(newMapping, trans);
             }
 
+            // add its output
+            if (mapping.Output != null) AddMappingOutput(mapping, qf, trans);
+
+            // add its children
             foreach (NodeMapping child in mapping.Children)
                 AddMapping(child, qf, trans);
         }
@@ -1276,6 +1333,7 @@ namespace Cadmus.Graph.Sql
         }
         #endregion
 
+        #region Graph
         /// <summary>
         /// Gets the set of graph's nodes and triples whose SID starts with
         /// the specified GUID. This identifies all the nodes and triples
@@ -1438,5 +1496,6 @@ namespace Cadmus.Graph.Sql
                 throw;
             }
         }
+        #endregion
     }
 }

@@ -9,7 +9,7 @@ namespace Cadmus.Graph
     {
         private IDictionary<string, MappedNode>? _nodes;
         private IList<MappedTriple>? _triples;
-        private IDictionary<string, object>? _metadata;
+        private IDictionary<string, string>? _metadata;
 
         /// <summary>
         /// The nodes to emit, keyed under some mapping-scoped ID. This ID can
@@ -48,12 +48,14 @@ namespace Cadmus.Graph
 
         /// <summary>
         /// The metadata pushed into the mapping context.
+        /// All these metadata are of type string, as they come from the
+        /// mapping definition.
         /// </summary>
-        public IDictionary<string, object> Metadata
+        public IDictionary<string, string> Metadata
         {
             get
             {
-                return _metadata ??= new Dictionary<string, object>();
+                return _metadata ??= new Dictionary<string, string>();
             }
             set { _metadata = value; }
         }
