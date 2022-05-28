@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
+using System.Globalization;
 
 namespace Cadmus.Graph
 {
@@ -123,7 +124,7 @@ namespace Cadmus.Graph
             {
                 "label" => node.Label ?? "",
                 "sid" => node.Sid ?? "",
-                "src_type" => node.SourceType ?? "",
+                "src_type" => node.SourceType.ToString(CultureInfo.InvariantCulture),
                 _ => node.Uri ?? "",
             };
         }

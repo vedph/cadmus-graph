@@ -8,7 +8,7 @@
         /// <summary>
         /// Gets or sets the source type to match.
         /// </summary>
-        public string SourceType { get; set; }
+        public int SourceType { get; set; }
 
         /// <summary>
         /// Gets or sets the facet ID to match.
@@ -39,14 +39,5 @@
         /// Gets or sets the role ID of the source part to match.
         /// </summary>
         public string? PartRole { get; set; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="RunNodeMappingFilter"/>
-        /// class.
-        /// </summary>
-        public RunNodeMappingFilter()
-        {
-            SourceType = NodeMapping.SOURCE_TYPE_ITEM;
-        }
     }
 }

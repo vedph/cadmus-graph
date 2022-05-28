@@ -271,8 +271,8 @@ namespace Cadmus.Graph.Sql.Test
                     Id = id,
                     Label = $"Node {i + 1:00}",
                     SourceType = i == 0
-                        ? NodeMapping.SOURCE_TYPE_ITEM
-                        : NodeMapping.SOURCE_TYPE_PART,
+                        ? Node.SOURCE_ITEM
+                        : Node.SOURCE_PART,
                     Sid = i == 0 ? itemId : partId,
                     Tag = tag ? ((i + 1) % 2 == 0 ? "even" : "odd") : null
                 };
@@ -348,10 +348,7 @@ namespace Cadmus.Graph.Sql.Test
             IGraphRepository repository = GetRepository();
             AddNodes(10, repository);
 
-            DataPage<UriNode> page = repository.GetNodes(new NodeFilter
-            {
-                SourceType = NodeMapping.SOURCE_TYPE_ITEM
-            });
+            DataPage<UriNode> page = repository.GetNodes(new NodeFilter());
 
             Assert.Equal(1, page.Total);
             Assert.Equal(1, page.Items.Count);
@@ -471,20 +468,20 @@ namespace Cadmus.Graph.Sql.Test
             Node argos = new()
             {
                 Id = repository.AddUri("x:dogs/argos"),
-                Label = "Argos"
+                Label = "Argos",
             };
             repository.AddNode(argos);
             Node a = new()
             {
                 Id = repository.AddUri("rdf:type"),
-                Label = "a"
+                Label = "a",
             };
             repository.AddNode(a);
             Node animal = new()
             {
                 Id = repository.AddUri("x:animal"),
                 Label = "animal",
-                IsClass = true
+                IsClass = true,
             };
             repository.AddNode(animal);
             // triple
@@ -514,20 +511,20 @@ namespace Cadmus.Graph.Sql.Test
             Node argos = new()
             {
                 Id = repository.AddUri("x:dogs/argos"),
-                Label = "Argos"
+                Label = "Argos",
             };
             repository.AddNode(argos);
             Node a = new()
             {
                 Id = repository.AddUri("rdf:type"),
-                Label = "a"
+                Label = "a",
             };
             repository.AddNode(a);
             Node animal = new()
             {
                 Id = repository.AddUri("x:animal"),
                 Label = "animal",
-                IsClass = true
+                IsClass = true,
             };
             repository.AddNode(animal);
             // triple
@@ -555,7 +552,7 @@ namespace Cadmus.Graph.Sql.Test
             Node argos = new()
             {
                 Id = repository.AddUri("x:dogs/argos"),
-                Label = "Argos"
+                Label = "Argos",
             };
             repository.AddNode(argos);
 
@@ -571,7 +568,7 @@ namespace Cadmus.Graph.Sql.Test
             Node argos = new()
             {
                 Id = repository.AddUri("x:dogs/argos"),
-                Label = "Argos"
+                Label = "Argos",
             };
             repository.AddNode(argos);
 
@@ -1189,7 +1186,6 @@ namespace Cadmus.Graph.Sql.Test
             // item mapping
             NodeMapping mapping = new()
             {
-                SourceType = NodeMapping.SOURCE_TYPE_ITEM,
                 FacetFilter = "person",
                 Name = "Item",
                 Description = "Description"
@@ -1213,7 +1209,6 @@ namespace Cadmus.Graph.Sql.Test
             // item mapping
             NodeMapping mapping = new()
             {
-                SourceType = NodeMapping.SOURCE_TYPE_ITEM,
                 FacetFilter = "person",
                 Name = "Item",
                 Description = "Description"
@@ -1239,7 +1234,6 @@ namespace Cadmus.Graph.Sql.Test
             // item mapping
             NodeMapping mapping = new()
             {
-                SourceType = NodeMapping.SOURCE_TYPE_ITEM,
                 FacetFilter = "person",
                 Name = "Item",
                 Description = "Description"
@@ -1258,7 +1252,6 @@ namespace Cadmus.Graph.Sql.Test
             // item mapping
             NodeMapping mapping = new()
             {
-                SourceType = NodeMapping.SOURCE_TYPE_ITEM,
                 FacetFilter = "person",
                 Name = "Item",
                 Description = "Description"

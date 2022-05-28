@@ -59,7 +59,7 @@
     </ShowAsCollectionAssociation>
   </Class>
   <Class Name="Cadmus.Graph.NodeMapper">
-    <Position X="3.25" Y="7" Width="1.75" />
+    <Position X="3.25" Y="7.5" Width="1.75" />
     <Members>
       <Method Name="NodeMapper" Hidden="true" />
       <Method Name="ResolveMacro" Hidden="true" />
@@ -102,7 +102,7 @@
     </TypeIdentifier>
   </Class>
   <Class Name="Cadmus.Graph.JsonNodeMapper">
-    <Position X="3.25" Y="10.5" Width="1.75" />
+    <Position X="3.25" Y="10.75" Width="1.75" />
     <Members>
       <Method Name="AddNodes" Hidden="true" />
       <Method Name="AddTriples" Hidden="true" />
@@ -177,7 +177,7 @@
     </ShowAsCollectionAssociation>
   </Class>
   <Class Name="Cadmus.Graph.RamUidBuilder">
-    <Position X="0.5" Y="10.25" Width="1.5" />
+    <Position X="0.5" Y="10.5" Width="1.5" />
     <Compartments>
       <Compartment Name="Fields" Collapsed="true" />
     </Compartments>
@@ -188,7 +188,7 @@
     <Lollipop Position="0.2" />
   </Class>
   <Class Name="Cadmus.Graph.JsonGraphPresetReader">
-    <Position X="13.25" Y="2.5" Width="2" />
+    <Position X="13.25" Y="2.75" Width="2" />
     <Members>
       <Method Name="JsonGraphPresetReader" Hidden="true" />
       <Method Name="Read" Hidden="true" />
@@ -197,7 +197,7 @@
       <Compartment Name="Fields" Collapsed="true" />
     </Compartments>
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAQAAAAAAAEAAAABgAAAAAAAAAAAAAAAAACA=</HashCode>
+      <HashCode>AAAAAAAAAQAAAAAAAEAAAABgAAAAAAAAAAAQAAAAACA=</HashCode>
       <FileName>JsonGraphPresetReader.cs</FileName>
     </TypeIdentifier>
     <Lollipop Position="0.2" />
@@ -253,22 +253,32 @@
       <FileName>MappedNode.cs</FileName>
     </TypeIdentifier>
   </Class>
+  <Class Name="Cadmus.Graph.CrudGrouper&lt;T&gt;">
+    <Position X="0.5" Y="0.5" Width="1.5" />
+    <Members>
+      <Method Name="CrudGrouper" Hidden="true" />
+    </Members>
+    <TypeIdentifier>
+      <HashCode>AAAAAEAEAAAAAAAAAAAAEEAAAAAAAAAAQAAAAABAAAA=</HashCode>
+      <FileName>CrudGrouper.cs</FileName>
+    </TypeIdentifier>
+  </Class>
   <Interface Name="Cadmus.Graph.INodeMapper">
-    <Position X="3.25" Y="4.75" Width="1.75" />
+    <Position X="3.25" Y="5.25" Width="1.75" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAhIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>INodeMapper.cs</FileName>
     </TypeIdentifier>
   </Interface>
   <Interface Name="Cadmus.Graph.INodeMappingMacro">
-    <Position X="0.5" Y="7" Width="1.75" />
+    <Position X="0.5" Y="7.25" Width="1.75" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAI=</HashCode>
       <FileName>INodeMappingMacro.cs</FileName>
     </TypeIdentifier>
   </Interface>
   <Interface Name="Cadmus.Graph.IUidBuilder">
-    <Position X="0.5" Y="8.75" Width="1.5" />
+    <Position X="0.5" Y="9" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAA=</HashCode>
       <FileName>IUidBuilder.cs</FileName>
@@ -277,14 +287,14 @@
   <Interface Name="Cadmus.Graph.IGraphPresetReader">
     <Position X="13.25" Y="0.5" Width="2" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAAAAEAAAABAAAAAAAAAAAAAAAAAACA=</HashCode>
+      <HashCode>AAAAAAAAAAAAAAAAAEAAAABAAAAAAAAAAAAQAAAAACA=</HashCode>
       <FileName>IGraphPresetReader.cs</FileName>
     </TypeIdentifier>
   </Interface>
   <Interface Name="Cadmus.Graph.IGraphRepository">
     <Position X="17.25" Y="0.5" Width="2" />
     <TypeIdentifier>
-      <HashCode>sAgACIAohAEABAAAEAAAAAQEHAAAAAQZAQgBgABMBQA=</HashCode>
+      <HashCode>sAgACIAohAEABAAAFAAAAAQEHAAAAAQZAQgBgABMBQA=</HashCode>
       <FileName>IGraphRepository.cs</FileName>
     </TypeIdentifier>
   </Interface>

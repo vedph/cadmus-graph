@@ -88,7 +88,7 @@ CREATE TABLE mapping (
 	facet_filter varchar(100) NULL,
 	group_filter varchar(100) NULL,
 	title_filter varchar(100) NULL,
-	flags_filter int NOT NULL,
+	flags_filter int NULL,
 	part_type_filter varchar(100) NULL,
 	part_role_filter varchar(100) NULL,
 	description varchar(1000) NULL,
@@ -194,3 +194,30 @@ INSERT INTO node(id, is_class, label, tag, source_type, sid) VALUES(12, 0, 'rdfs
 INSERT INTO node(id, is_class, label, tag, source_type, sid) VALUES(13, 0, 'rdfs:comment', 'property', 0, NULL);
 INSERT INTO node(id, is_class, label, tag, source_type, sid) VALUES(14, 0, 'rdfs:seeAlso', 'property', 0, NULL);
 INSERT INTO node(id, is_class, label, tag, source_type, sid) VALUES(15, 0, 'rdfs:isDefinedBy', 'property', 0, NULL);
+
+-- --------------------------------------------------------
+-- graph stored procedures
+-- --------------------------------------------------------
+
+DELIMITER $$
+CREATE PROCEDURE `populate_node_class`(IN instance_id INT, IN a_id INT, IN sub_id INT)
+BEGIN
+INSERT INTO node_class(node_id, class_id, level)
+WITH RECURSIVE cn AS (
+	-- ANCHOR
+	-- get object class node
+	SELECT t.o_id AS id, 1 AS level FROM node n
+	-- of a triple having S=start node P=a O=class node
+	INNER JOIN triple t ON t.s_id=n.id AND t.p_id=a_id
+	LEFT JOIN node n2 ON t.o_id=n2.id AND n2.is_class=true
+	WHERE n.id=instance_id
+	UNION DISTINCT
+	-- RECURSIVE
+	SELECT t.o_id AS id, level+1 AS level FROM cn
+    -- sub_id is the ID of rdfs:subClassOf
+	INNER JOIN triple t ON t.s_id=cn.id AND t.p_id=sub_id
+	LEFT JOIN node n2 ON t.o_id=n2.id AND n2.is_class=true
+)
+SELECT instance_id, cn.id, cn.level FROM cn;
+END$$
+DELIMITER ;

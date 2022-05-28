@@ -6,6 +6,23 @@
     public class Node
     {
         /// <summary>
+        /// The "user" value for <see cref="SourceType"/>.
+        /// </summary>
+        public const int SOURCE_USER = 0;
+        /// <summary>
+        /// The "item" value for <see cref="SourceType"/>.
+        /// </summary>
+        public const int SOURCE_ITEM = 1;
+        /// <summary>
+        /// The "part" value for <see cref="SourceType"/>.
+        /// </summary>
+        public const int SOURCE_PART = 2;
+        /// <summary>
+        /// The "thesaurus" value for <see cref="SourceType"/>.
+        /// </summary>
+        public const int SOURCE_THESAURUS = 3;
+
+        /// <summary>
         /// The value for <see cref="Tag"/> when the node represents a property,
         /// i.e. a resource which can be used as a predicate.
         /// </summary>
@@ -41,7 +58,7 @@
         /// <summary>
         /// Gets or sets the type of the source for this node.
         /// </summary>
-        public string? SourceType { get; set; }
+        public int SourceType { get; set; }
 
         /// <summary>
         /// Gets or sets the source ID for this node.

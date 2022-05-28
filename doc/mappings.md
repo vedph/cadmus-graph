@@ -25,11 +25,10 @@ It should be stressed that the nodes produced from mapping are not intended to f
 
 ## Sources
 
-At the input side of mappings, there are these types of sources:
+At the input side of mappings, there are two types of sources:
 
 - **item**: an item. You can have mappings for the item; its group; its facet.
 - **part**: a part.
-- **thesaurus**: a thesaurus (not an alias, but a true thesaurus with entries).
 
 Note that for _item titles_ a couple of conventions dictate that:
 
@@ -122,7 +121,7 @@ A mapping rule is modeled as an object having a number of properties, defining:
 
 In turn, each mapping rule can include any number of children rules. The model as it used in a JSON-based serialization is as follows:
 
-- `sourceType`\*: the type of the source object, like item, part, or thesaurus. This is meaningful for the root mapping only.
+- `sourceType`\*: the type of the source object, i.e. item (1) or part (2). This is meaningful for the root mapping only.
 - `sid`\*: the source ID (SID) of this mapping. This is meaningful for the root mapping only.
 - `facetFilter`: an optional item's facet filter.
 - `groupFilter`: an optional item's group filter.
@@ -136,6 +135,8 @@ In turn, each mapping rule can include any number of children rules. The model a
   - `triples`: an array of strings, each representing a triple [template](#templates).
   - `metadata`: optional metadata to be consumed in [templates](#templates). Metadata come from several sources: the source object, the mapping process itself, and these definitions in the mapping.
 - `children`: children mappings.
+
+>Note: the source type is a number where 0=user, 1=item, 2=part, 3=thesaurus. This is not an enumerated value, so that you can eventually add new values by just defining new constants.
 
 ## Templates
 
@@ -303,7 +304,40 @@ Here is a quick recap of mappings, reading the file from top to bottom:
 
 (1) the first mapping matches any event of type `person.birth` (see its `source` property: this is the JMES path). Its output is just a metadatum, which will be consumed by its children mappings. This has key `eid-sid` and is built from a template, collecting the part ID and the event's EID. So, all the children of this mapping start with their source located at the birth event.
 
-(2) the first child of this mapping matches the event's EID property, and uses it to emit a node for that event. As a sample, its template has a prefix (`x:events/`, where `x:` stands for some URI namespace), and the EID from the event. These build the node's UID. This node is keyed under `event`: this key will be used by other mappings to refer to the UID of this node. As you know, the [UID](#entity-id-uid) cannot be known in advance, as it might receive a numeric suffix to disambiguate it. So, having a key for each emitted node allows us to refer to it in other mappings. Of course, the key is meaningful only in the scope of the process of this mapping. It will have no existence outside of the mapping process. Think of it as a sort of variable name, to be used in mapping templates.
+```json
+{
+  "name": "birth event",
+  "sourceType": 2,
+  "facetFilter": "person",
+  "partTypeFilter": "it.vedph.historical-events",
+  "description": "Map birth event",
+  "source": "events[?type=='person.birth']",
+  "output": {
+    "metadata": {
+      "eid-sid": "{$part-id}/{@eid}"
+    }
+  }
+}
+```
+
+(2) the first child of this mapping matches the event's [EID](#entry-id-eid) property, and uses it to emit a node for that event. As a sample, its template has a prefix (`x:events/`, where `x:` stands for some URI namespace), and the EID from the event. These build the node's UID. This node is keyed under `event`: this key will be used by other mappings to refer to the UID of this node. As you know, the [UID](#entity-id-uid) cannot be known in advance, as it might receive a numeric suffix to disambiguate it. So, having a key for each emitted node allows us to refer to it in other mappings. Of course, the key is meaningful only in the scope of the process of this mapping. It will have no existence outside of the mapping process. Think of it as a sort of variable name, to be used in mapping templates.
+
+```json
+{
+  "name": "birth event - eid",
+  "source": "eid",
+  "sid": "{$eid-sid}",
+  "output": {
+    "nodes": {
+      "event": "x:events/{$.}"
+    },
+    "triples": [
+      "{?event} a crm:E67_Birth",
+      "{?event} crm:P98_brought_into_life {$item-uri}"
+    ]
+  }
+}
+```
 
 (3) the same mapping, once emitted the event node, uses it to build a couple of triples. One tells that this event is a birth event; and another that it brought into life the entity corresponding to the item containing this part. This item corresponds to the person who was born. Note that triples use node and metadata placeholders:
 
@@ -312,11 +346,82 @@ Here is a quick recap of mappings, reading the file from top to bottom:
 
 (4) the second child mapping matches the event's `note` property. It then emits a node representing a free textual annotation, and a corresponding triple using it. The triple links the event (referred to via its key) to the note's literal text (`{$.}` wraps a simple dot, which is the path to the current node; here, `note` being a string property, the current node is just the string's value, i.e. the note's text). Also notice that the UID here is just `x:notes/n`, which is generic as this node carries no intrinsic data we could use for a more meaningful user-friendly ID. The infrastructure will ensure that each additional note emitted gets a numeric suffix, thus producing sequences like `x:notes/n`, `x:notes/n#1`, `x:notes/n#23`, etc. (the actual numbers vary, the only requirement being that each is unique, so often they won't be progressive).
 
+```json
+{
+   "name": "birth event - note",
+   "source": "note",
+   "sid": "{$eid-sid}/note",
+   "output": {
+     "nodes": {
+       "note": "x:notes/n"
+     },
+     "triples": [ "{?event} crm:P3_has_note \"{$.}\"" ]
+   }
+}
+```
+
 (5) the third child walks down the event's `chronotope` property, including the place and/or date. As such, it has no output, but it just provides an ad hoc SID and a number of children mappings. As you can see, here the hierarchy of mappings reflects the hierarchy of the object. That's a very intuitive way of designing such processes.
+
+```json
+{
+  "name": "birth event - chronotope",
+  "source": "chronotope",
+  "sid": "{$eid-sid}/chronotope",
+}
+```
 
 (6) down to the `chronotope`'s mapping children, we have a couple of them, for `place` and `date`. The `place` mapping emits a place node, and a couple of triples telling that this is a place, and that the event took place there. The `date` mapping looks more interesting, as it requires a macro. We want to emit two nodes for each date: one with an approximate numeric value, calculated from the historical date model, and useful for processing data (for filtering, sorting, etc.); another with the human-friendly (yet parsable) representation of the date. So, the logic required for this could not be represented by the simple mapping model, which is purely declarative, and is bound to be simple for performance reasons. Rather, we use a macro, i.e. an external function, previously registered with the mapper (via the Cadmus data profile). Macro are pluggable components, so they represent an easy and powerful extension point. In this case, the macro `hdate` is used to calculate the values from the JSON code representing the historical date's model. The output is stored in a couple of metadata, and then used in the triples.
 
+```json
+"children": [
+  {
+    "source": "place",
+    "output": {
+      "nodes": {
+        "place": "x:places/{@value}"
+      },
+      "triples": [
+        "{?place} a crm:E53_Place",
+        "{?event} crm:P7_took_place_at {?place}"
+      ]
+    }
+  },
+  {
+    "name": "birth event - chronotope - date",
+    "source": "date",
+    "output": {
+      "metadata": {
+        "date_value": "{!_hdate({@.} & value)}",
+        "date_text": "{!_hdate({@.} & text)}"
+      },
+      "nodes": {
+        "timespan": "x:timespans/ts"
+      },
+      "triples": [
+        "{?event} crm:P4_has_time_span {?timespan}",
+        "{?timespan} crm:P82_at_some_time_within \"{$date_value}\"^^xs:float",
+        "{?timespan} crm:P87_is_identified_by \"{$date_text}\"@en"
+      ]
+    }
+  }
+]
+```
+
 (7) at this point, we're done with the `chronotope` property. The next mapping is child of the `event` object, and matches all the related entities whose `relation` property has value `mother`, i.e. the mother of this person. It outputs a node for her, using the received `id` with some prefix, just to show how we can still manipulate the received ID if needed, so users can enter a shortened version if useful. The corresponding triple links the event and the mother.
+
+```json
+{
+  "name": "birth event - related - mother",
+  "sid": "{$eid-sid}/related",
+  "source": "relatedEntities[?relation=='mother']",
+  "output": {
+    "nodes": {
+      "mother": "x:persons/{@id}"
+    },
+    "triples": [ "{?event} crm:P96_by_mother {?mother}" ]
+  }
+}
+```
 
 (8) finally, a sibling mapping does the same for the father.
 
@@ -326,7 +431,7 @@ Here is the full code for those mappings:
 [
   {
     "name": "birth event",
-    "sourceType": "part",
+    "sourceType": 2,
     "facetFilter": "person",
     "partTypeFilter": "it.vedph.historical-events",
     "description": "Map birth event",

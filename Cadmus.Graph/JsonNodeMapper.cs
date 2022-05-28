@@ -18,7 +18,7 @@ namespace Cadmus.Graph
     {
         private readonly JmesPath _jmes;
         private JsonDocument? _doc;
-        private string? _sourceType;
+        private int _sourceType;
         private string? _lastSid;
 
         public JsonNodeMapper()
@@ -111,7 +111,7 @@ namespace Cadmus.Graph
             if (mapping.Output.HasMetadata)
             {
                 foreach (var p in mapping.Output.Metadata)
-                    Data[p.Key] = ResolveTemplate(p.Value.ToString()!, false);
+                    Data[p.Key] = ResolveTemplate(p.Value!, false);
             }
 
             if (!string.IsNullOrEmpty(sid))
@@ -238,7 +238,7 @@ namespace Cadmus.Graph
                 throw new ArgumentNullException(nameof(target));
 
             // reset state
-            _sourceType = null;
+            _sourceType = 0;
             _lastSid = null;
             _doc = null;
 
@@ -247,9 +247,7 @@ namespace Cadmus.Graph
             if (string.IsNullOrEmpty(json)) return;
 
             // set source type once for all the descendants
-            _sourceType = mapping.SourceType
-                ?? throw new CadmusGraphException(
-                    "Source type not set for mapping " + mapping);
+            _sourceType = mapping.SourceType;
 
             ApplyMapping(null, json, mapping, target);
         }

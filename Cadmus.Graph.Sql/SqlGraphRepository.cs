@@ -746,8 +746,12 @@ namespace Cadmus.Graph.Sql
                     SqlHelper.SqlEncode(filter.Group, false, true, false)));
             }
 
-            if (filter.Flags > 0)
-                query.WhereRaw($"(flags_filter & {filter.Flags})={filter.Flags}");
+            if (filter.Flags.HasValue)
+            {
+                query.WhereNotNull("flags_filter")
+                    .WhereRaw(
+                    $"(flags_filter & {filter.Flags.Value})={filter.Flags.Value}");
+            }
 
             if (!string.IsNullOrEmpty(filter.Title))
                 query.Where("title_filter", filter.Title);
@@ -1089,8 +1093,8 @@ namespace Cadmus.Graph.Sql
             // optional flags (all the flags specified must be present)
             if (filter.Flags.HasValue)
             {
-                query.WhereRaw($"(flags_filter & {filter.Flags})={filter.Flags}")
-                     .OrWhere("flags_filter", 0);
+                query.WhereNull("flags_filter")
+                     .OrWhereRaw($"(flags_filter & {filter.Flags})={filter.Flags}");
             }
 
             // optional title
@@ -1433,7 +1437,7 @@ namespace Cadmus.Graph.Sql
                         Id = AddUri(uri, qf),
                         IsClass = true,
                         Label = id,
-                        SourceType = NodeMapping.SOURCE_TYPE_THESAURUS,
+                        SourceType = Node.SOURCE_THESAURUS,
                         Tag = "thesaurus",
                         Sid = thesaurus.Id
                     };
@@ -1450,7 +1454,7 @@ namespace Cadmus.Graph.Sql
                         Id = AddUri(uri, qf),
                         IsClass = true,
                         Label = entry.Id,
-                        SourceType = NodeMapping.SOURCE_TYPE_THESAURUS,
+                        SourceType = Node.SOURCE_THESAURUS,
                         Tag = "thesaurus",
                         Sid = thesaurus.Id
                     };

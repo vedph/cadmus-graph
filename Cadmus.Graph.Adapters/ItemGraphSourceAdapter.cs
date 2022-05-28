@@ -23,7 +23,7 @@ namespace Cadmus.Graph.Adapters
             if (item == null) return;
 
             // filter
-            filter.SourceType = NodeMapping.SOURCE_TYPE_ITEM;
+            filter.SourceType = Node.SOURCE_ITEM;
             filter.Facet = item.FacetId;
             filter.Group = item.GroupId;
             filter.Flags = item.Flags;

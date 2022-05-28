@@ -38,7 +38,7 @@ namespace Cadmus.Graph.Adapters
             if (part == null) return null;
 
             // filter
-            filter.SourceType = NodeMapping.SOURCE_TYPE_PART;
+            filter.SourceType = Node.SOURCE_PART;
             filter.PartType = part.TypeId;
             filter.PartRole = part.RoleId;
 

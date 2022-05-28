@@ -1,7 +1,7 @@
 ﻿[
   {
     "name": "birth event",
-    "sourceType": "part",
+    "sourceType": 2,
     "facetFilter": "person",
     "partTypeFilter": "it.vedph.historical-events",
     "description": "Map birth event",

@@ -12,19 +12,6 @@ namespace Cadmus.Graph
         private IList<NodeMapping>? _children;
 
         /// <summary>
-        /// The item source type.
-        /// </summary>
-        public const string SOURCE_TYPE_ITEM = "item";
-        /// <summary>
-        /// The part source type.
-        /// </summary>
-        public const string SOURCE_TYPE_PART = "part";
-        /// <summary>
-        /// The thesaurus source type.
-        /// </summary>
-        public const string SOURCE_TYPE_THESAURUS = "thesaurus";
-
-        /// <summary>
         /// Gets or sets a numeric identifier for this mapping. This is
         /// assigned when the mapping is archived in a database.
         /// </summary>
@@ -48,10 +35,10 @@ namespace Cadmus.Graph
         public string? Name { get; set; }
 
         /// <summary>
-        /// The type of the source object mapped by this mapping, like item,
-        /// part, or thesaurus. This is set for the root mapping only.
+        /// The type of the source object mapped by this mapping. This is
+        /// meaningful for the root mapping only.
         /// </summary>
-        public string? SourceType { get; set; }
+        public int SourceType { get; set; }
 
         /// <summary>
         /// The optional item's facet filter.
