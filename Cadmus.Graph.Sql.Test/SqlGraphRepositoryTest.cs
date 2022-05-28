@@ -348,7 +348,10 @@ namespace Cadmus.Graph.Sql.Test
             IGraphRepository repository = GetRepository();
             AddNodes(10, repository);
 
-            DataPage<UriNode> page = repository.GetNodes(new NodeFilter());
+            DataPage<UriNode> page = repository.GetNodes(new NodeFilter
+            {
+                SourceType = Node.SOURCE_ITEM
+            });
 
             Assert.Equal(1, page.Total);
             Assert.Equal(1, page.Items.Count);
@@ -379,7 +382,7 @@ namespace Cadmus.Graph.Sql.Test
 
             DataPage<UriNode> page = repository.GetNodes(new NodeFilter
             {
-                Sid = "f321f320-26da-4164-890b-e3974e9272ba/",
+                Sid = "f321f320-26da-4164-890b-e3974e9272ba",
                 IsSidPrefix = true
             });
 

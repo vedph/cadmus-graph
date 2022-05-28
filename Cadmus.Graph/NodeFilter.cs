@@ -33,7 +33,7 @@ namespace Cadmus.Graph
         /// <summary>
         /// Gets or sets the type of the source.
         /// </summary>
-        public string? SourceType { get; set; }
+        public int SourceType { get; set; }
 
         /// <summary>
         /// Gets or sets the sid.
