@@ -351,8 +351,8 @@ namespace Cadmus.Graph.Sql
                 query.WhereLike("label", "%" + filter.Label + "%");
 
             // source type
-            if (filter.SourceType != null)
-                query.Where("source_type", filter.SourceType);
+            if (filter.SourceType.HasValue)
+                query.Where("source_type", filter.SourceType.Value);
 
             // sid
             if (!string.IsNullOrEmpty(filter.Sid))
@@ -1501,23 +1501,25 @@ namespace Cadmus.Graph.Sql
             Node? a = GetNodeByUri("rdf:type", qf);
             if (a == null)
             {
-                AddNode(a = new Node
+                a = new Node
                 {
                     Id = AddUri("rdf:type", qf),
                     Label = "is-a",
                     Tag = "property"
-                }, true, qf);
+                };
+                AddNode(a, true, qf);
             }
 
             Node? sub = GetNodeByUri("rdfs:subClassOf", qf);
             if (sub == null)
             {
-                AddNode(sub = new Node
+                sub = new Node
                 {
                     Id = AddUri("rdfs:subClassOf", qf),
                     Label = "rdfs:subClassOf",
                     Tag = "property"
-                }, true, qf);
+                };
+                AddNode(sub, true, qf);
             }
             return Tuple.Create(a.Id, sub.Id);
         }

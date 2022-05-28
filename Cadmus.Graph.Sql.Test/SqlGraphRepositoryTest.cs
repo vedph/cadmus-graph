@@ -1181,18 +1181,103 @@ namespace Cadmus.Graph.Sql.Test
         #endregion
 
         #region Mapping
+        private static void AssertMappingsEqual(NodeMapping expected,
+            NodeMapping actual, bool output, bool children)
+        {
+            Assert.Equal(expected.Id, actual.Id);
+            Assert.Equal(expected.ParentId, actual.ParentId);
+            Assert.Equal(expected.Ordinal, actual.Ordinal);
+            Assert.Equal(expected.Name, actual.Name);
+            Assert.Equal(expected.SourceType, actual.SourceType);
+            Assert.Equal(expected.FacetFilter, actual.FacetFilter);
+            Assert.Equal(expected.GroupFilter, actual.GroupFilter);
+            Assert.Equal(expected.FlagsFilter, actual.FlagsFilter);
+            Assert.Equal(expected.TitleFilter, actual.TitleFilter);
+            Assert.Equal(expected.PartTypeFilter, actual.PartTypeFilter);
+            Assert.Equal(expected.PartRoleFilter, actual.PartRoleFilter);
+            Assert.Equal(expected.Description, actual.Description);
+            Assert.Equal(expected.Source, actual.Source);
+            Assert.Equal(expected.Sid, actual.Sid);
+
+            // output
+            if (output)
+            {
+                if (expected.Output == null) Assert.Null(actual.Output);
+                else
+                {
+                    Assert.NotNull(actual.Output);
+                    // TODO
+                }
+            }
+
+            // children
+            if (children)
+            {
+                Assert.Equal(expected.HasChildren, actual.HasChildren);
+                if (expected.HasChildren)
+                {
+                    for (int i = 0; i < expected.Children.Count; i++)
+                    {
+                        AssertMappingsEqual(expected.Children[i], actual.Children[i],
+                            output, true);
+                    }
+                }
+            }
+        }
+
+        private static IList<NodeMapping> GetMappings(int count)
+        {
+            List<NodeMapping> mappings = new(count);
+            for (int n = 1; n <= count; n++)
+            {
+                NodeMapping mapping = new()
+                {
+                    Id = n,
+                    Ordinal = n,
+                    SourceType = Node.SOURCE_ITEM,
+                    Name = "m" + n,
+                    FacetFilter = "person",
+                    Description = "Mapping " + n,
+                    Source = "source-" + n,
+                    Sid = "{?item-id}",
+                    Output = new NodeMappingOutput
+                    {
+                        Nodes = new Dictionary<string, MappedNode>()
+                        {
+                            [$"node{n}"] = new MappedNode
+                            {
+                                Label = "Node " + n,
+                                Uid = "x:nodes/n" + n,
+                                Tag = n == 1? "one" : null
+                            }
+                        },
+                        Triples = new List<MappedTriple>()
+                        {
+                            new MappedTriple
+                            {
+                                S = "{?node" + n + "}",
+                                P = "rdfs:label",
+                                OL = "Node " + n
+                            }
+                        },
+                        Metadata = new Dictionary<string, string>()
+                        {
+                            ["n"] = $"{n}"
+                        }
+                    }
+                };
+                mappings.Add(mapping);
+            }
+            return mappings;
+        }
+
         protected void DoAddMapping_NotExisting_Ok()
         {
             Reset();
             IGraphRepository repository = GetRepository();
 
             // item mapping
-            NodeMapping mapping = new()
-            {
-                FacetFilter = "person",
-                Name = "Item",
-                Description = "Description"
-            };
+            NodeMapping mapping = GetMappings(1)[0];
             repository.AddMapping(mapping);
 
             Assert.True(mapping.Id > 0);
