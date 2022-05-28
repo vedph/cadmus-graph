@@ -4,6 +4,9 @@ using Fusi.Tools.Config;
 using MySql.Data.MySqlClient;
 using SqlKata.Compilers;
 using System.Data;
+using System.IO;
+using System.Reflection;
+using System.Text;
 
 namespace Cadmus.Graph.MySql
 {
@@ -30,5 +33,18 @@ namespace Cadmus.Graph.MySql
         /// <returns>Connection.</returns>
         protected override IDbConnection GetConnection()
             => new MySqlConnection(ConnectionString);
+
+        /// <summary>
+        /// Gets the SQL DDL code representing the database schema for the
+        /// graph.
+        /// </summary>
+        /// <returns>SQL code.</returns>
+        public static string GetSchema()
+        {
+            using StreamReader reader = new(Assembly.GetExecutingAssembly()
+                .GetManifestResourceStream("Cadmus.Graph.MySql.Assets.Schema.mysql")!,
+                Encoding.UTF8);
+            return reader.ReadToEnd();
+        }
     }
 }

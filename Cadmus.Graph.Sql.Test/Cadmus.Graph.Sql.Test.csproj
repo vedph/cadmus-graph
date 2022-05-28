@@ -8,7 +8,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Fusi.DbManager.MySql" Version="2.0.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.1.0" />
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
@@ -22,8 +21,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Cadmus.Graph.MySql\Cadmus.Graph.MySql.csproj" />
-    <ProjectReference Include="..\Cadmus.Graph.Sql.Test\Cadmus.Graph.Sql.Test.csproj" />
+    <ProjectReference Include="..\Cadmus.Graph.Sql\Cadmus.Graph.Sql.csproj" />
+    <ProjectReference Include="..\Cadmus.Graph\Cadmus.Graph.csproj" />
   </ItemGroup>
 
 </Project>
