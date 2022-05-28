@@ -84,7 +84,7 @@ CREATE TABLE mapping (
 	parent_id int NULL,
 	ordinal int NOT NULL,
 	name varchar(100) NOT NULL,
-	source_type varchar(20) NOT NULL,
+	source_type int NOT NULL,
 	facet_filter varchar(100) NULL,
 	group_filter varchar(100) NULL,
 	title_filter varchar(100) NULL,

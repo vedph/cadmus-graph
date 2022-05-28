@@ -1206,6 +1206,9 @@ namespace Cadmus.Graph.Sql.Test
                 else
                 {
                     Assert.NotNull(actual.Output);
+                    Assert.Equal(expected.Output.HasNodes, actual.Output!.HasNodes);
+                    Assert.Equal(expected.Output.HasNodes, actual.Output.HasTriples);
+                    Assert.Equal(expected.Output.HasNodes, actual.Output.HasMetadata);
                     // TODO
                 }
             }
@@ -1232,7 +1235,6 @@ namespace Cadmus.Graph.Sql.Test
             {
                 NodeMapping mapping = new()
                 {
-                    Id = n,
                     Ordinal = n,
                     SourceType = Node.SOURCE_ITEM,
                     Name = "m" + n,
@@ -1283,10 +1285,7 @@ namespace Cadmus.Graph.Sql.Test
             Assert.True(mapping.Id > 0);
             NodeMapping? mapping2 = repository.GetMapping(mapping.Id);
             Assert.NotNull(mapping2);
-            Assert.Equal(mapping.SourceType, mapping2!.SourceType);
-            Assert.Equal(mapping.Name, mapping2!.Name);
-            Assert.Equal(mapping.FacetFilter, mapping2.FacetFilter);
-            Assert.Equal(mapping.Description, mapping2.Description);
+            AssertMappingsEqual(mapping, mapping2!, true, true);
         }
 
         protected void DoAddMapping_Existing_Ok()
