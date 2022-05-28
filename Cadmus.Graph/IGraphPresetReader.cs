@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Cadmus.Core.Config;
+using System.Collections.Generic;
 using System.IO;
 
 namespace Cadmus.Graph
@@ -23,6 +24,13 @@ namespace Cadmus.Graph
         /// <param name="stream">The stream.</param>
         /// <returns>Triples.</returns>
         IEnumerable<UriTriple> ReadTriples(Stream stream);
+
+        /// <summary>
+        /// Reads the preset thesauri from the specified stream.
+        /// </summary>
+        /// <param name="stream">The stream.</param>
+        /// <returns>Thesauri.</returns>
+        IEnumerable<Thesaurus> ReadThesauri(Stream stream);
 
         /// <summary>
         /// Loads node mappings from the specified stream.

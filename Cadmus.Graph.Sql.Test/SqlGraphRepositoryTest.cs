@@ -1,6 +1,10 @@
+using Cadmus.Core.Config;
 using Fusi.DbManager;
 using Fusi.Tools.Data;
 using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using Xunit;
 
 namespace Cadmus.Graph.Sql.Test
@@ -187,7 +191,6 @@ namespace Cadmus.Graph.Sql.Test
         #endregion
 
         #region Uid
-        [Fact]
         protected void DoAddUid_NoClash_AddedNoSuffix()
         {
             Reset();
@@ -199,7 +202,6 @@ namespace Cadmus.Graph.Sql.Test
             Assert.Equal("x:persons/john_doe", uid);
         }
 
-        [Fact]
         protected void DoAddUid_Clash_AddedWithSuffix()
         {
             Reset();
@@ -213,7 +215,6 @@ namespace Cadmus.Graph.Sql.Test
             Assert.NotEqual(uid1, uid2);
         }
 
-        [Fact]
         protected void DoAddUid_ClashButSameSid_ReusedWithSuffix()
         {
             Reset();
@@ -228,7 +229,6 @@ namespace Cadmus.Graph.Sql.Test
         #endregion
 
         #region Uri
-        [Fact]
         protected void DoAddUri_NotExisting_Added()
         {
             Reset();
@@ -241,7 +241,6 @@ namespace Cadmus.Graph.Sql.Test
             Assert.Equal(uri, uri2);
         }
 
-        [Fact]
         protected void DoAddUri_Existing_Nope()
         {
             Reset();
@@ -730,5 +729,548 @@ namespace Cadmus.Graph.Sql.Test
         }
         #endregion
 
+        #region Triple
+        private static Triple AddMichelangeloArtist(IGraphRepository repository)
+        {
+            Node michelangelo = new()
+            {
+                Id = repository.AddUri("x:persons/michelangelo"),
+                Label = "Michelangelo"
+            };
+            repository.AddNode(michelangelo);
+            Node a = new()
+            {
+                Id = repository.AddUri("rdf:type"),
+                Label = "a",
+                Tag = Node.TAG_PROPERTY
+            };
+            repository.AddNode(a);
+            Node artist = new()
+            {
+                Id = repository.AddUri("x:artist"),
+                IsClass = true,
+                Label = "Artist class"
+            };
+            repository.AddNode(artist);
+
+            // triple: michelangelo a artist
+            Triple triple = new()
+            {
+                SubjectId = michelangelo.Id,
+                PredicateId = a.Id,
+                ObjectId = artist.Id
+            };
+            repository.AddTriple(triple);
+
+            return triple;
+        }
+
+        protected void DoAddTriple_NotExisting_Added()
+        {
+            Reset();
+            IGraphRepository repository = GetRepository();
+
+            Triple triple = AddMichelangeloArtist(repository);
+
+            UriTriple? triple2 = repository.GetTriple(triple.Id);
+            Assert.NotNull(triple2);
+            Assert.Equal(triple.SubjectId, triple2!.SubjectId);
+            Assert.Equal(triple.PredicateId, triple2.PredicateId);
+            Assert.Equal(triple.ObjectId, triple2.ObjectId);
+            Assert.Equal(triple.ObjectLiteral, triple2.ObjectLiteral);
+            Assert.Equal(triple.Sid, triple2.Sid);
+            Assert.Equal(triple.Tag, triple2.Tag);
+        }
+
+        protected void DoAddTriple_Same_Unchanged()
+        {
+            Reset();
+            IGraphRepository repository = GetRepository();
+
+            Triple triple = AddMichelangeloArtist(repository);
+            Triple triple2 = AddMichelangeloArtist(repository);
+
+            Assert.Equal(triple.Id, triple2.Id);
+            Assert.Equal(1, repository.GetTriples(new TripleFilter()).Total);
+        }
+
+        private static void AddTriples(IGraphRepository repository)
+        {
+            // nodes
+            Node michelangelo = new()
+            {
+                Id = repository.AddUri("x:persons/michelangelo"),
+                Label = "Michelangelo"
+            };
+            repository.AddNode(michelangelo);
+
+            Node a = new()
+            {
+                Id = repository.AddUri("rdf:type"),
+                Label = "a",
+                Tag = Node.TAG_PROPERTY
+            };
+            repository.AddNode(a);
+
+            Node name = new()
+            {
+                Id = repository.AddUri("foaf:name"),
+                Label = "Person name",
+                Tag = Node.TAG_PROPERTY
+            };
+            repository.AddNode(name);
+
+            Node artist = new()
+            {
+                Id = repository.AddUri("x:artist"),
+                IsClass = true,
+                Label = "Artist class"
+            };
+            repository.AddNode(artist);
+
+            // michelangelo a artist
+            repository.AddTriple(new Triple
+            {
+                SubjectId = michelangelo.Id,
+                PredicateId = a.Id,
+                ObjectId = artist.Id
+            });
+            // michelangelo hasName "Michelangelo Buonarroti"
+            repository.AddTriple(new Triple
+            {
+                SubjectId = michelangelo.Id,
+                PredicateId = name.Id,
+                ObjectLiteral = "Michelangelo Buonarroti",
+                Tag = "fake",
+                Sid = "d33d98de-7e61-4c67-8ddb-0cd1b4f03dae"
+            });
+        }
+
+        protected void DoGetTriples_NoFilter_Ok()
+        {
+            Reset();
+            IGraphRepository repository = GetRepository();
+            AddTriples(repository);
+
+            var page = repository.GetTriples(new TripleFilter());
+
+            Assert.Equal(2, page.Total);
+            Assert.Equal(2, page.Items.Count);
+        }
+
+        protected void DoGetTriples_BySubjectId_Ok()
+        {
+            Reset();
+            IGraphRepository repository = GetRepository();
+            AddTriples(repository);
+
+            var page = repository.GetTriples(new TripleFilter
+            {
+                SubjectId = 1
+            });
+
+            Assert.Equal(2, page.Total);
+            Assert.Equal(2, page.Items.Count);
+        }
+
+        protected void DoGetTriples_ByPredicateId_Ok()
+        {
+            Reset();
+            IGraphRepository repository = GetRepository();
+            AddTriples(repository);
+
+            var page = repository.GetTriples(new TripleFilter
+            {
+                PredicateId = 4
+            });
+
+            Assert.Equal(1, page.Total);
+            Assert.Single(page.Items);
+            Assert.NotNull(page.Items[0].ObjectLiteral);
+        }
+
+        protected void DoGetTriples_ByObjectId_Ok()
+        {
+            Reset();
+            IGraphRepository repository = GetRepository();
+            AddTriples(repository);
+
+            var page = repository.GetTriples(new TripleFilter
+            {
+                ObjectId = 5
+            });
+
+            Assert.Equal(1, page.Total);
+            Assert.Single(page.Items);
+        }
+
+        protected void DoGetTriples_ByLiteral_Ok()
+        {
+            Reset();
+            IGraphRepository repository = GetRepository();
+            AddTriples(repository);
+
+            var page = repository.GetTriples(new TripleFilter
+            {
+                ObjectLiteral = "^Michelangelo"
+            });
+
+            Assert.Equal(1, page.Total);
+            Assert.Single(page.Items);
+            Assert.NotNull(page.Items[0].ObjectLiteral);
+        }
+
+        protected void DoGetTriples_BySidExact_Ok()
+        {
+            Reset();
+            IGraphRepository repository = GetRepository();
+            AddTriples(repository);
+
+            DataPage<UriTriple> page = repository.GetTriples(new TripleFilter
+            {
+                Sid = "d33d98de-7e61-4c67-8ddb-0cd1b4f03dae"
+            });
+
+            Assert.Equal(1, page.Total);
+            Assert.Equal(1, page.Items.Count);
+        }
+
+        protected void DoGetTriples_BySidPrefix_Ok()
+        {
+            Reset();
+            IGraphRepository repository = GetRepository();
+            AddTriples(repository);
+
+            DataPage<UriTriple> page = repository.GetTriples(new TripleFilter
+            {
+                Sid = "d33d98de-7e61-4c67-8ddb-",
+                IsSidPrefix = true
+            });
+
+            Assert.Equal(1, page.Total);
+            Assert.Single(page.Items);
+        }
+
+        protected void DoGetTriples_ByNoTag_Ok()
+        {
+            Reset();
+            IGraphRepository repository = GetRepository();
+            AddTriples(repository);
+
+            var page = repository.GetTriples(new TripleFilter
+            {
+                Tag = ""
+            });
+
+            Assert.Equal(1, page.Total);
+            Assert.Single(page.Items);
+            Assert.Null(page.Items[0].ObjectLiteral);
+        }
+
+        protected void DoGetTriples_ByTag_Ok()
+        {
+            Reset();
+            IGraphRepository repository = GetRepository();
+            AddTriples(repository);
+
+            var page = repository.GetTriples(new TripleFilter
+            {
+                Tag = "fake"
+            });
+
+            Assert.Equal(1, page.Total);
+            Assert.Single(page.Items);
+            Assert.NotNull(page.Items[0].ObjectLiteral);
+        }
+
+        protected void DoGetTriple_NotExisting_Null()
+        {
+            Reset();
+            IGraphRepository repository = GetRepository();
+            AddTriples(repository);
+
+            UriTriple? triple = repository.GetTriple(123);
+
+            Assert.Null(triple);
+        }
+
+        protected void DoGetTriple_Existing_Ok()
+        {
+            Reset();
+            IGraphRepository repository = GetRepository();
+            AddTriples(repository);
+
+            UriTriple? triple = repository.GetTriple(2);
+
+            Assert.NotNull(triple);
+            Assert.NotNull(triple!.ObjectLiteral);
+            Assert.Equal("x:persons/michelangelo", triple.SubjectUri);
+            Assert.Equal("foaf:name", triple.PredicateUri);
+            Assert.Null(triple.ObjectUri);
+        }
+
+        protected void DoDeleteTriple_NotExisting_Nope()
+        {
+            Reset();
+            IGraphRepository repository = GetRepository();
+            AddTriples(repository);
+
+            repository.DeleteTriple(123);
+
+            Assert.Equal(2, repository.GetTriples(new TripleFilter()).Total);
+        }
+
+        protected void DoDeleteTriple_Existing_Ok()
+        {
+            Reset();
+            IGraphRepository repository = GetRepository();
+            AddTriples(repository);
+
+            repository.DeleteTriple(2);
+
+            Assert.NotNull(repository.GetTriple(1));
+            Assert.Null(repository.GetTriple(2));
+        }
+        #endregion
+
+        #region Thesaurus
+        static private Stream GetResourceStream(string name) =>
+            typeof(SqlGraphRepositoryTest).Assembly.GetManifestResourceStream(
+            "Cadmus.Graph.Sql.Test.Assets." + name)!;
+
+        private static Thesaurus GetThesaurus()
+        {
+            Thesaurus thesaurus = new("geometry@en");
+            thesaurus.AddEntry(new ThesaurusEntry
+            {
+                Id = "shapes",
+                Value = "shapes"
+            });
+            thesaurus.AddEntry(new ThesaurusEntry
+            {
+                Id = "shapes.2d",
+                Value = "shapes: 2D"
+            });
+            thesaurus.AddEntry(new ThesaurusEntry
+            {
+                Id = "shapes.2d.circle",
+                Value = "shapes: 2D: circle"
+            });
+            thesaurus.AddEntry(new ThesaurusEntry
+            {
+                Id = "shapes.2d.triangle",
+                Value = "shapes: 2D: triangle"
+            });
+            thesaurus.AddEntry(new ThesaurusEntry
+            {
+                Id = "shapes.3d",
+                Value = "shapes: 3D"
+            });
+            thesaurus.AddEntry(new ThesaurusEntry
+            {
+                Id = "shapes.3d.cube",
+                Value = "shapes: 3D: cube"
+            });
+
+            return thesaurus;
+        }
+
+        protected void DoAddThesaurus_Root_Ok(string? prefix)
+        {
+            Reset();
+            IGraphRepository repository = GetRepository();
+            Thesaurus thesaurus = GetThesaurus();
+
+            repository.AddThesaurus(thesaurus, true, prefix);
+
+            // get nodes and triples
+            IList<UriNode> nodes = repository.GetNodes(new NodeFilter
+            {
+                IsClass = true
+            }).Items;
+            Assert.Equal(8, nodes.Count);
+
+            IList<UriTriple> triples =
+                repository.GetTriples(new TripleFilter()).Items;
+            Assert.Equal(6, triples.Count);
+
+            const string sub = "rdfs:subClassOf";
+
+            // geometry (root from ID)
+            UriNode? geometry = nodes.FirstOrDefault(
+                n => n.Uri == prefix + "geometry");
+            Assert.NotNull(geometry);
+
+            // shapes (root entry)
+            UriNode? shapes = nodes.FirstOrDefault(
+                n => n.Uri == prefix + "shapes");
+            Assert.NotNull(shapes);
+            // shapes subclass of geometry
+            UriTriple? triple = triples.FirstOrDefault(
+                t => t.SubjectUri == shapes!.Uri
+                && t.PredicateUri == sub
+                && t.ObjectUri == geometry!.Uri);
+            Assert.NotNull(triple);
+
+            // shapes.2d
+            UriNode? shapes2d = nodes.FirstOrDefault(
+                n => n.Uri == prefix + "shapes.2d");
+            Assert.NotNull(shapes2d);
+            // shapes.2d subclass of shapes
+            triple = triples.FirstOrDefault(
+                t => t.SubjectUri == shapes2d!.Uri
+                && t.PredicateUri == sub
+                && t.ObjectUri == shapes!.Uri);
+            Assert.NotNull(triple);
+
+            // shapes.3d
+            UriNode? shapes3d = nodes.FirstOrDefault(
+                n => n.Uri == prefix + "shapes.3d");
+            Assert.NotNull(shapes3d);
+            // shapes.3d subclass of shapes
+            triple = triples.FirstOrDefault(
+                t => t.SubjectUri == shapes3d!.Uri
+                && t.PredicateUri == sub
+                && t.ObjectUri == shapes!.Uri);
+            Assert.NotNull(triple);
+
+            // shapes.2d.circle
+            UriNode? node = nodes.FirstOrDefault(
+                n => n.Uri == prefix + "shapes.2d.circle");
+            Assert.NotNull(node);
+            // shapes.2d.circle subclass of shapes.2d
+            triple = triples.FirstOrDefault(
+                t => t.SubjectUri == node!.Uri
+                && t.PredicateUri == sub
+                && t.ObjectUri == shapes2d!.Uri);
+            Assert.NotNull(triple);
+
+            // shapes.2d.triangle
+            node = nodes.FirstOrDefault(n => n.Uri == prefix + "shapes.2d.triangle");
+            Assert.NotNull(node);
+            // shapes.2d.triangle subclass of shapes.2d
+            triple = triples.FirstOrDefault(
+                t => t.SubjectUri == node!.Uri
+                && t.PredicateUri == sub
+                && t.ObjectUri == shapes2d!.Uri);
+            Assert.NotNull(triple);
+
+            // shapes.3d.cube
+            node = nodes.FirstOrDefault(n => n.Uri == prefix + "shapes.3d.cube");
+            Assert.NotNull(node);
+            // shapes.3d.cube subclass of shapes.3d
+            triple = triples.FirstOrDefault(
+                t => t.SubjectUri == node!.Uri
+                && t.PredicateUri == sub
+                && t.ObjectUri == shapes3d!.Uri);
+            Assert.NotNull(triple);
+        }
+
+        protected void DoAddRealThesaurus_Ok()
+        {
+            Reset();
+            IGraphRepository repository = GetRepository();
+            IGraphPresetReader reader = new JsonGraphPresetReader();
+
+            using var stream = GetResourceStream("Thesauri.json");
+            foreach (Thesaurus thesaurus in reader.ReadThesauri(stream))
+            {
+                repository.AddThesaurus(thesaurus, false, "x:classes/");
+            }
+        }
+        #endregion
+
+        #region Mapping
+        protected void DoAddMapping_NotExisting_Ok()
+        {
+            Reset();
+            IGraphRepository repository = GetRepository();
+
+            // item mapping
+            NodeMapping mapping = new()
+            {
+                SourceType = NodeMapping.SOURCE_TYPE_ITEM,
+                FacetFilter = "person",
+                Name = "Item",
+                Description = "Description"
+            };
+            repository.AddMapping(mapping);
+
+            Assert.True(mapping.Id > 0);
+            NodeMapping? mapping2 = repository.GetMapping(mapping.Id);
+            Assert.NotNull(mapping2);
+            Assert.Equal(mapping.SourceType, mapping2!.SourceType);
+            Assert.Equal(mapping.Name, mapping2!.Name);
+            Assert.Equal(mapping.FacetFilter, mapping2.FacetFilter);
+            Assert.Equal(mapping.Description, mapping2.Description);
+        }
+
+        protected void DoAddMapping_Existing_Ok()
+        {
+            Reset();
+            IGraphRepository repository = GetRepository();
+
+            // item mapping
+            NodeMapping mapping = new()
+            {
+                SourceType = NodeMapping.SOURCE_TYPE_ITEM,
+                FacetFilter = "person",
+                Name = "Item",
+                Description = "Description"
+            };
+            repository.AddMapping(mapping);
+
+            // update
+            mapping.Description = "Updated!";
+            repository.AddMapping(mapping);
+
+            NodeMapping? mapping2 = repository.GetMapping(mapping.Id);
+            Assert.NotNull (mapping2);
+            Assert.Equal(mapping.SourceType, mapping2!.SourceType);
+            Assert.Equal(mapping.Name, mapping2!.Name);
+            Assert.Equal(mapping.FacetFilter, mapping2.FacetFilter);
+            Assert.Equal(mapping.Description, mapping2.Description);
+        }
+
+        protected void DoDeleteMapping_NotExisting_Nope()
+        {
+            Reset();
+            IGraphRepository repository = GetRepository();
+            // item mapping
+            NodeMapping mapping = new()
+            {
+                SourceType = NodeMapping.SOURCE_TYPE_ITEM,
+                FacetFilter = "person",
+                Name = "Item",
+                Description = "Description"
+            };
+            repository.AddMapping(mapping);
+
+            repository.DeleteMapping(123);
+
+            Assert.NotNull(repository.GetMapping(mapping.Id));
+        }
+
+        protected void DoDeleteMapping_Existing_Ok()
+        {
+            Reset();
+            IGraphRepository repository = GetRepository();
+            // item mapping
+            NodeMapping mapping = new()
+            {
+                SourceType = NodeMapping.SOURCE_TYPE_ITEM,
+                FacetFilter = "person",
+                Name = "Item",
+                Description = "Description"
+            };
+            repository.AddMapping(mapping);
+
+            repository.DeleteMapping(mapping.Id);
+
+            Assert.Null(repository.GetMapping(mapping.Id));
+        }
+
+        // TODO
+        #endregion
     }
 }

@@ -1,4 +1,5 @@
-﻿using Fusi.Tools;
+﻿using Cadmus.Core.Config;
+using Fusi.Tools;
 using Fusi.Tools.Data;
 using System;
 using System.Collections.Generic;
@@ -201,6 +202,17 @@ namespace Cadmus.Graph
         /// </summary>
         /// <param name="id">The identifier.</param>
         void DeleteTriple(int id);
+
+        /// <summary>
+        /// Adds the specified thesaurus as a set of class nodes.
+        /// </summary>
+        /// <param name="thesaurus">The thesaurus.</param>
+        /// <param name="includeRoot">If set to <c>true</c>, include also the
+        /// root entry in a hierarchical thesaurus.</param>
+        /// <param name="prefix">The optional prefix to prepend to each
+        /// thesaurus entry ID.</param>
+        void AddThesaurus(Thesaurus thesaurus, bool includeRoot,
+            string? prefix = null);
 
         /// <summary>
         /// Updates the classes for all the nodes belonging to any class.

@@ -30,8 +30,10 @@ namespace Cadmus.Graph.Adapters
         protected override object? Adapt(GraphSource source,
             RunNodeMappingFilter filter, IDictionary<string, string> metadata)
         {
+            // item
             ItemGraphSourceAdapter.ExtractItemMetadata(source, filter, metadata);
 
+            // part
             IPart? part = source.Part;
             if (part == null) return null;
 

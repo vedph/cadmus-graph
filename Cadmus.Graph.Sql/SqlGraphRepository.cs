@@ -1,4 +1,5 @@
-﻿using Cadmus.Index.Sql;
+﻿using Cadmus.Core.Config;
+using Cadmus.Index.Sql;
 using Fusi.Tools;
 using Fusi.Tools.Config;
 using Fusi.Tools.Data;
@@ -1375,6 +1376,117 @@ namespace Cadmus.Graph.Sql
         {
             using QueryFactory qf = GetQueryFactory();
             DeleteTriple(id, qf);
+        }
+        #endregion
+
+        #region Thesaurus
+        /// <summary>
+        /// Adds the specified thesaurus as a set of class nodes.
+        /// </summary>
+        /// <param name="thesaurus">The thesaurus.</param>
+        /// <param name="includeRoot">If set to <c>true</c>, include a root node
+        /// corresponding to the thesaurus ID. This typically happens for
+        /// non-hierarchic thesauri, where a flat list of entries is grouped
+        /// under a single root.</param>
+        /// <param name="prefix">The optional prefix to prepend to each ID.</param>
+        /// <exception cref="ArgumentNullException">thesaurus</exception>
+        public void AddThesaurus(Thesaurus thesaurus, bool includeRoot,
+            string? prefix = null)
+        {
+            if (thesaurus is null)
+                throw new ArgumentNullException(nameof(thesaurus));
+
+            // nothing to do for aliases
+            if (thesaurus.TargetId != null) return;
+
+            using QueryFactory qf = GetQueryFactory();
+            IDbTransaction trans = qf.Connection.BeginTransaction();
+
+            try
+            {
+                // ensure that we have rdfs:subClassOf
+                Node? sub = GetNodeByUri("rdfs:subClassOf", qf);
+                if (sub == null)
+                {
+                    sub = new Node
+                    {
+                        Id = AddUri("rdfs:subClassOf", qf),
+                        Label = "subclass-of",
+                        IsClass = true
+                    };
+                    AddNode(sub, true, qf);
+                }
+
+                // include root if requested
+                Node? root = null;
+                if (includeRoot)
+                {
+                    int atIndex = thesaurus.Id.LastIndexOf('@');
+                    string id = atIndex > -1
+                        ? thesaurus.Id[..atIndex]
+                        : thesaurus.Id;
+                    string uri = string.IsNullOrEmpty(prefix)
+                        ? id : prefix + id;
+
+                    root = new Node
+                    {
+                        Id = AddUri(uri, qf),
+                        IsClass = true,
+                        Label = id,
+                        SourceType = NodeMapping.SOURCE_TYPE_THESAURUS,
+                        Tag = "thesaurus",
+                        Sid = thesaurus.Id
+                    };
+                    AddNode(root, true, qf);
+                }
+
+                Dictionary<string, int> ids = new();
+                thesaurus.VisitByLevel(entry =>
+                {
+                    string uri = string.IsNullOrEmpty(prefix)
+                        ? entry.Id : prefix + entry.Id;
+                    Node node = new()
+                    {
+                        Id = AddUri(uri, qf),
+                        IsClass = true,
+                        Label = entry.Id,
+                        SourceType = NodeMapping.SOURCE_TYPE_THESAURUS,
+                        Tag = "thesaurus",
+                        Sid = thesaurus.Id
+                    };
+                    AddNode(node, true, qf);
+                    ids[entry.Id] = node.Id;
+
+                    // triple
+                    if (entry.Parent != null)
+                    {
+                        AddTriple(new Triple
+                        {
+                            SubjectId = node.Id,
+                            PredicateId = sub.Id,
+                            ObjectId = ids[entry.Parent.Id]
+                        }, qf);
+                    }
+                    else if (root != null)
+                    {
+                        AddTriple(new Triple
+                        {
+                            SubjectId = node.Id,
+                            PredicateId = sub.Id,
+                            ObjectId = root.Id
+                        }, qf);
+                    }
+
+                    return true;
+                });
+
+                trans.Commit();
+            }
+            catch
+            {
+                trans.Rollback();
+                throw;
+            }
         }
         #endregion
 

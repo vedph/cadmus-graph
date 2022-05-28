@@ -5,7 +5,7 @@ namespace Cadmus.Graph.Adapters
 {
     /// <summary>
     /// Graph source adapter. Implementors adapt a specific data source, like
-    /// item, part, or thesaurus, to the graph mapping process.
+    /// item or part, to the graph mapping process.
     /// </summary>
     public interface IGraphSourceAdapter
     {

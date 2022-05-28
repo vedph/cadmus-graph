@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Cadmus.Core.Config;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -64,7 +65,20 @@ namespace Cadmus.Graph
         /// <returns>Triples.</returns>
         public IEnumerable<UriTriple> ReadTriples(Stream stream)
         {
-            throw new NotImplementedException();
+            if (stream is null) throw new ArgumentNullException(nameof(stream));
+            return Read<UriTriple>(stream);
+        }
+
+        /// <summary>
+        /// Reads the preset thesauri from the specified stream.
+        /// </summary>
+        /// <param name="stream">The stream.</param>
+        /// <returns>Thesauri.</returns>
+        /// <exception cref="ArgumentNullException">stream</exception>
+        public IEnumerable<Thesaurus> ReadThesauri(Stream stream)
+        {
+            if (stream is null) throw new ArgumentNullException(nameof(stream));
+            return Read<Thesaurus>(stream);
         }
 
         /// <summary>

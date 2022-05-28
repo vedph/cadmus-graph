@@ -1,5 +1,4 @@
 ﻿using Cadmus.Core;
-using Cadmus.Core.Config;
 using System;
 
 namespace Cadmus.Graph.Adapters
@@ -11,19 +10,14 @@ namespace Cadmus.Graph.Adapters
     public class GraphSource
     {
         /// <summary>
-        /// Gets the item. This is always set unless dealing with thesauri.
+        /// Gets the item.
         /// </summary>
-        public IItem? Item { get; }
+        public IItem Item { get; }
 
         /// <summary>
-        /// Gets the part. This implies that <see cref="Item"/> is set, too.
+        /// Gets the part.
         /// </summary>
         public IPart? Part { get; }
-
-        /// <summary>
-        /// Gets the thesaurus. When this is set, it requires no other properties.
-        /// </summary>
-        public Thesaurus? Thesaurus { get; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="GraphSource"/> class.
@@ -48,16 +42,6 @@ namespace Cadmus.Graph.Adapters
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="GraphSource"/> class.
-        /// </summary>
-        /// <param name="thesaurus">The thesaurus.</param>
-        /// <exception cref="ArgumentNullException">thesaurus</exception>
-        public GraphSource(Thesaurus thesaurus)
-        {
-            Thesaurus = thesaurus ?? throw new ArgumentNullException(nameof(thesaurus));
-        }
-
-        /// <summary>
         /// Converts to string.
         /// </summary>
         /// <returns>
@@ -65,7 +49,6 @@ namespace Cadmus.Graph.Adapters
         /// </returns>
         public override string ToString()
         {
-            if (Thesaurus != null) return Thesaurus.ToString();
             if (Part != null) return Part.ToString()!;
             return Item!.ToString()!;
         }
