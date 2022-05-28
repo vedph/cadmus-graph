@@ -22,13 +22,16 @@ namespace Cadmus.Graph.Adapters
         }
 
         /// <summary>
-        /// Extracts the metadata from the <paramref name="source"/> object
-        /// into <paramref name="metadata"/>.
+        /// Adapt the source to the mapping process, eventually also setting
+        /// <paramref name="filter"/> and <paramref name="metadata"/>
+        /// accordingly.
         /// </summary>
         /// <param name="source">The source.</param>
-        /// <param name="metadata">The metadata.</param>
-        protected abstract void ExtractMetadata(object source,
-            IDictionary<string, object> metadata);
+        /// <param name="filter">The filter to set.</param>
+        /// <param name="metadata">The metadata to set.</param>
+        /// <returns>Adapted object or null.</returns>
+        protected abstract object? Adapt(GraphSource source,
+            RunNodeMappingFilter filter, IDictionary<string, string> metadata);
 
         /// <summary>
         /// Adapts the specified source.
@@ -40,16 +43,20 @@ namespace Cadmus.Graph.Adapters
         /// The adaptation result, or null.
         /// </returns>
         /// <exception cref="ArgumentNullException">source or metadata</exception>
-        public object? Adapt(object source, IDictionary<string, object> metadata)
+        public Tuple<object?, RunNodeMappingFilter> Adapt(
+            GraphSource source, IDictionary<string, string> metadata)
         {
             if (source is null)
                 throw new ArgumentNullException(nameof(source));
             if (metadata is null)
                 throw new ArgumentNullException(nameof(metadata));
 
-            ExtractMetadata(source, metadata);
+            RunNodeMappingFilter filter = new();
+            object? result = Adapt(source, new RunNodeMappingFilter(), metadata);
 
-            return JsonSerializer.Serialize(source, _options);
+            return Tuple.Create(
+                (object?)JsonSerializer.Serialize(result, _options),
+                filter);
         }
     }
 }

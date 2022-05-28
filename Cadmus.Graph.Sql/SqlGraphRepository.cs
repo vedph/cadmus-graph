@@ -2,6 +2,7 @@
 using Fusi.Tools;
 using Fusi.Tools.Config;
 using Fusi.Tools.Data;
+using Microsoft.Extensions.Caching.Memory;
 using SqlKata;
 using SqlKata.Compilers;
 using SqlKata.Execution;
@@ -34,6 +35,14 @@ namespace Cadmus.Graph.Sql
         /// Gets the SQL compiler, set once in the constructor.
         /// </summary>
         protected Compiler SqlCompiler { get; }
+
+        /// <summary>
+        /// Gets or sets the optional cache to use for mappings. This improves
+        /// performance when fetching mappings from the database. All the
+        /// mappings are stored with key <c>nm-</c> + the mapping's ID.
+        /// Avoid using this if editing mappings.
+        /// </summary>
+        public IMemoryCache? Cache { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SqlGraphRepository"/>
@@ -721,32 +730,32 @@ namespace Cadmus.Graph.Sql
             if (filter.ParentId != null)
                 query.Where("parent_id", filter.ParentId.Value);
 
-            if (filter.SourceTypes?.Count > 0)
-                query.WhereIn("source_type", filter.SourceTypes);
+            if (!string.IsNullOrEmpty(filter.SourceType))
+                query.Where("source_type", filter.SourceType);
 
             if (!string.IsNullOrEmpty(filter.Name))
                 query.WhereLike("name", "%" + filter.Name + "%");
 
             if (!string.IsNullOrEmpty(filter.Facet))
-                query.Where("facet", filter.Facet);
+                query.Where("facet_filter", filter.Facet);
 
             if (!string.IsNullOrEmpty(filter.Group))
             {
-                query.WhereRaw(SqlHelper.BuildRegexMatch("group",
+                query.WhereRaw(SqlHelper.BuildRegexMatch("group_filter",
                     SqlHelper.SqlEncode(filter.Group, false, true, false)));
             }
 
             if (filter.Flags > 0)
-                query.WhereRaw($"(flags & {filter.Flags})={filter.Flags}");
+                query.WhereRaw($"(flags_filter & {filter.Flags})={filter.Flags}");
 
             if (!string.IsNullOrEmpty(filter.Title))
-                query.Where("title", filter.Title);
+                query.Where("title_filter", filter.Title);
 
             if (!string.IsNullOrEmpty(filter.PartType))
-                query.Where("part_type", filter.PartType);
+                query.Where("part_type_filter", filter.PartType);
 
             if (!string.IsNullOrEmpty(filter.PartRole))
-                query.Where("part_role", filter.PartRole);
+                query.Where("part_role_filter", filter.PartRole);
         }
 
         private static NodeMapping? DataToMapping(dynamic? d)
@@ -816,6 +825,27 @@ namespace Cadmus.Graph.Sql
                 mapping.Output.Metadata[d.name] = d.value;
         }
 
+        private NodeMapping GetPopulatedMapping(NodeMapping mapping,
+            QueryFactory qf, bool descendants)
+        {
+            // use the cached mapping if any
+            if (Cache != null &&
+                Cache.TryGetValue($"nm-{mapping.Id}", out NodeMapping m))
+            {
+                return m;
+            }
+
+            // else populate and cache for later (only if complete)
+            PopulateMappingOutput(mapping, qf);
+            if (descendants)
+            {
+                PopulateMappingDescendants(mapping, qf);
+                Cache?.Set($"nm-{mapping.Id}", mapping);
+            }
+
+            return mapping;
+        }
+
         /// <summary>
         /// Gets the specified page of node mappings.
         /// </summary>
@@ -856,9 +886,8 @@ namespace Cadmus.Graph.Sql
             List<NodeMapping> mappings = new();
             foreach (var d in query.Get())
             {
-                var mapping = DataToMapping(d);
-                PopulateMappingOutput(mapping, qf);
-                if (descendants) PopulateMappingDescendants(mapping, qf);
+                NodeMapping mapping = DataToMapping(d);
+                mapping = GetPopulatedMapping(mapping, qf, descendants);
                 mappings.Add(mapping);
             }
 
@@ -891,10 +920,7 @@ namespace Cadmus.Graph.Sql
             if (d == null) return null;
 
             NodeMapping mapping = DataToMapping(d);
-            PopulateMappingOutput(mapping, qf);
-            PopulateMappingDescendants(mapping, qf);
-
-            return mapping;
+            return GetPopulatedMapping(mapping, qf, true);
         }
 
         private static void DeleteMappingOutput(int id, QueryFactory qf,
@@ -1038,6 +1064,83 @@ namespace Cadmus.Graph.Sql
         {
             using QueryFactory qf = GetQueryFactory();
             qf.Query("mapping").Where("id", id).Delete();
+        }
+
+        private void ApplyRunNodeMappingsFilter(RunNodeMappingFilter filter,
+            Query query)
+        {
+            // top-level mappings only with specified source type
+            query.Where("parent_id", 0)
+                 .Where("source_type", filter.SourceType);
+
+            // optional facet
+            if (!string.IsNullOrEmpty(filter.Facet))
+                query.Where("facet_filter", filter.Facet).OrWhereNull("facet");
+
+            // optional group
+            if (!string.IsNullOrEmpty(filter.Group))
+            {
+                query.WhereRaw(SqlHelper.BuildRegexMatch("group_filter",
+                    SqlHelper.SqlEncode(filter.Group, false, true, false)))
+                    .OrWhereNull("group_filter");
+            }
+
+            // optional flags (all the flags specified must be present)
+            if (filter.Flags.HasValue)
+            {
+                query.WhereRaw($"(flags_filter & {filter.Flags})={filter.Flags}")
+                     .OrWhere("flags_filter", 0);
+            }
+
+            // optional title
+            if (!string.IsNullOrEmpty(filter.Title))
+                query.Where("title_filter", filter.Title).OrWhereNull("title_filter");
+
+            // optional part type
+            if (!string.IsNullOrEmpty(filter.PartType))
+            {
+                query.Where("part_type_filter", filter.PartType)
+                     .OrWhereNull("part_type_filter");
+            }
+
+            // optional part role
+            if (!string.IsNullOrEmpty(filter.PartRole))
+            {
+                query.Where("part_role_filter", filter.PartRole)
+                     .OrWhereNull("part_role_filter");
+            }
+        }
+
+        /// <summary>
+        /// Finds all the applicable mappings.
+        /// </summary>
+        /// <param name="filter">The filter to match.</param>
+        /// <returns>List of mappings.</returns>
+        /// <exception cref="ArgumentNullException">filter</exception>
+        public IList<NodeMapping> FindMappings(RunNodeMappingFilter filter)
+        {
+            if (filter is null)
+                throw new ArgumentNullException(nameof(filter));
+
+            using QueryFactory qf = GetQueryFactory();
+            Query query = qf.Query("mapping")
+                .Select("id", "parent_id", "ordinal", "name", "source_type",
+                "facet_filter", "group_filter", "flags_filter", "title_filter",
+                "part_type_filter", "part_role_filter", "description",
+                "source", "sid");
+            ApplyRunNodeMappingsFilter(filter, query);
+            query.OrderBy("ordinal");
+
+            List<NodeMapping> mappings = new();
+            foreach (var d in query.Get())
+            {
+                var mapping = DataToMapping(d);
+                PopulateMappingOutput(mapping, qf);
+                PopulateMappingDescendants(mapping, qf);
+                mappings.Add(mapping);
+            }
+
+            return mappings;
         }
         #endregion
 

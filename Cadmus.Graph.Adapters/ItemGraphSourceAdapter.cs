@@ -16,18 +16,20 @@ namespace Cadmus.Graph.Adapters
         public const string M_ITEM_FACET = "item-facet";
         public const string M_ITEM_GROUP = "item-group";
 
-        /// <summary>
-        /// Extracts the metadata from the <paramref name="source"/> object
-        /// into <paramref name="metadata"/>.
-        /// </summary>
-        /// <param name="source">The source.</param>
-        /// <param name="metadata">The metadata.</param>
-        protected override void ExtractMetadata(object source,
-            IDictionary<string, object> metadata)
+        internal static void ExtractItemMetadata(GraphSource source,
+            RunNodeMappingFilter filter, IDictionary<string, string> metadata)
         {
-            IItem? item = source as IItem;
+            IItem? item = source.Item;
             if (item == null) return;
 
+            // filter
+            filter.SourceType = NodeMapping.SOURCE_TYPE_ITEM;
+            filter.Facet = item.FacetId;
+            filter.Group = item.GroupId;
+            filter.Flags = item.Flags;
+            filter.Title = item.Title;
+
+            // metadata
             metadata[M_ITEM_ID] = item.Id;
             metadata[M_ITEM_TITLE] = item.Title;
             metadata[M_ITEM_FACET] = item.FacetId;
@@ -42,6 +44,24 @@ namespace Cadmus.Graph.Adapters
                         metadata[$"{M_ITEM_GROUP}@{++n}"] = g;
                 }
             }
+        }
+
+        /// <summary>
+        /// Adapt the source to the mapping process, eventually also setting
+        /// <paramref name="filter" /> and <paramref name="metadata" />
+        /// accordingly.
+        /// </summary>
+        /// <param name="source">The source with its item.</param>
+        /// <param name="filter">The filter to set.</param>
+        /// <param name="metadata">The metadata to set.</param>
+        /// <returns>
+        /// Adapted object or null.
+        /// </returns>
+        protected override object? Adapt(GraphSource source,
+            RunNodeMappingFilter filter, IDictionary<string, string> metadata)
+        {
+            ExtractItemMetadata(source, filter, metadata);
+            return source.Item;
         }
     }
 }

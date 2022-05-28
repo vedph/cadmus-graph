@@ -16,21 +16,37 @@ namespace Cadmus.Graph.Adapters
         public const string M_PART_ROLE_ID = "part-role-id";
 
         /// <summary>
-        /// Extracts the metadata from the <paramref name="source" /> object
-        /// into <paramref name="metadata" />.
+        /// Adapt the source to the mapping process, eventually also setting
+        /// <paramref name="filter" /> and <paramref name="metadata" />
+        /// accordingly.
         /// </summary>
-        /// <param name="source">The source.</param>
-        /// <param name="metadata">The metadata.</param>
-        protected override void ExtractMetadata(object source,
-            IDictionary<string, object> metadata)
+        /// <param name="source">The source. This must be an object implementing
+        /// <see cref="IPart"/>.</param>
+        /// <param name="filter">The filter to set.</param>
+        /// <param name="metadata">The metadata to set.</param>
+        /// <returns>
+        /// Adapted object or null.
+        /// </returns>
+        protected override object? Adapt(GraphSource source,
+            RunNodeMappingFilter filter, IDictionary<string, string> metadata)
         {
-            IPart? part = source as IPart;
-            if (part == null) return;
+            ItemGraphSourceAdapter.ExtractItemMetadata(source, filter, metadata);
 
+            IPart? part = source.Part;
+            if (part == null) return null;
+
+            // filter
+            filter.SourceType = NodeMapping.SOURCE_TYPE_PART;
+            filter.PartType = part.TypeId;
+            filter.PartRole = part.RoleId;
+
+            // metadata
             metadata[M_PART_ID] = part.Id;
             metadata[ItemGraphSourceAdapter.M_ITEM_ID] = part.ItemId;
             metadata[M_PART_TYPE_ID] = part.TypeId;
             metadata[M_PART_ROLE_ID] = part.RoleId;
+
+            return part;
         }
     }
 }

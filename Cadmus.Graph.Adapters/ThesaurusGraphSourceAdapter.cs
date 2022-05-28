@@ -11,25 +11,46 @@ namespace Cadmus.Graph.Adapters
     public sealed class ThesaurusGraphSourceAdapter : JsonGraphSourceAdapter,
         IGraphSourceAdapter
     {
+        /// <summary>
+        /// The thesaurus identifier metadata key.
+        /// </summary>
         public const string M_THESAURUS_ID = "thesaurus-id";
+
+        /// <summary>
+        /// The thesaurus language metadata key.
+        /// </summary>
         public const string M_THESAURUS_LANG = "thesaurus-lang";
 
         /// <summary>
-        /// Extracts the metadata from the <paramref name="source" /> object
-        /// into <paramref name="metadata" />.
+        /// Adapt the source to the mapping process, eventually also setting
+        /// <paramref name="filter" /> and <paramref name="metadata" />
+        /// accordingly.
         /// </summary>
-        /// <param name="source">The source.</param>
-        /// <param name="metadata">The metadata.</param>
-        protected override void ExtractMetadata(object source,
-            IDictionary<string, object> metadata)
+        /// <param name="source">The source. This must be an object implementing
+        /// <see cref="IPart"/>.</param>
+        /// <param name="filter">The filter to set.</param>
+        /// <param name="metadata">The metadata to set.</param>
+        /// <returns>
+        /// Adapted object or null.
+        /// </returns>
+        protected override object? Adapt(GraphSource source,
+            RunNodeMappingFilter filter, IDictionary<string, string> metadata)
         {
-            Thesaurus? thesaurus = source as Thesaurus;
-            if (thesaurus == null) return;
+            ItemGraphSourceAdapter.ExtractItemMetadata(source, filter, metadata);
 
+            Thesaurus? thesaurus = source.Thesaurus;
+            if (thesaurus == null) return null;
+
+            // filter
+            filter.SourceType = NodeMapping.SOURCE_TYPE_THESAURUS;
+
+            // metadata
             metadata[M_THESAURUS_ID] = thesaurus.Id;
             int i = thesaurus.Id.LastIndexOf('@');
             metadata[M_THESAURUS_LANG] = i > -1
                 ? thesaurus.Id[(i + 1)..] : "en";
+
+            return thesaurus;
         }
     }
 }

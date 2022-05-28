@@ -1,27 +1,14 @@
-﻿using Fusi.Tools.Data;
-
-namespace Cadmus.Graph
+﻿namespace Cadmus.Graph
 {
     /// <summary>
-    /// A filter for <see cref="NodeMapping"/>.
+    /// Filter to match the mappings to be run for any specific source.
     /// </summary>
-    public class NodeMappingFilter : PagingOptions
+    public class RunNodeMappingFilter
     {
-        /// <summary>
-        /// Gets or sets the parent mapping's identifier. Set to 0 to get
-        /// only top level mappings; set to null to avoid filtering at all.
-        /// </summary>
-        public int? ParentId { get; set; }
-
         /// <summary>
         /// Gets or sets the source type to match.
         /// </summary>
-        public string? SourceType { get; set; }
-
-        /// <summary>
-        /// Gets or sets any portion of the mapping's name to match.
-        /// </summary>
-        public string? Name { get; set; }
+        public string SourceType { get; set; }
 
         /// <summary>
         /// Gets or sets the facet ID to match.
@@ -52,5 +39,14 @@ namespace Cadmus.Graph
         /// Gets or sets the role ID of the source part to match.
         /// </summary>
         public string? PartRole { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RunNodeMappingFilter"/>
+        /// class.
+        /// </summary>
+        public RunNodeMappingFilter()
+        {
+            SourceType = NodeMapping.SOURCE_TYPE_ITEM;
+        }
     }
 }
