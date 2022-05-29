@@ -1209,7 +1209,6 @@ namespace Cadmus.Graph.Sql.Test
                     Assert.Equal(expected.Output.HasNodes, actual.Output!.HasNodes);
                     Assert.Equal(expected.Output.HasNodes, actual.Output.HasTriples);
                     Assert.Equal(expected.Output.HasNodes, actual.Output.HasMetadata);
-                    // TODO
                 }
             }
 
