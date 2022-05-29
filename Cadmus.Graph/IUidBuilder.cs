@@ -11,9 +11,9 @@
         /// <summary>
         /// Build the eventually suffixed UID.
         /// </summary>
-        /// <param name="sid">The source ID (SID).</param>
         /// <param name="unsuffixed">The generated, unsuffixed UID.</param>
+        /// <param name="sid">The source ID (SID).</param>
         /// <returns>UID, eventually suffixed with #N.</returns>
-        string Build(string sid, string unsuffixed);
+        string BuildUid(string unsuffixed, string sid);
     }
 }

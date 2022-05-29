@@ -90,7 +90,7 @@ namespace Cadmus.Graph
 
             foreach (UriNode triple in Nodes)
             {
-                string key = triple.Sid?.Substring(0, 36) ?? "";
+                string key = triple.Sid?[..36] ?? "";
 
                 if (!dct.ContainsKey(key)) dct[key] = new List<UriNode>();
                 dct[key].Add(triple);
@@ -111,7 +111,7 @@ namespace Cadmus.Graph
 
             foreach (UriTriple triple in Triples)
             {
-                string key = triple.Sid?.Substring(0, 36) ?? "";
+                string key = triple.Sid?[..36] ?? "";
 
                 if (!dct.ContainsKey(key)) dct[key] = new List<UriTriple>();
                 dct[key].Add(triple);

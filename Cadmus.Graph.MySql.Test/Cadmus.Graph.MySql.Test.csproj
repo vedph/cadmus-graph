@@ -35,6 +35,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Cadmus.Graph.Adapters\Cadmus.Graph.Adapters.csproj" />
     <ProjectReference Include="..\Cadmus.Graph.MySql\Cadmus.Graph.MySql.csproj" />
     <ProjectReference Include="..\Cadmus.Graph.Sql.Test\Cadmus.Graph.Sql.Test.csproj" />
   </ItemGroup>

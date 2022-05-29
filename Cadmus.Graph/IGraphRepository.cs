@@ -11,7 +11,7 @@ namespace Cadmus.Graph
     /// <summary>
     /// The nodes graph repository in the index.
     /// </summary>
-    public interface IGraphRepository
+    public interface IGraphRepository : IUidBuilder
     {
         /// <summary>
         /// Gets the specified page of namespaces with their prefixes.
@@ -46,15 +46,6 @@ namespace Cadmus.Graph
         /// </summary>
         /// <param name="uri">The namespace URI.</param>
         void DeleteNamespaceByUri(string uri);
-
-        /// <summary>
-        /// Adds the specified UID, eventually completing it with a suffix.
-        /// </summary>
-        /// <param name="uid">The UID as calculated from its source, without any
-        /// suffix.</param>
-        /// <param name="sid">The SID identifying the source for this UID.</param>
-        /// <returns>The UID, eventually suffixed.</returns>
-        string AddUid(string uid, string sid);
 
         /// <summary>
         /// Adds the specified URI to the mapped URIs set.

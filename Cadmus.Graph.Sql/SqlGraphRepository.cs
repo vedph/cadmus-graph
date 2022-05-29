@@ -223,7 +223,7 @@ namespace Cadmus.Graph.Sql
         /// suffix.</param>
         /// <param name="sid">The SID identifying the source for this UID.</param>
         /// <returns>The UID, eventually suffixed.</returns>
-        public string AddUid(string uid, string sid)
+        public string BuildUid(string uid, string sid)
         {
             if (uid == null) throw new ArgumentNullException(nameof(uid));
             if (sid == null) throw new ArgumentNullException(nameof(sid));
@@ -1709,7 +1709,7 @@ namespace Cadmus.Graph.Sql
             }
         }
 
-        private void UpdateGraph(string sourceId, IList<UriNode> nodes,
+        private void UpdateGraph(string? sourceId, IList<UriNode> nodes,
             IList<UriTriple> triples, QueryFactory qf)
         {
             // corner case: sourceId = null/empty:
@@ -1747,7 +1747,10 @@ namespace Cadmus.Graph.Sql
             foreach (UriNode node in nodeGrouper.Deleted)
                 DeleteNode(node.Id, qf);
             foreach (UriNode node in nodeGrouper.Added)
+            {
+                node.Id = AddUri(node.Uri!, qf);
                 AddNode(node, true, qf);
+            }
             foreach (UriNode node in nodeGrouper.Updated)
                 AddNode(node, node.Sid == null, qf);
 

@@ -51,8 +51,8 @@ namespace Cadmus.Graph
         {
             foreach (var p in mapping.Output!.Nodes)
             {
-                string uri = UidBuilder.Build(sid,
-                    ResolveTemplate(p.Value.Uid!, true));
+                string uri = UidBuilder.BuildUid(ResolveTemplate(p.Value.Uid!, true),
+                    sid);
                 UriNode node = new()
                 {
                     Uri = uri,

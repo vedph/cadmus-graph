@@ -196,7 +196,7 @@ namespace Cadmus.Graph.Sql.Test
             Reset();
             IGraphRepository repository = GetRepository();
 
-            string uid = repository.AddUid("x:persons/john_doe",
+            string uid = repository.BuildUid("x:persons/john_doe",
                 Guid.NewGuid().ToString());
 
             Assert.Equal("x:persons/john_doe", uid);
@@ -207,9 +207,9 @@ namespace Cadmus.Graph.Sql.Test
             Reset();
             IGraphRepository repository = GetRepository();
             string sid = Guid.NewGuid().ToString();
-            string uid1 = repository.AddUid("x:persons/john_doe", sid);
+            string uid1 = repository.BuildUid("x:persons/john_doe", sid);
 
-            string uid2 = repository.AddUid("x:persons/john_doe",
+            string uid2 = repository.BuildUid("x:persons/john_doe",
                 Guid.NewGuid().ToString());
 
             Assert.NotEqual(uid1, uid2);
@@ -220,9 +220,9 @@ namespace Cadmus.Graph.Sql.Test
             Reset();
             IGraphRepository repository = GetRepository();
             string sid = Guid.NewGuid().ToString();
-            string uid1 = repository.AddUid("x:persons/john_doe", sid);
+            string uid1 = repository.BuildUid("x:persons/john_doe", sid);
 
-            string uid2 = repository.AddUid("x:persons/john_doe", sid);
+            string uid2 = repository.BuildUid("x:persons/john_doe", sid);
 
             Assert.Equal(uid1, uid2);
         }
