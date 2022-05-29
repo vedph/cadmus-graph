@@ -35,11 +35,13 @@ namespace Cadmus.Graph.Test
             IList<NodeMapping> mappings = reader.LoadMappings(
                 GetResourceStream("Mappings.json"));
 
-            Assert.Equal(10, mappings.Count);
-            Assert.Equal("Lemma item", mappings[0].Name);
-            Assert.Equal("Pin variant@* x:hasIxVariantForm ...", mappings[9].Name);
-            for (int i = 0; i < 10; i++)
-                Assert.Equal(i + 1, mappings[i].Id);
+            Assert.Equal(2, mappings.Count);
+            foreach (NodeMapping mapping in mappings)
+            {
+                Assert.NotNull(mapping.Output);
+                Assert.True(mapping.HasChildren);
+                Assert.NotEmpty(mapping.Children);
+            }
         }
 
         [Fact]

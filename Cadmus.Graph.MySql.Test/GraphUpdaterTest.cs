@@ -1,9 +1,6 @@
-﻿using Cadmus.Core;
-using Cadmus.Index.Graph;
-using Cadmus.Index.Sql;
+﻿using Cadmus.Index.Sql;
 using Fusi.DbManager;
 using Fusi.DbManager.MySql;
-using Fusi.Tools.Data;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -19,6 +16,7 @@ namespace Cadmus.Graph.MySql.Test
         private const string CST = "Server=localhost;Database={0};Uid=root;Pwd=mysql;";
         private const string DB_NAME = "cadmus-index-test";
         static private readonly string CS = string.Format(CST, DB_NAME);
+        private const string PART_ID = "bdd152f1-2ae2-4189-8a4a-e3d68c6a9d7e";
 
         private static void Reset()
         {
@@ -57,12 +55,29 @@ namespace Cadmus.Graph.MySql.Test
             return reader.ReadToEnd();
         }
 
-        [Fact]
-        public void Update_Ok()
+        private static void RemoveFromGraph(GraphSet set, string sidPrefix)
         {
-            Reset();
-            IGraphRepository repository = GetRepository();
+            for (int i = set.Nodes.Count - 1; i > -1; i--)
+            {
+                if (set.Nodes[i].Sid?.StartsWith(
+                    sidPrefix, StringComparison.Ordinal) == true)
+                {
+                    set.Nodes.RemoveAt(i);
+                }
+            }
 
+            for (int i = set.Triples.Count - 1; i > -1; i--)
+            {
+                if (set.Triples[i].Sid?.StartsWith(
+                    sidPrefix, StringComparison.Ordinal) == true)
+                {
+                    set.Triples.RemoveAt(i);
+                }
+            }
+        }
+
+        private GraphSet BuildSampleGraph()
+        {
             // load events data
             string data = LoadResourceText("Events.json");
 
@@ -75,13 +90,13 @@ namespace Cadmus.Graph.MySql.Test
             INodeMapper mapper = new JsonNodeMapper();
             // mock metadata from item
             mapper.Data["item-id"] = Guid.NewGuid().ToString();
-            mapper.Data["item-uri"] = "x:francesco_petrarca";
+            mapper.Data["item-uri"] = "x:guys/francesco_petrarca";
             mapper.Data["item-label"] = "Petrarch";
             mapper.Data["group-id"] = "group";
             mapper.Data["facet-id"] = "facet";
             mapper.Data["flags"] = "3";
             // mock metada from part
-            mapper.Data["part-id"] = Guid.NewGuid().ToString();
+            mapper.Data["part-id"] = PART_ID;
 
             // run mappings
             GraphSet set = new();
@@ -89,24 +104,35 @@ namespace Cadmus.Graph.MySql.Test
             {
                 mapper.Map(data, mapping, set);
             }
+            return set;
+        }
 
-            // 1) store initial set: 5 nodes, 9 triples
+        [Fact]
+        public void Update_Ok()
+        {
+            Reset();
+            IGraphRepository repository = GetRepository();
+            GraphSet set = BuildSampleGraph();
+
+            // 1) store initial set
             repository.UpdateGraph(set);
 
             var nodePage = repository.GetNodes(new NodeFilter());
-            Assert.Equal(5, nodePage.Total);
+            Assert.Equal(5 + 3, nodePage.Total);
 
             var triplePage = repository.GetTriples(new TripleFilter());
-            Assert.Equal(9, triplePage.Total);
+            Assert.Equal(9 + 7, triplePage.Total);
 
-            // 2) user-edits:
+            // 2) user-edits: we emulate them by directly changing the graph
+            // (in real world, we would regenerate the full graph from a changed
+            // data source, here an events part)
             // - petrarca a person (added)
             UriNode petrarca = repository.GetNodeByUri("x:francesco_petrarca")!;
             Assert.NotNull(petrarca);
             set.AddTriples(new[]{
                 new UriTriple
                 {
-                    SubjectUri = "x:francesco_petrarca",
+                    SubjectUri = "x:guys/francesco_petrarca",
                     PredicateUri = "rdf:type",
                     ObjectUri = "foaf:Person"
                 }
@@ -120,11 +146,17 @@ namespace Cadmus.Graph.MySql.Test
             date!.ObjectLiteral = "\"1304 AD\"@it";
 
             // - remove death (deleted)
-            // TODO
+            string deathPrefix = $"{PART_ID}/death";
+            RemoveFromGraph(set, deathPrefix);
 
+            // update
             repository.UpdateGraph(set);
 
-            // TODO
+            nodePage = repository.GetNodes(new NodeFilter());
+            Assert.Equal(5, nodePage.Total);
+
+            triplePage = repository.GetTriples(new TripleFilter());
+            Assert.Equal(9, triplePage.Total);
         }
 
         [Fact]
@@ -134,6 +166,7 @@ namespace Cadmus.Graph.MySql.Test
             IGraphRepository repository = GetRepository();
 
             repository.DeleteGraphSet("not-existing");
+            Assert.True(true);
         }
 
         [Fact]
@@ -141,11 +174,16 @@ namespace Cadmus.Graph.MySql.Test
         {
             Reset();
             IGraphRepository repository = GetRepository();
+            GraphSet set = BuildSampleGraph();
+            repository.UpdateGraph(set);
 
-            // TODO
+            repository.DeleteGraphSet($"{PART_ID}/death");
 
-            // delete set
-            // repository.DeleteGraphSet(part.Id);
+            var nodePage = repository.GetNodes(new NodeFilter());
+            Assert.Equal(5 + 3, nodePage.Total);
+
+            var triplePage = repository.GetTriples(new TripleFilter());
+            Assert.Equal(9 + 7, triplePage.Total);
         }
     }
 }
