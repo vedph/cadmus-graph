@@ -159,6 +159,13 @@ namespace Cadmus.Graph
             bool descendants);
 
         /// <summary>
+        /// Finds all the applicable mappings.
+        /// </summary>
+        /// <param name="filter">The filter to match.</param>
+        /// <returns>List of mappings.</returns>
+        IList<NodeMapping> FindMappings(RunNodeMappingFilter filter);
+
+        /// <summary>
         /// Gets the node mapping witht the specified ID.
         /// </summary>
         /// <param name="id">The identifier.</param>

@@ -16,7 +16,7 @@ namespace Cadmus.Graph
         /// <summary>
         /// Gets or sets the source type to match.
         /// </summary>
-        public string? SourceType { get; set; }
+        public int? SourceType { get; set; }
 
         /// <summary>
         /// Gets or sets any portion of the mapping's name to match.

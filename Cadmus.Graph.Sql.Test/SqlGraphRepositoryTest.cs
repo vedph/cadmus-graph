@@ -1350,7 +1350,100 @@ namespace Cadmus.Graph.Sql.Test
             Assert.Null(repository.GetMapping(mapping.Id));
         }
 
-        // TODO
+        protected void DoGetMappings_NoDescendants_Ok()
+        {
+            Reset();
+            IGraphRepository repository = GetRepository();
+            IList<NodeMapping> mappings = GetMappings(3);
+            mappings[0].Children.Add(new NodeMapping
+            {
+                Name = "child"
+            });
+            foreach (NodeMapping mapping in mappings)
+                repository.AddMapping(mapping);
+
+            DataPage<NodeMapping> page = repository.GetMappings(
+                new NodeMappingFilter
+                {
+                    PageSize = 2,
+                    SourceType = Node.SOURCE_ITEM
+                }, false);
+
+            Assert.Equal(3, page.Total);
+            Assert.Equal(2, page.Items.Count);
+
+            Assert.Equal("m1", page.Items[0].Name);
+            Assert.NotNull(page.Items[0].Output);
+            Assert.False(page.Items[0].HasChildren);
+
+            Assert.Equal("m2", page.Items[1].Name);
+            Assert.NotNull(page.Items[1].Output);
+            Assert.False(page.Items[1].HasChildren);
+        }
+
+        protected void DoGetMappings_Descendants_Ok()
+        {
+            Reset();
+            IGraphRepository repository = GetRepository();
+            IList<NodeMapping> mappings = GetMappings(3);
+            mappings[0].Children.Add(new NodeMapping
+            {
+                Name = "child"
+            });
+            foreach (NodeMapping mapping in mappings)
+                repository.AddMapping(mapping);
+
+            DataPage<NodeMapping> page = repository.GetMappings(
+                new NodeMappingFilter
+                {
+                    PageSize = 2,
+                    SourceType = Node.SOURCE_ITEM
+                }, true);
+
+            Assert.Equal(3, page.Total);
+            Assert.Equal(2, page.Items.Count);
+
+            Assert.Equal("m1", page.Items[0].Name);
+            Assert.NotNull(page.Items[0].Output);
+            Assert.True(page.Items[0].HasChildren);
+            Assert.Equal("child", page.Items[0].Children[0].Name);
+
+            Assert.Equal("m2", page.Items[1].Name);
+            Assert.NotNull(page.Items[1].Output);
+            Assert.False(page.Items[1].HasChildren);
+        }
+
+        protected void DoFindMappings_Ok()
+        {
+            Reset();
+            IGraphRepository repository = GetRepository();
+            IList<NodeMapping> mappings = GetMappings(3);
+            mappings[0].Children.Add(new NodeMapping
+            {
+                Name = "child"
+            });
+            mappings[1].FacetFilter = "x";
+            foreach (NodeMapping mapping in mappings)
+                repository.AddMapping(mapping);
+
+            IList<NodeMapping> results = repository.FindMappings(
+                new RunNodeMappingFilter
+                {
+                    SourceType = Node.SOURCE_ITEM,
+                    Facet = "person"
+                });
+
+            Assert.Equal(2, results.Count);
+
+            Assert.Equal("m1", results[0].Name);
+            Assert.NotNull(results[0].Output);
+            Assert.True(results[0].HasChildren);
+            Assert.Equal("child", results[0].Children[0].Name);
+
+            Assert.Equal("m3", results[1].Name);
+            Assert.NotNull(results[1].Output);
+            Assert.False(results[1].HasChildren);
+        }
         #endregion
     }
 }

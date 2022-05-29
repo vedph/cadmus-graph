@@ -246,6 +246,15 @@ namespace Cadmus.Graph.MySql.Test
 
         [Fact]
         public void DeleteMapping_Existing_Ok() => DoDeleteMapping_Existing_Ok();
+
+        [Fact]
+        public void GetMappings_NoDescendants_Ok() => DoGetMappings_NoDescendants_Ok();
+
+        [Fact]
+        public void GetMappings_Descendants_Ok() => DoGetMappings_Descendants_Ok();
+
+        [Fact]
+        public void FindMappings_Ok() => DoFindMappings_Ok();
         #endregion
 
 #pragma warning restore S2699 // Tests should include assertions

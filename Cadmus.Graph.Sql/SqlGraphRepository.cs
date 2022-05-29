@@ -731,7 +731,7 @@ namespace Cadmus.Graph.Sql
             if (filter.ParentId != null)
                 query.Where("parent_id", filter.ParentId.Value);
 
-            if (!string.IsNullOrEmpty(filter.SourceType))
+            if (filter.SourceType.HasValue)
                 query.Where("source_type", filter.SourceType);
 
             if (!string.IsNullOrEmpty(filter.Name))
@@ -1024,14 +1024,22 @@ namespace Cadmus.Graph.Sql
             {
                 mapping.Id = qf.Query("mapping")
                     .InsertGetId<int>(newMapping, trans);
+                if (mapping.HasChildren)
+                {
+                    foreach (NodeMapping child in mapping.Children)
+                        child.ParentId = mapping.Id;
+                }
             }
 
             // add its output
             if (mapping.Output != null) AddMappingOutput(mapping, qf, trans);
 
             // add its children
-            foreach (NodeMapping child in mapping.Children)
-                AddMapping(child, qf, trans);
+            if (mapping.HasChildren)
+            {
+                foreach (NodeMapping child in mapping.Children)
+                    AddMapping(child, qf, trans);
+            }
         }
 
         /// <summary>
@@ -1075,44 +1083,56 @@ namespace Cadmus.Graph.Sql
             Query query)
         {
             // top-level mappings only with specified source type
-            query.Where("parent_id", 0)
+            query.WhereNull("parent_id")
                  .Where("source_type", filter.SourceType);
 
             // optional facet
             if (!string.IsNullOrEmpty(filter.Facet))
-                query.Where("facet_filter", filter.Facet).OrWhereNull("facet");
+            {
+                query.Where(q =>
+                    q.Where("facet_filter", filter.Facet)
+                     .OrWhereNull("facet_filter"));
+            }
 
             // optional group
             if (!string.IsNullOrEmpty(filter.Group))
             {
-                query.WhereRaw(SqlHelper.BuildRegexMatch("group_filter",
-                    SqlHelper.SqlEncode(filter.Group, false, true, false)))
-                    .OrWhereNull("group_filter");
+                query.Where(q =>
+                    q.WhereRaw(SqlHelper.BuildRegexMatch("group_filter",
+                        SqlHelper.SqlEncode(filter.Group, false, true, false)))
+                     .OrWhereNull("group_filter"));
             }
 
             // optional flags (all the flags specified must be present)
             if (filter.Flags.HasValue)
             {
-                query.WhereNull("flags_filter")
-                     .OrWhereRaw($"(flags_filter & {filter.Flags})={filter.Flags}");
+                query.Where(q =>
+                    q.WhereNull("flags_filter")
+                     .OrWhereRaw($"(flags_filter & {filter.Flags})={filter.Flags}"));
             }
 
             // optional title
             if (!string.IsNullOrEmpty(filter.Title))
-                query.Where("title_filter", filter.Title).OrWhereNull("title_filter");
+            {
+                query.Where(q =>
+                    q.Where("title_filter", filter.Title)
+                     .OrWhereNull("title_filter"));
+            }
 
             // optional part type
             if (!string.IsNullOrEmpty(filter.PartType))
             {
-                query.Where("part_type_filter", filter.PartType)
-                     .OrWhereNull("part_type_filter");
+                query.Where(q =>
+                    q.Where("part_type_filter", filter.PartType)
+                     .OrWhereNull("part_type_filter"));
             }
 
             // optional part role
             if (!string.IsNullOrEmpty(filter.PartRole))
             {
-                query.Where("part_role_filter", filter.PartRole)
-                     .OrWhereNull("part_role_filter");
+                query.Where(q =>
+                    q.Where("part_role_filter", filter.PartRole)
+                     .OrWhereNull("part_role_filter"));
             }
         }
 
