@@ -245,11 +245,11 @@ Should you want to disable this filtering, start the template with `!`, which be
 
 As a sample, consider this historical events part. This contains any number of events, eventually with their place and/or time and directly related entities.
 
-In this sample, we have a single event representing the birth of Petrarch in 1304 at Arezzo from ser Petracco and Eletta Cangiani.
+In this sample, we have two events representing the birth of Petrarch in 1304 at Arezzo from ser Petracco and Eletta Cangiani, and his death at Arquà in 1374.
 
 ### Sample Data
 
-Our data here come from a Cadmus part. Its serialized form is as follows (stripping out some unnecessary clutter):
+Our data here come from a Cadmus part. Its serialized form (stripping out some unnecessary clutter) essentially is an array of two event objects, with their properties:
 
 ```json
 {
@@ -267,30 +267,44 @@ Our data here come from a Cadmus part. Its serialized form is as follows (stripp
           }
         }
       },
-      "assertion": {},
       "description": "Petrarch was born in 1304 at Arezzo from ser Petracco and Eletta Cangiani.",
       "relatedEntities": [
         {
           "relation": "mother",
-          "id": "x:guys/eletta_cangiani"
+          "id": "eletta_cangiani"
         },
         {
           "relation": "father",
-          "id": "x:guys/ser_petracco"
+          "id": "ser_petracco"
         }
       ]
+    },
+    {
+      "eid": "death",
+      "type": "person.death",
+      "chronotope": {
+        "place": {
+          "value": "Arquà"
+        },
+        "date": {
+          "a": {
+            "value": 1374
+          }
+        }
+      },
+      "description": "Petrarch died in 1374 at Arquà."
     }
   ]
 }
 ```
 
-As you can see, here the `events` array contains a single event, identified by an [EID](#entry-id-eid) with value `birth`. Its type refers to a thesaurus entry ID, `person.birth`, representing the "birth" class of a set of person-related events.
+As you can see, each event in the `events` array is identified by an arbitrarily assigned [EID](#entry-id-eid), unique only in the context of this part's scope. Event types are drawn from a thesaurus.
 
-The event is connected to a place (`Arezzo`) and a date (`1304`).
+Each event usually is connected to a place (`Arezzo`) and a date (`1304`). Also, it has a human-friendly description, and a list of related entities, each having a relation type (from another thesaurus), and the ID of the related entity.
 
-Also, it has a human-friendly description, and a list of related entities, each having a relation type (from another thesaurus), and the ID of the related entity.
+So the first event represents an event of type birth, which took place at Arezzo in 1304, with a couple of related entities for the parents (mother and father). The person who was born (Petrarca) is implicit, as this events part is inside a person item, which represents that person.
 
-So here we are encoding an event of type birth, which took place at Arezzo in 1304, with a couple of related entities for the parents (mother and father). The person who was born is implicit, as this events part is inside a person item, which represents that person.
+The second event represents an event of type death, which took place at Arquà in 1374. Again, the person took out of existence by this event is implicit.
 
 ### Sample Mappings
 
@@ -300,7 +314,7 @@ These mappings are encoded in a simple JSON document, which can be imported into
 
 The JSON document is an array of mapping objects. Each mapping object has some properties, and optionally any number of children mappings, nested under their `children` property.
 
-Here is a quick recap of mappings, reading the file from top to bottom:
+Here is a quick recap of mappings for the first event, reading the file from top to bottom:
 
 (1) the first mapping matches any event of type `person.birth` (see its `source` property: this is the JMES path). Its output is just a metadatum, which will be consumed by its children mappings. This has key `eid-sid` and is built from a template, collecting the part ID and the event's EID. So, all the children of this mapping start with their source located at the birth event.
 
@@ -510,7 +524,7 @@ Here is the full code for those mappings:
         "source": "relatedEntities[?relation=='mother']",
         "output": {
           "nodes": {
-            "mother": "x:persons/{@id}"
+            "mother": "x:guys/{@id}"
           },
           "triples": [ "{?event} crm:P96_by_mother {?mother}" ]
         }
@@ -521,10 +535,87 @@ Here is the full code for those mappings:
         "source": "relatedEntities[?relation=='father']",
         "output": {
           "nodes": {
-            "father": "x:persons/{@id}"
+            "father": "x:guys/{@id}"
           },
           "triples": [ "{?event} crm:P97_by_father {?father}" ]
         }
+      }
+    ]
+  },
+  {
+    "name": "death event",
+    "sourceType": 2,
+    "facetFilter": "person",
+    "partTypeFilter": "it.vedph.historical-events",
+    "description": "Map death event",
+    "source": "events[?type=='person.death']",
+    "output": {
+      "metadata": {
+        "eid-sid": "{$part-id}/{@eid}"
+      }
+    },
+    "children": [
+      {
+        "name": "death event - eid",
+        "source": "eid",
+        "sid": "{$eid-sid}",
+        "output": {
+          "nodes": {
+            "event": "x:events/{$.}"
+          },
+          "triples": [
+            "{?event} a crm:E69_Death",
+            "{?event} crm:P93_took_out_of_existence {$item-uri}"
+          ]
+        }
+      },
+      {
+        "name": "death event - note",
+        "source": "note",
+        "sid": "{$eid-sid}/note",
+        "output": {
+          "nodes": {
+            "note": "x:notes/n"
+          },
+          "triples": [ "{?event} crm:P3_has_note \"{$.}\"" ]
+        }
+      },
+      {
+        "name": "death event - chronotope",
+        "source": "chronotope",
+        "sid": "{$eid-sid}/chronotope",
+        "children": [
+          {
+            "source": "place",
+            "output": {
+              "nodes": {
+                "place": "x:places/{@value}"
+              },
+              "triples": [
+                "{?place} a crm:E53_Place",
+                "{?event} crm:P7_took_place_at {?place}"
+              ]
+            }
+          },
+          {
+            "name": "death event - chronotope - date",
+            "source": "date",
+            "output": {
+              "metadata": {
+                "date_value": "{!_hdate({@.} & value)}",
+                "date_text": "{!_hdate({@.} & text)}"
+              },
+              "nodes": {
+                "timespan": "x:timespans/ts"
+              },
+              "triples": [
+                "{?event} crm:P4_has_time_span {?timespan}",
+                "{?timespan} crm:P82_at_some_time_within \"{$date_value}\"^^xs:float",
+                "{?timespan} crm:P87_is_identified_by \"{$date_text}\"@en"
+              ]
+            }
+          }
+        ]
       }
     ]
   }
@@ -536,20 +627,28 @@ Here is the full code for those mappings:
 The results of these mapping rules are a set of nodes with their triples. First we have the nodes for each entity:
 
 - the birth event;
-- the place;
-- the time;
+- the birth place;
+- the birth time;
 - the mother;
-- the father.
+- the father;
+- the death event;
+- the death place;
+- the death time.
 
-label                            | URI
----------------------------------|---------------------------------
-x:events/birth                   | x:events/birth
-x:places/arezzo                  | x:places/arezzo
-x:timespans/ts                   | x:timespans/ts
-x:persons/x:guys/eletta_cangiani | x:persons/x:guys/eletta_cangiani
-x:persons/x:guys/ser_petracco    | x:persons/x:guys/ser_petracco
+label                  | URI                    | SID
+-----------------------|------------------------|------------------------------------------------------
+x:events/birth         | x:events/birth         | bdd152f1-2ae2-4189-8a4a-e3d68c6a9d7e/birth
+x:places/arezzo        | x:places/arezzo        | bdd152f1-2ae2-4189-8a4a-e3d68c6a9d7e/birth/chronotope
+x:timespans/ts         | x:timespans/ts         | bdd152f1-2ae2-4189-8a4a-e3d68c6a9d7e/birth/chronotope
+x:guys/eletta_cangiani | x:guys/eletta_cangiani | bdd152f1-2ae2-4189-8a4a-e3d68c6a9d7e/birth/related
+x:guys/ser_petracco    | x:guys/ser_petracco    | bdd152f1-2ae2-4189-8a4a-e3d68c6a9d7e/birth/related
+x:events/death         | x:events/death         | bdd152f1-2ae2-4189-8a4a-e3d68c6a9d7e/death
+x:places/arqua         | x:places/arqua         | bdd152f1-2ae2-4189-8a4a-e3d68c6a9d7e/death/chronotope
+x:timespans/ts#1       | x:timespans/ts#1       | bdd152f1-2ae2-4189-8a4a-e3d68c6a9d7e/death/chronotope
 
 Then, these are their triples:
+
+a) for birth:
 
 - the event is classified as a birth event;
 - the event brought into life the entity corresponding to the item (=Petrarch);
@@ -560,16 +659,31 @@ Then, these are their triples:
 - the birth had Eletta Cangiani as the mother;
 - the birth had ser Petracco as the father.
 
-S               | P                           | O
-----------------|-----------------------------|---------------------------------
-x:events/birth  | a                           | crm:e67_birth
-x:events/birth  | crm:p98_brought_into_life   | x:items/my-item
-x:places/arezzo | a                           | crm:e53_place
-x:events/birth  | crm:p7_took_place_at        | x:places/arezzo
-x:events/birth  | crm:p4_has_time_span        | x:timespans/ts
-x:timespans/ts  | crm:p82_at_some_time_within | "1304"^^xs:float
-x:timespans/ts  | crm:p87_is_identified_by    | "1304 AD"@en
-x:events/birth  | crm:p96_by_mother           | x:persons/x:guys/eletta_cangiani
-x:events/birth  | crm:p97_by_father           | x:persons/x:guys/ser_petracco
+b) for death:
+
+- the event is classified as a death event;
+- the event took out of existence the entity corresponding to the item (=Petrarch);
+- Arquà is a place;
+- the event has a timespan node;
+- this timespan is located at about 1374.
+
+S                | P                             | O                         | SID
+-----------------|-------------------------------|---------------------------|------------------------------------------------------
+x:events/birth   | a                             | crm:e67_birth             | bdd152f1-2ae2-4189-8a4a-e3d68c6a9d7e/birth
+x:events/birth   | crm:p98_brought_into_life     | x:guys/francesco_petrarca | bdd152f1-2ae2-4189-8a4a-e3d68c6a9d7e/birth
+x:places/arezzo  | a                             | crm:e53_place             | bdd152f1-2ae2-4189-8a4a-e3d68c6a9d7e/birth/chronotope
+x:events/birth   | crm:p7_took_place_at          | x:places/arezzo           | bdd152f1-2ae2-4189-8a4a-e3d68c6a9d7e/birth/chronotope
+x:events/birth   | crm:p4_has_time_span          | x:timespans/ts            | bdd152f1-2ae2-4189-8a4a-e3d68c6a9d7e/birth/chronotope
+x:timespans/ts   | crm:p82_at_some_time_within   | "1304"^^xs:float          | bdd152f1-2ae2-4189-8a4a-e3d68c6a9d7e/birth/chronotope
+x:timespans/ts   | crm:p87_is_identified_by      | "1304 AD"@en              | bdd152f1-2ae2-4189-8a4a-e3d68c6a9d7e/birth/chronotope
+x:events/birth   | crm:p96_by_mother             | x:guys/eletta_cangiani    | bdd152f1-2ae2-4189-8a4a-e3d68c6a9d7e/birth/related
+x:events/birth   | crm:p97_by_father             | x:guys/ser_petracco       | bdd152f1-2ae2-4189-8a4a-e3d68c6a9d7e/birth/related
+x:events/death   | a                             | crm:e69_death             | bdd152f1-2ae2-4189-8a4a-e3d68c6a9d7e/death
+x:events/death   | crm:p93_took_out_of_existence | x:guys/francesco_petrarca | bdd152f1-2ae2-4189-8a4a-e3d68c6a9d7e/death
+x:places/arqua   | a                             | crm:e53_place             | bdd152f1-2ae2-4189-8a4a-e3d68c6a9d7e/death/chronotope
+x:events/death   | crm:p7_took_place_at          | x:places/arqua            | bdd152f1-2ae2-4189-8a4a-e3d68c6a9d7e/death/chronotope
+x:events/death   | crm:p4_has_time_span          | x:timespans/ts#1          | bdd152f1-2ae2-4189-8a4a-e3d68c6a9d7e/death/chronotope
+x:timespans/ts#1 | crm:p82_at_some_time_within   | "1374"^^xs:float          | bdd152f1-2ae2-4189-8a4a-e3d68c6a9d7e/death/chronotope
+x:timespans/ts#1 | crm:p87_is_identified_by      | "1374 AD"@en              | bdd152f1-2ae2-4189-8a4a-e3d68c6a9d7e/death/chronotope
 
 So, these are the outcome of the mapping process. The user is not aware of all this: his only task is filling a form in a UI. This form lists events. Then, whenever he saves his work, the mapping process for the edited part steps in, and generates this graph of nodes. The graph will then be merged to the graph stored in the database.
