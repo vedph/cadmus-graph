@@ -80,7 +80,7 @@
         "source": "relatedEntities[?relation=='mother']",
         "output": {
           "nodes": {
-            "mother": "x:guys/{@id}"
+            "mother": "x:persons/{@id}"
           },
           "triples": [ "{?event} crm:P96_by_mother {?mother}" ]
         }
@@ -91,7 +91,7 @@
         "source": "relatedEntities[?relation=='father']",
         "output": {
           "nodes": {
-            "father": "x:guys/{@id}"
+            "father": "x:persons/{@id}"
           },
           "triples": [ "{?event} crm:P97_by_father {?father}" ]
         }

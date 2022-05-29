@@ -11,6 +11,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Assets\Events.json" />
+    <None Remove="Assets\Mappings.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\Events.json" />
+    <EmbeddedResource Include="Assets\Mappings.json" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Fusi.DbManager.MySql" Version="2.0.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.2.0" />
     <PackageReference Include="xunit" Version="2.4.1" />

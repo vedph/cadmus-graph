@@ -3,7 +3,6 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Text.Json;
 using DevLab.JmesPath;
-using System.Collections.Generic;
 
 namespace Cadmus.Graph
 {
@@ -226,7 +225,7 @@ namespace Cadmus.Graph
         /// <summary>
         /// Map the specified source into the <paramref name="target"/> graphset.
         /// </summary>
-        /// <param name="source">The source object.</param>
+        /// <param name="source">The source object, here a JSON string.</param>
         /// <param name="mapping">The mapping to apply.</param>
         /// <param name="target">The target graphset.</param>
         /// <exception cref="ArgumentNullException">mapping or target</exception>

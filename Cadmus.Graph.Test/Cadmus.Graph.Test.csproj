@@ -13,11 +13,15 @@
   <ItemGroup>
     <None Remove="Assets\Events.json" />
     <None Remove="Assets\Mappings.json" />
+    <None Remove="Assets\Nodes.json" />
+    <None Remove="Assets\Thesauri.json" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="Assets\Events.json" />
     <EmbeddedResource Include="Assets\Mappings.json" />
+    <EmbeddedResource Include="Assets\Nodes.json" />
+    <EmbeddedResource Include="Assets\Thesauri.json" />
   </ItemGroup>
 
   <ItemGroup>

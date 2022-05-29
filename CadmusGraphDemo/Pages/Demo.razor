@@ -46,6 +46,7 @@
             <tr>
                 <th>label</th>
                 <th>URI</th>
+                <th>SID</th>
             </tr>
         </thead>
         <tbody>
@@ -53,7 +54,8 @@
             {
                 <tr>
                     <td>@node.Label</td>
-                    <td>@node.Uri</td>
+                    <td style="color:#5bb858">@node.Uri</td>
+                    <td><small>@node.Sid</small></td>
                 </tr>
             }
         </tbody>
@@ -66,15 +68,16 @@
                 <th>S</th>
                 <th>P</th>
                 <th>O</th>
+                <th>SID</th>
             </tr>
         </thead>
         <tbody>
             @foreach(var triple in Model.Graph.Triples)
             {
                 <tr>
-                    <td>@triple.SubjectUri</td>
-                    <td>@triple.PredicateUri</td>
-                    <td>
+                    <td style="color:#5bb858">@triple.SubjectUri</td>
+                    <td style="color:#b8585b">@triple.PredicateUri</td>
+                    <td style="color:#585eb8">
                         @if (triple.ObjectUri != null)
                         {
                             @triple.ObjectUri
@@ -84,6 +87,7 @@
                             @triple.ObjectLiteral
                         }
                     </td>
+                    <td><small>@triple.Sid</small></td>
                 </tr>
             }
         </tbody>

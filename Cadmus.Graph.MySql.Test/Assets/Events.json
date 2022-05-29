@@ -17,11 +17,11 @@
       "relatedEntities": [
         {
           "relation": "mother",
-          "id": "eletta_cangiani"
+          "id": "x:guys/eletta_cangiani"
         },
         {
           "relation": "father",
-          "id": "ser_petracco"
+          "id": "x:guys/ser_petracco"
         }
       ]
     },

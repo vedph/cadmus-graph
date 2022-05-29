@@ -88,7 +88,7 @@ namespace CadmusGraphDemo.Pages
 
                 // mock metadata from item
                 _mapper.Data["item-id"] = Guid.NewGuid().ToString();
-                _mapper.Data["item-uri"] = "x:items/my-item";
+                _mapper.Data["item-uri"] = "x:guys/francesco_petrarca";
                 _mapper.Data["item-label"] = "Petrarch";
                 _mapper.Data["group-id"] = "group";
                 _mapper.Data["facet-id"] = "facet";
