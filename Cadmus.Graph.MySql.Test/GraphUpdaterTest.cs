@@ -37,7 +37,7 @@ namespace Cadmus.Graph.MySql.Test
 
         private static IGraphRepository GetRepository()
         {
-            MySqlGraphRepository repository = new MySqlGraphRepository();
+            MySqlGraphRepository repository = new();
             repository.Configure(new SqlOptions
             {
                 ConnectionString = CS
@@ -162,7 +162,7 @@ namespace Cadmus.Graph.MySql.Test
             repository.UpdateGraph(set);
 
             nodePage = repository.GetNodes(new NodeFilter());
-            Assert.Equal(5, nodePage.Total);
+            Assert.Equal(18, nodePage.Total);
 
             triplePage = repository.GetTriples(new TripleFilter());
             Assert.Equal(9, triplePage.Total);
