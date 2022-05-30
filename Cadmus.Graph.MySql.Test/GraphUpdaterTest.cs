@@ -126,11 +126,9 @@ namespace Cadmus.Graph.MySql.Test
             // 1) store initial set
             repository.UpdateGraph(set);
 
-            // (5 from birth, 3 from death, and 2 properties)
             var nodePage = repository.GetNodes(new NodeFilter());
-            Assert.Equal(5 + 3 + 2, nodePage.Total);
+            Assert.Equal(22, nodePage.Total);
 
-            // (16 triples)
             var triplePage = repository.GetTriples(new TripleFilter());
             Assert.Equal(9 + 7, triplePage.Total);
 

@@ -91,7 +91,9 @@ namespace Cadmus.Graph
                 {
                     Sid = sid,
                     SubjectUri = ResolveTemplate(tripleSource.S!, true),
-                    PredicateUri = ResolveTemplate(tripleSource.P!, true),
+                    // P=a becomes rdf:type
+                    PredicateUri = ResolveTemplate(tripleSource.P == "a"
+                        ? "rdf:type": tripleSource.P!, true),
                     ObjectUri = tripleSource.O != null
                         ? ResolveTemplate(tripleSource.O!, true) : null,
                     ObjectLiteral = tripleSource.OL != null
