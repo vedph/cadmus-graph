@@ -136,7 +136,7 @@ namespace Cadmus.Graph.MySql.Test
             // (in real world, we would regenerate the full graph from a changed
             // data source, here an events part)
             // - petrarca a person (added)
-            UriNode petrarca = repository.GetNodeByUri("x:francesco_petrarca")!;
+            UriNode petrarca = repository.GetNodeByUri("x:guys/francesco_petrarca")!;
             Assert.NotNull(petrarca);
             set.AddTriples(new[]{
                 new UriTriple

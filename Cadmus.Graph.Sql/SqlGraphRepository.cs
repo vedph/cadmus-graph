@@ -1772,6 +1772,21 @@ namespace Cadmus.Graph.Sql
         {
             if (set == null) throw new ArgumentNullException(nameof(set));
 
+            // ensure to save each new node's URI, thus getting its corresponding ID
+            foreach (UriNode node in set.Nodes.Where(n => n.Id == 0))
+                node.Id = AddUri(node.Uri!);
+            foreach (UriTriple triple in set.Triples)
+            {
+                if (triple.SubjectId == 0)
+                    triple.SubjectId = AddUri(triple.SubjectUri!);
+
+                if (triple.PredicateId== 0)
+                    triple.PredicateId = AddUri(triple.PredicateUri!);
+
+                if (triple.ObjectId == 0 && !string.IsNullOrEmpty(triple.ObjectUri))
+                    triple.ObjectId = AddUri(triple.ObjectUri);
+            }
+
             // get nodes and triples grouped by their SID's GUID
             var nodeGroups = set.GetNodesByGuid();
             var tripleGroups = set.GetTriplesByGuid();
