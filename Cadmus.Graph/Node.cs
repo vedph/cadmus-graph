@@ -21,6 +21,13 @@
         /// The "thesaurus" value for <see cref="SourceType"/>.
         /// </summary>
         public const int SOURCE_THESAURUS = 3;
+        /// <summary>
+        /// The "implicit" value for <see cref="SourceType"/>. An implicit
+        /// source is a node used in an emitted triple but not found among
+        /// the existing or emitted nodes. In this case the node is automatically
+        /// emitted to ensure a valid triple.
+        /// </summary>
+        public const int SOURCE_IMPLICIT = 4;
 
         /// <summary>
         /// The value for <see cref="Tag"/> when the node represents a property,

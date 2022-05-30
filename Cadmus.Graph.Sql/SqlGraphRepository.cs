@@ -1773,18 +1773,66 @@ namespace Cadmus.Graph.Sql
             if (set == null) throw new ArgumentNullException(nameof(set));
 
             // ensure to save each new node's URI, thus getting its corresponding ID
-            foreach (UriNode node in set.Nodes.Where(n => n.Id == 0))
-                node.Id = AddUri(node.Uri!);
+            HashSet<string> nodeUris = new();
+            foreach (UriNode node in set.Nodes)
+            {
+                nodeUris.Add(node.Uri!);
+                if (node.Id == 0) node.Id = AddUri(node.Uri!);
+            }
+
             foreach (UriTriple triple in set.Triples)
             {
                 if (triple.SubjectId == 0)
+                {
                     triple.SubjectId = AddUri(triple.SubjectUri!);
+                    if (!nodeUris.Contains(triple.SubjectUri!))
+                    {
+                        // add node implicit in triple
+                        set.Nodes.Add(new UriNode
+                        {
+                            Id = triple.SubjectId,
+                            Uri = triple.SubjectUri,
+                            Label = triple.SubjectUri,
+                            Sid = triple.Sid,
+                            SourceType = Node.SOURCE_IMPLICIT
+                        });
+                    }
+                }
 
                 if (triple.PredicateId== 0)
+                {
                     triple.PredicateId = AddUri(triple.PredicateUri!);
+                    if (!nodeUris.Contains(triple.PredicateUri!))
+                    {
+                        // add node implicit in triple,
+                        // but this shold not happen for predicates
+                        set.Nodes.Add(new UriNode
+                        {
+                            Id = triple.PredicateId,
+                            Uri = triple.PredicateUri,
+                            Label = triple.PredicateUri,
+                            Sid = triple.Sid,
+                            SourceType = Node.SOURCE_IMPLICIT
+                        });
+                    }
+                }
 
                 if (triple.ObjectId == 0 && !string.IsNullOrEmpty(triple.ObjectUri))
+                {
                     triple.ObjectId = AddUri(triple.ObjectUri);
+                    if (!nodeUris.Contains(triple.ObjectUri!))
+                    {
+                        // add node implicit in triple
+                        set.Nodes.Add(new UriNode
+                        {
+                            Id = triple.ObjectId,
+                            Uri = triple.ObjectUri,
+                            Label = triple.ObjectUri,
+                            Sid = triple.Sid,
+                            SourceType = Node.SOURCE_IMPLICIT
+                        });
+                    }
+                }
             }
 
             // get nodes and triples grouped by their SID's GUID

@@ -17,7 +17,9 @@ namespace Cadmus.Graph.MySql.Test
         private const string CST = "Server=localhost;Database={0};Uid=root;Pwd=mysql;";
         private const string DB_NAME = "cadmus-index-test";
         static private readonly string CS = string.Format(CST, DB_NAME);
+
         private const string PART_ID = "bdd152f1-2ae2-4189-8a4a-e3d68c6a9d7e";
+        private const string PETRARCH_URI = "x:guys/francesco_petrarca";
 
         private static void Reset()
         {
@@ -95,8 +97,8 @@ namespace Cadmus.Graph.MySql.Test
             // mock metadata from item
             mapper.Data[ItemGraphSourceAdapter.M_ITEM_ID]
                 = Guid.NewGuid().ToString();
-            mapper.Data["item-uri"] = "x:guys/francesco_petrarca";
-            mapper.Data[ItemGraphSourceAdapter.M_ITEM_TITLE] = "Petrarch";
+            mapper.Data["item-uri"] = PETRARCH_URI;
+            mapper.Data[ItemGraphSourceAdapter.M_ITEM_TITLE] = "Francesco Petrarca";
             mapper.Data[ItemGraphSourceAdapter.M_ITEM_FACET] = "person";
             // mock metada from part
             mapper.Data[PartGraphSourceAdapter.M_PART_ID] = PART_ID;
@@ -136,12 +138,12 @@ namespace Cadmus.Graph.MySql.Test
             // (in real world, we would regenerate the full graph from a changed
             // data source, here an events part)
             // - petrarca a person (added)
-            UriNode petrarca = repository.GetNodeByUri("x:guys/francesco_petrarca")!;
+            UriNode petrarca = repository.GetNodeByUri(PETRARCH_URI)!;
             Assert.NotNull(petrarca);
             set.AddTriples(new[]{
                 new UriTriple
                 {
-                    SubjectUri = "x:guys/francesco_petrarca",
+                    SubjectUri = PETRARCH_URI,
                     PredicateUri = "rdf:type",
                     ObjectUri = "foaf:Person"
                 }
