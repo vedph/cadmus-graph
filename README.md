@@ -9,6 +9,10 @@ Currently this is under development. It will later be integrated in the Cadmus s
 
 ## History
 
+### 0.0.4
+
+- 2022-05-31: refactored adapters and updated dependencies from `Cadmus` 4.0.0.
+
 ### 0.0.1
 
 - 2022-05-29: first release of libraries still dependent on legacy `Cadmus.Core`.

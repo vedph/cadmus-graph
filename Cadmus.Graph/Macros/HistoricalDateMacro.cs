@@ -1,4 +1,5 @@
-﻿using Fusi.Antiquity.Chronology;
+﻿using Cadmus.Graph.Adapters;
+using Fusi.Antiquity.Chronology;
 using Fusi.Tools.Config;
 using System;
 using System.Diagnostics;
@@ -45,7 +46,7 @@ namespace Cadmus.Graph.Macros
         /// <c>text</c>.</param>
         /// <returns>Result or null.</returns>
         /// <exception cref="ArgumentNullException">template</exception>
-        public string? Run(object? context, string[]? args)
+        public string? Run(GraphSource? context, string[]? args)
         {
             if (args == null || args.Length == 0) return null;
 

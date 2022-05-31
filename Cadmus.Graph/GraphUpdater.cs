@@ -50,7 +50,8 @@ namespace Cadmus.Graph
         {
             if (item is null) throw new ArgumentNullException(nameof(item));
 
-            var df = _itemAdapter.Adapt(new GraphSource(item), _metadata);
+            _mapper.Context = new GraphSource(item);
+            var df = _itemAdapter.Adapt(_mapper.Context, _metadata);
             if (df.Item1 != null) Update(df.Item1, df.Item2);
         }
 
@@ -65,7 +66,8 @@ namespace Cadmus.Graph
             if (item is null) throw new ArgumentNullException(nameof(item));
             if (part is null) throw new ArgumentNullException(nameof(part));
 
-            var df = _partAdapter.Adapt(new GraphSource(item, part), _metadata);
+            _mapper.Context = new GraphSource(item, part);
+            var df = _partAdapter.Adapt(_mapper.Context, _metadata);
             if (df.Item1 != null) Update(df.Item1, df.Item2);
         }
     }

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Linq;
 using System.Globalization;
+using Cadmus.Graph.Adapters;
 
 namespace Cadmus.Graph
 {
@@ -35,13 +36,14 @@ namespace Cadmus.Graph
         protected IDictionary<string, INodeMappingMacro> Macros => _macros;
 
         /// <summary>
-        /// The object representing the mapping context, usually corresponding
-        /// to the context of mapping's source, like an item, a part, or a
-        /// thesaurus. The source is directly passed to <see cref="INodeMapper.Map"/>;
+        /// The object representing the mapping source context, usually
+        /// corresponding to the context of mapping's source, like an
+        /// item and/or a part.
+        /// The source is directly passed to <see cref="INodeMapper.Map"/>;
         /// this rather refers to the source's context. For instance, when
         /// mapping a part you would still need to know about its parent item.
         /// </summary>
-        public object? Context { get; set; }
+        public GraphSource? Context { get; set; }
 
         /// <summary>
         /// Gets or sets the context nodes of this mapper. These are the nodes
