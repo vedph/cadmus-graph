@@ -136,7 +136,7 @@ In turn, each mapping rule can include any number of children rules. The model a
   - `metadata`: optional metadata to be consumed in [templates](#templates). Metadata come from several sources: the source object, the mapping process itself, and these definitions in the mapping.
 - `children`: children mappings.
 
->Note: the source type is a number where 0=user, 1=item, 2=part, 3=thesaurus. This is not an enumerated value, so that you can eventually add new values by just defining new constants.
+>Note: the source type is a number where 0=user, 1=item, 2=part, 3=thesaurus, 4=implicit (assigned to nodes automatically added because used in a triple without yet being present in the graph). This is not an enumerated value, so that you can eventually add new values by just defining new constants.
 
 ## Templates
 
