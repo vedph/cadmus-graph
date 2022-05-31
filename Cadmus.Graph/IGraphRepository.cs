@@ -1,6 +1,7 @@
 ﻿using Cadmus.Core.Config;
 using Fusi.Tools;
 using Fusi.Tools.Data;
+using Microsoft.Extensions.Caching.Memory;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -13,6 +14,14 @@ namespace Cadmus.Graph
     /// </summary>
     public interface IGraphRepository : IUidBuilder
     {
+        /// <summary>
+        /// Gets or sets the optional cache to use for mappings. This improves
+        /// performance when fetching mappings from the database. All the
+        /// mappings are stored with key <c>nm-</c> + the mapping's ID.
+        /// Avoid using this if editing mappings.
+        /// </summary>
+        public IMemoryCache? Cache { get; set; }
+
         /// <summary>
         /// Gets the specified page of namespaces with their prefixes.
         /// </summary>

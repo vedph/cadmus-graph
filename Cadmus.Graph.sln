@@ -11,20 +11,19 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cadmus.Graph.Test", "Cadmus
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E3E593EC-1A3F-4BD2-9C1E-5F9022BDB9EC}"
 	ProjectSection(SolutionItems) = preProject
+		InstallToFeed.bat = InstallToFeed.bat
 		Pack.bat = Pack.bat
 		Push.bat = Push.bat
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cadmus.Graph.Adapters", "Cadmus.Graph.Adapters\Cadmus.Graph.Adapters.csproj", "{A3BABFB6-1BE0-4986-B27B-7BDB0AE5F941}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cadmus.Graph.Sql", "Cadmus.Graph.Sql\Cadmus.Graph.Sql.csproj", "{DF6DDF0C-E542-40E1-8BF5-05AC4A056C20}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cadmus.Graph.MySql", "Cadmus.Graph.MySql\Cadmus.Graph.MySql.csproj", "{C5477BBB-1411-4F08-A4C6-E63A61E438EF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cadmus.Graph.MySql.Test", "Cadmus.Graph.MySql.Test\Cadmus.Graph.MySql.Test.csproj", "{CB4C360B-15B6-405B-B970-16C336C12241}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cadmus.Graph.MySql.Test", "Cadmus.Graph.MySql.Test\Cadmus.Graph.MySql.Test.csproj", "{CB4C360B-15B6-405B-B970-16C336C12241}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cadmus.Graph.Sql.Test", "Cadmus.Graph.Sql.Test\Cadmus.Graph.Sql.Test.csproj", "{A25E37C6-7B0D-408E-8CA7-7B4524FC6D26}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cadmus.Graph.Sql.Test", "Cadmus.Graph.Sql.Test\Cadmus.Graph.Sql.Test.csproj", "{A25E37C6-7B0D-408E-8CA7-7B4524FC6D26}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -44,10 +43,6 @@ Global
 		{5BFBBBCE-19A5-4696-83D2-28B4FCCFB6D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5BFBBBCE-19A5-4696-83D2-28B4FCCFB6D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5BFBBBCE-19A5-4696-83D2-28B4FCCFB6D9}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A3BABFB6-1BE0-4986-B27B-7BDB0AE5F941}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A3BABFB6-1BE0-4986-B27B-7BDB0AE5F941}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A3BABFB6-1BE0-4986-B27B-7BDB0AE5F941}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A3BABFB6-1BE0-4986-B27B-7BDB0AE5F941}.Release|Any CPU.Build.0 = Release|Any CPU
 		{DF6DDF0C-E542-40E1-8BF5-05AC4A056C20}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{DF6DDF0C-E542-40E1-8BF5-05AC4A056C20}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DF6DDF0C-E542-40E1-8BF5-05AC4A056C20}.Release|Any CPU.ActiveCfg = Release|Any CPU

@@ -189,10 +189,10 @@ namespace Cadmus.Graph.MySql.Test
             repository.DeleteGraphSet($"{PART_ID}/death");
 
             var nodePage = repository.GetNodes(new NodeFilter());
-            Assert.Equal(5 + 3, nodePage.Total);
+            Assert.Equal(17, nodePage.Total);
 
             var triplePage = repository.GetTriples(new TripleFilter());
-            Assert.Equal(9 + 7, triplePage.Total);
+            Assert.Equal(9, triplePage.Total);
         }
     }
 }
