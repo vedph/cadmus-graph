@@ -32,6 +32,35 @@
         public string? ObjectLiteral { get; set; }
 
         /// <summary>
+        /// Gets or sets the object literal value filtered for indexing.
+        /// This is derived from <see cref="ObjectLiteral"/>, filtering text
+        /// in some conventional way, and is a performance-oriented addition
+        /// to the literal value to allow faster text-based searches.
+        /// </summary>
+        public string? ObjectLiteralIx { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the object literal. This corresponds to
+        /// literal suffixes after <c>^^</c> in Turtle: e.g.
+        /// <c>"12.3"^^xs:double</c>.
+        /// </summary>
+        public string? LiteralType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the object literal language. This is meaningful only
+        /// for string literals, and usually is an ISO639 code.
+        /// </summary>
+        public string? LiteralLanguage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the numeric value derived from <see cref="ObjectLiteral"/>
+        /// when its type is numeric (boolean, integer, floating point, etc.).
+        /// This is a performance-oriented addition to the literal value to allow
+        /// for faster searches when dealing with numeric values.
+        /// </summary>
+        public double? LiteralNumber { get; set; }
+
+        /// <summary>
         /// Gets or sets the optional SID for this triple. This is null for
         /// manually created triples.
         /// </summary>

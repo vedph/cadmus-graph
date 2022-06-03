@@ -100,6 +100,7 @@ namespace Cadmus.Graph
                         ? ResolveTemplate(tripleSource.OL, false)
                         : null
                 };
+                LiteralHelper.AdjustLiteral(triple);
                 target.Triples.Add(triple);
             }
         }

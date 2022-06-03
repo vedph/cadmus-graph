@@ -1181,10 +1181,29 @@ namespace Cadmus.Graph.Sql
             if (filter.ObjectId > 0)
                 query.Where("o_id", filter.ObjectId);
 
+            // literal
             if (!string.IsNullOrEmpty(filter.ObjectLiteral))
             {
                 query.WhereRaw(SqlHelper.BuildRegexMatch("o_lit",
                     SqlHelper.SqlEncode(filter.ObjectLiteral, false, true, false)));
+            }
+
+            if (!string.IsNullOrEmpty(filter.LiteralType))
+                query.Where("o_lit_type", filter.LiteralType);
+
+            if (!string.IsNullOrEmpty(filter.LiteralLanguage))
+                query.Where("o_lit_lang", filter.LiteralLanguage);
+
+            if (filter.MinLiteralNumber.HasValue)
+            {
+                query.WhereNotNull("o_lit_n")
+                     .Where("o_lit_n", ">=", filter.MinLiteralNumber.Value);
+            }
+
+            if (filter.MaxLiteralNumber.HasValue)
+            {
+                query.WhereNotNull("o_lit_n")
+                     .Where("o_lit_n", "<=", filter.MaxLiteralNumber.Value);
             }
 
             // sid
@@ -1194,6 +1213,7 @@ namespace Cadmus.Graph.Sql
                 else query.Where("sid", filter.Sid);
             }
 
+            // tag
             if (filter.Tag != null)
             {
                 if (filter.Tag.Length == 0) query.WhereNull("tag");
@@ -1231,6 +1251,8 @@ namespace Cadmus.Graph.Sql
             // complete query and get page
             query.Select("triple.id", "triple.s_id", "triple.p_id",
                 "triple.o_id", "triple.o_lit", "triple.sid", "triple.tag",
+                "triple.o_lit_ix",
+                "triple.o_lit_type", "triple.o_lit_lang", "triple.o_lit_n",
                 "uls.uri AS s_uri", "ulp.uri AS p_uri", "ulo.uri AS o_uri")
                  .OrderBy("s_uri", "p_uri", "triple.id")
                  .Skip(filter.GetSkipCount());
@@ -1246,6 +1268,10 @@ namespace Cadmus.Graph.Sql
                     PredicateId = d.p_id,
                     ObjectId = d.o_id ?? 0,
                     ObjectLiteral = d.o_lit,
+                    ObjectLiteralIx = d.o_lit_ix,
+                    LiteralType = d.o_lit_type,
+                    LiteralLanguage = d.o_lit_lang,
+                    LiteralNumber = d.o_lit_n,
                     Sid = d.sid,
                     Tag = d.tag,
                     SubjectUri = d.s_uri,
@@ -1270,7 +1296,10 @@ namespace Cadmus.Graph.Sql
                 .LeftJoin("uri_lookup AS ulo", "triple.o_id", "ulo.id")
                 .Where("triple.id", id)
                 .Select("triple.id", "triple.s_id", "triple.p_id", "triple.o_id",
-                "triple.o_lit", "triple.sid", "triple.tag", "uls.uri AS s_uri",
+                "triple.o_lit", "triple.sid", "triple.tag",
+                "triple.o_lit_ix",
+                "triple.o_lit_type", "triple.o_lit_lang", "triple.o_lit_n",
+                "uls.uri AS s_uri",
                 "ulp.uri AS p_uri", "ulo.uri AS o_uri")
                 .Get().FirstOrDefault();
             return d == null ? null : new UriTriple
@@ -1280,6 +1309,10 @@ namespace Cadmus.Graph.Sql
                 PredicateId = d.p_id,
                 ObjectId = d.o_id ?? 0,
                 ObjectLiteral = d.o_lit,
+                ObjectLiteralIx = d.o_lit_ix,
+                LiteralType = d.o_lit_type,
+                LiteralLanguage = d.o_lit_lang,
+                LiteralNumber = d.o_lit_n,
                 Sid = d.sid,
                 Tag = d.tag,
                 SubjectUri = d.s_uri,
@@ -1299,7 +1332,12 @@ namespace Cadmus.Graph.Sql
             else query.Where("o_id", triple.ObjectId);
 
             if (triple.ObjectLiteral == null) query.WhereNull("o_lit");
-            else query.Where("o_lit", triple.ObjectLiteral);
+            else
+            {
+                query.Where("o_lit", triple.ObjectLiteral)
+                     .Where("o_lit_type", triple.LiteralType)
+                     .Where("o_lit_lang", triple.LiteralLanguage);
+            }
 
             if (triple.Sid == null) query.WhereNull("sid");
             else query.Where("sid", triple.Sid);
@@ -1333,6 +1371,10 @@ namespace Cadmus.Graph.Sql
                     p_id = triple.PredicateId,
                     o_id = triple.ObjectId == 0 ? null : (int?)triple.ObjectId,
                     o_lit = triple.ObjectLiteral,
+                    o_lit_ix = triple.ObjectLiteralIx,
+                    o_lit_type = triple.LiteralType,
+                    o_lit_lang = triple.LiteralLanguage,
+                    o_lit_n = triple.LiteralNumber,
                     sid = triple.Sid,
                     tag = triple.Tag,
                 });
@@ -1345,6 +1387,10 @@ namespace Cadmus.Graph.Sql
                     p_id = triple.PredicateId,
                     o_id = triple.ObjectId == 0 ? null : (int?)triple.ObjectId,
                     o_lit = triple.ObjectLiteral,
+                    o_lit_ix = triple.ObjectLiteralIx,
+                    o_lit_type = triple.LiteralType,
+                    o_lit_lang = triple.LiteralLanguage,
+                    o_lit_n = triple.LiteralNumber,
                     sid = triple.Sid,
                     tag = triple.Tag,
                 });

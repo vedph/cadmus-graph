@@ -7,6 +7,8 @@ using System.Text;
 using System.Linq;
 using System.Globalization;
 using Cadmus.Graph.Adapters;
+using Fusi.Text.Unicode;
+using System.Text.RegularExpressions;
 
 namespace Cadmus.Graph
 {
@@ -103,10 +105,10 @@ namespace Cadmus.Graph
 
         private string ResolveNode(string template)
         {
-            // - ?{node} or ?{node:uri} => uri
-            // - ?{node:label} => label
-            // - ?{node:sid} => sid
-            // - ?{node:src_type} => source type
+            // - {?node} or {?node:uri} => uri
+            // - {?node:label} => label
+            // - {?node:sid} => sid
+            // - {?node:src_type} => source type
             string key;
             string? prop = null;
             int i = template.LastIndexOf(':');
