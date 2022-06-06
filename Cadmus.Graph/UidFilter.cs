@@ -251,9 +251,7 @@ namespace Cadmus.Graph
                     default:
                         if (char.IsLetter(c))
                         {
-                            // TODO optimize
-                            sb.Append(char.ToLowerInvariant(
-                                _ud.Value.GetSegment(c, true)));
+                            sb.Append(char.ToLowerInvariant(GetSegment(c)));
                             break;
                         }
                         if (c >= '0' && c <= '9')
