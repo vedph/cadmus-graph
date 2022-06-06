@@ -6,19 +6,19 @@ using System.Text;
 using System.Collections.Generic;
 using System;
 using System.Linq;
-using DevLab.JmesPath;
+// using DevLab.JmesPath;
 
 namespace Cadmus.Graph.Test
 {
     public sealed class JsonNodeMapperTest
     {
-        private readonly string _json =
-            "{ \"id\": " +
-            "\"colors\", \"entries\": " +
-            "[ { \"id\": \"r\", \"value\": \"red\" }, " +
-            "{ \"id\": \"g\", \"value\": \"green\" }, " +
-            "{ \"id\": \"b\", \"value\": \"blue\" } ], " +
-            "\"size\": { \"w\": 21, \"h\": 29.7 } } ";
+        //private readonly string _json =
+        //    "{ \"id\": " +
+        //    "\"colors\", \"entries\": " +
+        //    "[ { \"id\": \"r\", \"value\": \"red\" }, " +
+        //    "{ \"id\": \"g\", \"value\": \"green\" }, " +
+        //    "{ \"id\": \"b\", \"value\": \"blue\" } ], " +
+        //    "\"size\": { \"w\": 21, \"h\": 29.7 } } ";
 
         private static Stream GetResourceStream(string name)
         {

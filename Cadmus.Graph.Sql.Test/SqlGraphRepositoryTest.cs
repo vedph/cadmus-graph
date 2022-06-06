@@ -881,7 +881,7 @@ namespace Cadmus.Graph.Sql.Test
 
             var page = repository.GetTriples(new TripleFilter
             {
-                PredicateId = 4
+                PredicateIds = new HashSet<int> { 4 }
             });
 
             Assert.Equal(1, page.Total);

@@ -326,7 +326,7 @@ namespace Cadmus.Graph.Sql
         #endregion
 
         #region Node
-        private static void ApplyNodeFilter(NodeFilter filter, Query query)
+        private static void ApplyNodeFilterBase(NodeFilterBase filter, Query query)
         {
             // uid
             if (!string.IsNullOrEmpty(filter.Uid))
@@ -361,6 +361,18 @@ namespace Cadmus.Graph.Sql
                 else query.Where("sid", filter.Sid);
             }
 
+            // class IDs
+            if (filter.ClassIds?.Count > 0)
+            {
+                query.Join("node_class AS nc", "node.id", "nc.node_id")
+                     .WhereIn("nc.class_id", filter.ClassIds);
+            }
+        }
+
+        private static void ApplyNodeFilter(NodeFilter filter, Query query)
+        {
+            ApplyNodeFilterBase(filter, query);
+
             // linked node ID and role
             if (filter.LinkedNodeId > 0)
             {
@@ -382,13 +394,6 @@ namespace Cadmus.Graph.Sql
                             $"(t.s_id=node.id AND t.o_id={filter.LinkedNodeId})"));
                         break;
                 }
-            }
-
-            // class IDs
-            if (filter.ClassIds?.Count > 0)
-            {
-                query.Join("node_class AS nc", "node.id", "nc.node_id")
-                     .WhereIn("nc.class_id", filter.ClassIds);
             }
         }
 
@@ -422,19 +427,7 @@ namespace Cadmus.Graph.Sql
                  .OrderBy("node.label", "node.id")
                  .Skip(filter.GetSkipCount()).Limit(filter.PageSize);
             List<UriNode> nodes = new();
-            foreach (var d in query.Get())
-            {
-                nodes.Add(new UriNode
-                {
-                    Id = d.id,
-                    IsClass = Convert.ToBoolean(d.is_class),
-                    Tag = d.tag,
-                    Label = d.label,
-                    SourceType = d.source_type,
-                    Sid = d.sid,
-                    Uri = d.uri
-                });
-            }
+            foreach (var d in query.Get()) nodes.Add(GetUriNode(d));
             return new DataPage<UriNode>(filter.PageNumber, filter.PageSize,
                 total, nodes);
         }
@@ -453,18 +446,7 @@ namespace Cadmus.Graph.Sql
               .Select("node.is_class", "node.tag", "node.label",
                       "node.source_type", "node.sid", "ul.uri")
               .Get().FirstOrDefault();
-            return d == null
-                ? null
-                : new UriNode
-                {
-                    Id = id,
-                    IsClass = Convert.ToBoolean(d.is_class),
-                    Tag = d.tag,
-                    Label = d.label,
-                    SourceType = d.source_type,
-                    Sid = d.sid,
-                    Uri = d.uri
-                };
+            return d == null ? null : GetUriNode(d);
         }
 
         private static UriNode? GetNodeByUri(string uri, QueryFactory qf)
@@ -475,18 +457,7 @@ namespace Cadmus.Graph.Sql
               .Select("node.id", "node.is_class", "node.tag", "node.label",
                       "node.source_type", "node.sid")
               .Get().FirstOrDefault();
-            return d == null
-                ? null
-                : new UriNode
-                {
-                    Id = d.id,
-                    IsClass = Convert.ToBoolean(d.is_class),
-                    Tag = d.tag,
-                    Label = d.label,
-                    SourceType = d.source_type,
-                    Sid = d.sid,
-                    Uri = uri
-                };
+            return d == null ? null : GetUriNode(d);
         }
 
         /// <summary>
@@ -579,10 +550,68 @@ namespace Cadmus.Graph.Sql
             using QueryFactory qf = GetQueryFactory();
             DeleteNode(id, qf);
         }
+
+        private static UriNode GetUriNode(dynamic d)
+        {
+            return new UriNode
+            {
+                Id = d.id,
+                IsClass = Convert.ToBoolean(d.is_class),
+                Tag = d.tag,
+                Label = d.label,
+                SourceType = d.source_type,
+                Sid = d.sid,
+                Uri = d.uri
+            };
+        }
+
+        /// <summary>
+        /// Gets the nodes included in a triple with a specified predicate ID,
+        /// either as its subject or as its object.
+        /// </summary>
+        /// <param name="filter">The filter.</param>
+        /// <returns>Page.</returns>
+        /// <exception cref="ArgumentNullException">filter</exception>
+        public DataPage<UriNode> GetLinkedNodes(LinkedNodeFilter filter)
+        {
+            if (filter is null) throw new ArgumentNullException(nameof(filter));
+
+            using QueryFactory qf = GetQueryFactory();
+            // nodes filtered by triple
+            var query = qf.Query("node")
+                          .Join("triple", filter.IsObject
+                            ? "triple.o_id"
+                            : "triple.s_id",
+                            "node.id");
+            // plus additional filters
+            ApplyNodeFilterBase(filter, query);
+
+            // get count and ret if no result
+            int total = query.Clone().Select("node.id")
+                             .Count<int>(new[] { "node.id" });
+            if (total == 0)
+            {
+                return new DataPage<UriNode>(
+                    filter.PageNumber, filter.PageSize, 0,
+                    Array.Empty<UriNode>());
+            }
+
+            // complete query and get page
+            query.Join("uri_lookup AS ul", "node.id", "ul.id")
+                 .Select("node.id", "node.is_class", "node.tag", "node.label",
+                         "node.source_type", "node.sid", "ul.uri")
+                 .OrderBy("node.label", "ul.uri", "node.id")
+                 .Skip(filter.GetSkipCount()).Limit(filter.PageSize);
+
+            List<UriNode> nodes = new(filter.PageSize);
+            foreach (var d in query.Get()) nodes.Add(GetUriNode(d));
+            return new DataPage<UriNode>(filter.PageNumber, filter.PageSize,
+                total, nodes);
+        }
         #endregion
 
         #region Property
-        private static void ApplyFilter(PropertyFilter filter, Query query)
+        private static void ApplyPropertyFilter(PropertyFilter filter, Query query)
         {
             if (!string.IsNullOrEmpty(filter.Uid))
                 query.WhereLike("ul.uri", "%" + filter.Uid + "%");
@@ -606,7 +635,7 @@ namespace Cadmus.Graph.Sql
             using QueryFactory qf = GetQueryFactory();
             Query query = qf.Query("property")
                         .Join("uri_lookup AS ul", "ul.id", "property.id");
-            ApplyFilter(filter, query);
+            ApplyPropertyFilter(filter, query);
 
             // get total
             int total = query.Clone().Count<int>(new[] { "property.id" });
@@ -1170,13 +1199,15 @@ namespace Cadmus.Graph.Sql
         #endregion
 
         #region Triples
-        private void ApplyFilter(TripleFilter filter, Query query)
+        private void ApplyTripleFilter(TripleFilter filter, Query query)
         {
             if (filter.SubjectId > 0)
                 query.Where("s_id", filter.SubjectId);
 
-            if (filter.PredicateId > 0)
-                query.Where("p_id", filter.PredicateId);
+            if (filter.PredicateIds?.Count > 0)
+                query.WhereIn("p_id", filter.PredicateIds);
+            if (filter.NotPredicateIds?.Count > 0)
+                query.WhereNotIn("p_id", filter.PredicateIds);
 
             if (filter.ObjectId > 0)
                 query.Where("o_id", filter.ObjectId);
@@ -1237,7 +1268,7 @@ namespace Cadmus.Graph.Sql
                 .Join("uri_lookup AS uls", "triple.s_id", "uls.id")
                 .Join("uri_lookup AS ulp", "triple.p_id", "ulp.id")
                 .LeftJoin("uri_lookup AS ulo", "triple.o_id", "ulo.id");
-            ApplyFilter(filter, query);
+            ApplyTripleFilter(filter, query);
 
             // get total
             int total = query.Clone().Count<int>(new[] { "triple.id" });
@@ -1446,6 +1477,78 @@ namespace Cadmus.Graph.Sql
         {
             using QueryFactory qf = GetQueryFactory();
             DeleteTriple(id, qf);
+        }
+
+        /// <summary>
+        /// Gets the specified page of triples variously filtered, and grouped
+        /// by their predicate.
+        /// </summary>
+        /// <param name="filter">The filter.</param>
+        /// <param name="sort">The sort order: any combination of <c>c</c>=by
+        /// count, ascending; <c>C</c>=by count, descending; <c>u</c>=by URI,
+        /// ascending; <c>U</c>=by URI, descending.</param>
+        /// <returns>Page.</returns>
+        /// <exception cref="ArgumentNullException">filter or sort</exception>
+        public DataPage<TripleGroup> GetTripleGroups(TripleFilter filter,
+            string sort = "Cu")
+        {
+            if (filter is null) throw new ArgumentNullException(nameof(filter));
+            if (sort is null) throw new ArgumentNullException(nameof(sort));
+
+            // something like:
+            // select t.p_id, ul.uri, count(t.p_id) as cnt
+            // from triple t
+            // inner join uri_lookup ul on t.p_id = ul.id
+            // group by t.p_id order by cnt desc, uri
+            using QueryFactory qf = GetQueryFactory();
+            var query = qf.Query("triple").Select("p_id");
+            ApplyTripleFilter(filter, query);
+            query.GroupBy("triple.p_id");
+
+            // get count and ret if no result
+            int total = query.Clone().Count<int>(new[] { "p_id" });
+            if (total == 0)
+            {
+                return new DataPage<TripleGroup>(
+                    filter.PageNumber, filter.PageSize, 0,
+                    Array.Empty<TripleGroup>());
+            }
+
+            // complete query and get page
+            query.Select("COUNT(p_id) AS cnt")
+                 .Select("ul.uri")
+                 .Join("uri_lookup AS ul", "p_id", "ul.id");
+            foreach (char c in sort)
+            {
+                switch (c)
+                {
+                    case 'c':
+                        query.OrderBy("cnt");
+                        break;
+                    case 'u':
+                        query.OrderBy("uri");
+                        break;
+                    case 'C':
+                        query.OrderByDesc("cnt");
+                        break;
+                    case 'U':
+                        query.OrderByDesc("uri");
+                        break;
+                }
+            }
+            query.Skip(filter.GetSkipCount()).Limit(filter.PageSize);
+            List<TripleGroup> groups = new(filter.PageSize);
+            foreach (var d in query.Get())
+            {
+                groups.Add(new TripleGroup
+                {
+                    PredicateId = d.p_id,
+                    PredicateUri = d.uri,
+                    Count = d.cnt
+                });
+            }
+            return new DataPage<TripleGroup>(filter.PageNumber, filter.PageSize,
+                total, groups);
         }
         #endregion
 

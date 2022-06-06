@@ -1,4 +1,5 @@
 ﻿using Fusi.Tools.Data;
+using System.Collections.Generic;
 
 namespace Cadmus.Graph
 {
@@ -14,9 +15,14 @@ namespace Cadmus.Graph
         public int SubjectId { get; set; }
 
         /// <summary>
-        /// Gets or sets the predicate node identifier to match.
+        /// Gets or sets the predicate node identifier which must be matched.
         /// </summary>
-        public int PredicateId { get; set; }
+        public HashSet<int>? PredicateIds { get; set; }
+
+        /// <summary>
+        /// Gets or sets the predicate node identifier which must NOT be matched.
+        /// </summary>
+        public HashSet<int>? NotPredicateIds { get; set; }
 
         /// <summary>
         /// Gets or sets the object identifier to match.

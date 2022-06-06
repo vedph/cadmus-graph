@@ -114,6 +114,15 @@ namespace Cadmus.Graph
         void DeleteNode(int id);
 
         /// <summary>
+        /// Gets the nodes included in a triple with a specified predicate ID,
+        /// either as its subject or as its object.
+        /// </summary>
+        /// <param name="filter">The filter.</param>
+        /// <returns>Page.</returns>
+        /// <exception cref="ArgumentNullException">filter</exception>
+        DataPage<UriNode> GetLinkedNodes(LinkedNodeFilter filter);
+
+        /// <summary>
         /// Gets the specified page of properties.
         /// </summary>
         /// <param name="filter">The filter.</param>
@@ -209,6 +218,19 @@ namespace Cadmus.Graph
         /// </summary>
         /// <param name="id">The identifier.</param>
         void DeleteTriple(int id);
+
+        /// <summary>
+        /// Gets the specified page of triples variously filtered, and grouped
+        /// by their predicate.
+        /// </summary>
+        /// <param name="filter">The filter.</param>
+        /// <param name="sort">The sort order: any combination of <c>c</c>=by
+        /// count, ascending; <c>C</c>=by count, descending; <c>u</c>=by URI,
+        /// ascending; <c>U</c>=by URI, descending.</param>
+        /// <returns>Page.</returns>
+        /// <exception cref="ArgumentNullException">filter or sort</exception>
+        DataPage<TripleGroup> GetTripleGroups(TripleFilter filter,
+            string sort = "Cu");
 
         /// <summary>
         /// Adds the specified thesaurus as a set of class nodes.
