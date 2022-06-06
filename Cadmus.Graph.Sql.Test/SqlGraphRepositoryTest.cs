@@ -912,7 +912,7 @@ namespace Cadmus.Graph.Sql.Test
 
             var page = repository.GetTriples(new TripleFilter
             {
-                ObjectLiteral = "^Michelangelo"
+                LiteralPattern = "^Michelangelo"
             });
 
             Assert.Equal(1, page.Total);

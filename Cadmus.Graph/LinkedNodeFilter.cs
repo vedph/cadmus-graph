@@ -7,6 +7,12 @@
     public class LinkedNodeFilter : NodeFilterBase
     {
         /// <summary>
+        /// Gets or sets the other node identifier, which is the subject node
+        /// ID when <see cref="IsObject"/> is true, otherwise the object node ID.
+        /// </summary>
+        public int OtherNodeId { get; set; }
+
+        /// <summary>
         /// Gets or sets the property identifier in the triple including the
         /// node to match, either as a subject or as an object (according to
         /// <see cref="IsObject"/>).

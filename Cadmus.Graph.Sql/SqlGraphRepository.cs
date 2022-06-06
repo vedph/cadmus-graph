@@ -566,8 +566,8 @@ namespace Cadmus.Graph.Sql
         }
 
         /// <summary>
-        /// Gets the nodes included in a triple with a specified predicate ID,
-        /// either as its subject or as its object.
+        /// Gets the nodes included in a triple with the specified predicate ID
+        /// and other node ID, either as its subject or as its object.
         /// </summary>
         /// <param name="filter">The filter.</param>
         /// <returns>Page.</returns>
@@ -579,10 +579,15 @@ namespace Cadmus.Graph.Sql
             using QueryFactory qf = GetQueryFactory();
             // nodes filtered by triple
             var query = qf.Query("node")
+                          .Where("triple.p_id", filter.PredicateId)
+                          .Where(filter.IsObject
+                            ? "triple.s_id" : "triple.o_id",
+                            filter.OtherNodeId)
                           .Join("triple", filter.IsObject
                             ? "triple.o_id"
                             : "triple.s_id",
                             "node.id");
+
             // plus additional filters
             ApplyNodeFilterBase(filter, query);
 
@@ -607,6 +612,52 @@ namespace Cadmus.Graph.Sql
             foreach (var d in query.Get()) nodes.Add(GetUriNode(d));
             return new DataPage<UriNode>(filter.PageNumber, filter.PageSize,
                 total, nodes);
+        }
+
+        /// <summary>
+        /// Gets the literals included in a triple with the specified subject ID
+        /// and predicate ID.
+        /// </summary>
+        /// <param name="filter">The filter.</param>
+        /// <returns>Page.</returns>
+        /// <exception cref="ArgumentNullException">filter</exception>
+        public DataPage<UriTriple> GetLinkedLiterals(LinkedLiteralFilter filter)
+        {
+            if (filter is null) throw new ArgumentNullException(nameof(filter));
+
+            using QueryFactory qf = GetQueryFactory();
+
+            // literals from specified predicate
+            var query = qf.Query("triple")
+                .Where("s_id", filter.SubjectId)
+                .Where("p_id", filter.PredicateId);
+
+            // plus additional filters
+            ApplyLiteralFilter(filter, query);
+
+            // get count and ret if no result
+            int total = query.Clone().Select("id").Count<int>(new[] { "id" });
+            if (total == 0)
+            {
+                return new DataPage<UriTriple>(
+                    filter.PageNumber, filter.PageSize, 0,
+                    Array.Empty<UriTriple>());
+            }
+
+            // complete query and get page
+            query.Join("uri_lookup AS uls", "triple.s_id", "uls.id")
+                 .Join("uri_lookup AS ulp", "triple.p_id", "ulp.id")
+                 .Select("triple.id", "triple.s_id", "triple.p_id", "triple.o_id",
+                         "triple.o_lit", "triple.o_lit_type", "triple.o_lit_lang",
+                         "triple.o_lit_ix", "triple.o_lit_n", "triple.sid",
+                         "triple.tag")
+                 .OrderBy("triple.o_lit_ix", "triple.id")
+                 .Skip(filter.GetSkipCount()).Limit(filter.PageSize);
+
+            List<UriTriple> triples = new(filter.PageSize);
+            foreach (var d in query.Get()) triples.Add(GetUriNode(d));
+            return new DataPage<UriTriple>(filter.PageNumber, filter.PageSize,
+                total, triples);
         }
         #endregion
 
@@ -1199,24 +1250,12 @@ namespace Cadmus.Graph.Sql
         #endregion
 
         #region Triples
-        private void ApplyTripleFilter(TripleFilter filter, Query query)
+        private void ApplyLiteralFilter(LiteralFilter filter, Query query)
         {
-            if (filter.SubjectId > 0)
-                query.Where("s_id", filter.SubjectId);
-
-            if (filter.PredicateIds?.Count > 0)
-                query.WhereIn("p_id", filter.PredicateIds);
-            if (filter.NotPredicateIds?.Count > 0)
-                query.WhereNotIn("p_id", filter.PredicateIds);
-
-            if (filter.ObjectId > 0)
-                query.Where("o_id", filter.ObjectId);
-
-            // literal
-            if (!string.IsNullOrEmpty(filter.ObjectLiteral))
+            if (!string.IsNullOrEmpty(filter.LiteralPattern))
             {
                 query.WhereRaw(SqlHelper.BuildRegexMatch("o_lit",
-                    SqlHelper.SqlEncode(filter.ObjectLiteral, false, true, false)));
+                    SqlHelper.SqlEncode(filter.LiteralPattern, false, true, false)));
             }
 
             if (!string.IsNullOrEmpty(filter.LiteralType))
@@ -1236,6 +1275,23 @@ namespace Cadmus.Graph.Sql
                 query.WhereNotNull("o_lit_n")
                      .Where("o_lit_n", "<=", filter.MaxLiteralNumber.Value);
             }
+        }
+
+        private void ApplyTripleFilter(TripleFilter filter, Query query)
+        {
+            if (filter.SubjectId > 0)
+                query.Where("s_id", filter.SubjectId);
+
+            if (filter.PredicateIds?.Count > 0)
+                query.WhereIn("p_id", filter.PredicateIds);
+            if (filter.NotPredicateIds?.Count > 0)
+                query.WhereNotIn("p_id", filter.PredicateIds);
+
+            if (filter.ObjectId > 0)
+                query.Where("o_id", filter.ObjectId);
+
+            // literal
+            ApplyLiteralFilter(filter, query);
 
             // sid
             if (!string.IsNullOrEmpty(filter.Sid))

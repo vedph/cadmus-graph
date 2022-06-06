@@ -114,13 +114,20 @@ namespace Cadmus.Graph
         void DeleteNode(int id);
 
         /// <summary>
-        /// Gets the nodes included in a triple with a specified predicate ID,
-        /// either as its subject or as its object.
+        /// Gets the nodes included in a triple with the specified predicate ID
+        /// and other node ID, either as its subject or as its object.
         /// </summary>
         /// <param name="filter">The filter.</param>
         /// <returns>Page.</returns>
-        /// <exception cref="ArgumentNullException">filter</exception>
         DataPage<UriNode> GetLinkedNodes(LinkedNodeFilter filter);
+
+        /// <summary>
+        /// Gets the literals included in a triple with the specified subject ID
+        /// and predicate ID.
+        /// </summary>
+        /// <param name="filter">The filter.</param>
+        /// <returns>Page.</returns>
+        public DataPage<UriTriple> GetLinkedLiterals(LinkedLiteralFilter filter);
 
         /// <summary>
         /// Gets the specified page of properties.
