@@ -222,6 +222,9 @@ namespace Cadmus.Graph.MySql.Test
 
         [Fact]
         public void DeleteTriple_Existing_Ok() => DoDeleteTriple_Existing_Ok();
+
+        [Fact]
+        public void GetTripleGroups_Subject_Ok() => DoGetTripleGroups_Subject_Ok();
         #endregion
 
         #region Thesaurus

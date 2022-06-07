@@ -475,7 +475,7 @@ namespace Cadmus.Graph.Sql
                       "node.source_type", "node.sid");
 
             var d = trans != null
-                ? query.Get(trans).FirstOrDefault(trans)
+                ? query.Get(trans).FirstOrDefault()
                 : query.Get().FirstOrDefault();
             return d == null ? null : GetUriNode(d);
         }
@@ -518,7 +518,7 @@ namespace Cadmus.Graph.Sql
         }
 
         private void AddNode(Node node, bool noUpdate, QueryFactory qf,
-            IDbTransaction? trans = null)
+            IDbTransaction? trans = null, bool noClasses = false)
         {
             var d = new
             {
@@ -548,8 +548,11 @@ namespace Cadmus.Graph.Sql
                 else qf.Query("node").Insert(d, trans);
             }
 
-            var asIds = GetASubIds(qf, trans);
-            UpdateNodeClasses(node.Id, asIds.Item1, asIds.Item2, qf, trans);
+            if (!noClasses)
+            {
+                var asIds = GetASubIds(qf, trans);
+                UpdateNodeClasses(node.Id, asIds.Item1, asIds.Item2, qf, trans);
+            }
         }
 
         /// <summary>
@@ -1863,7 +1866,7 @@ namespace Cadmus.Graph.Sql
                     Label = "is-a",
                     Tag = "property"
                 };
-                AddNode(a, true, qf, trans);
+                AddNode(a, true, qf, trans, true);
             }
 
             Node? sub = GetNodeByUri("rdfs:subClassOf", qf, trans);
@@ -1875,7 +1878,7 @@ namespace Cadmus.Graph.Sql
                     Label = "rdfs:subClassOf",
                     Tag = "property"
                 };
-                AddNode(sub, true, qf, trans);
+                AddNode(sub, true, qf, trans, true);
             }
             return Tuple.Create(a.Id, sub.Id);
         }

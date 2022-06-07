@@ -1039,33 +1039,40 @@ namespace Cadmus.Graph.Sql.Test
 
             // nodes
             using (Stream stream = GetResourceStream("Petrarch-n.json"))
+            using (ItemFlusher<UriNode> nodeFlusher = new(nodes =>
+                repository.ImportNodes(nodes)))
             {
-                ItemFlusher<UriNode> nodeFlusher = new(nodes =>
-                {
-                    repository.ImportNodes(nodes);
-                });
                 foreach (UriNode node in reader.ReadNodes(stream))
                     nodeFlusher.Add(node);
             }
 
             // triples
             using (Stream stream = GetResourceStream("Petrarch-t.json"))
+            using (ItemFlusher<UriTriple> tripleFlusher = new(triples =>
+                repository.ImportTriples(triples)))
             {
-                ItemFlusher<UriTriple> tripleFlusher = new(triples =>
-                {
-                    repository.ImportTriples(triples);
-                });
                 foreach (UriTriple triple in reader.ReadTriples(stream))
                     tripleFlusher.Add(triple);
             }
         }
 
-        protected void DoGetTripleGroups_Ok()
+        protected void DoGetTripleGroups_Subject_Ok()
         {
             Reset();
             IGraphRepository repository = GetRepository();
+            AddPetrarchGraph(repository);
+            // origin node
+            UriNode? petrarch = repository.GetNodeByUri("x:guys/francesco_petrarca");
+            Assert.NotNull(petrarch);
 
-            // TODO
+            DataPage<TripleGroup> page = repository.GetTripleGroups(new TripleFilter
+            {
+                SubjectId = petrarch!.Id
+            });
+
+            Assert.Equal(1, page.Total);
+            Assert.Equal("rdf:type", page.Items[0].PredicateUri);
+            Assert.Equal(1, page.Items[0].Count);
         }
         #endregion
 
