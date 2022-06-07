@@ -11,10 +11,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Assets\Petrarch-n.json" />
+    <None Remove="Assets\Petrarch-t.json" />
     <None Remove="Assets\Thesauri.json" />
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Assets\Petrarch-n.json" />
+    <EmbeddedResource Include="Assets\Petrarch-t.json" />
     <EmbeddedResource Include="Assets\Thesauri.json" />
   </ItemGroup>
 

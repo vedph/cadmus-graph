@@ -65,7 +65,7 @@ CREATE TABLE `triple` (
   `s_id` int NOT NULL,
   `p_id` int NOT NULL,
   `o_id` int DEFAULT NULL,
-  `o_lit` varchar(15000) DEFAULT NULL,
+  `o_lit` TEXT DEFAULT NULL,
   `o_lit_type` varchar(100) DEFAULT NULL,
   `o_lit_lang` varchar(10) DEFAULT NULL,
   `o_lit_ix` varchar(15000) DEFAULT NULL,

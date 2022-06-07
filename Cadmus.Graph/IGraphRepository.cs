@@ -108,6 +108,12 @@ namespace Cadmus.Graph
         void AddNode(Node node, bool noUpdate = false);
 
         /// <summary>
+        /// Bulk imports the specified nodes.
+        /// </summary>
+        /// <param name="nodes">The nodes.</param>
+        void ImportNodes(IEnumerable<UriNode> nodes);
+
+        /// <summary>
         /// Deletes the node with the specified ID.
         /// </summary>
         /// <param name="id">The node identifier.</param>
@@ -219,6 +225,12 @@ namespace Cadmus.Graph
         /// </summary>
         /// <param name="triple">The triple.</param>
         void AddTriple(Triple triple);
+
+        /// <summary>
+        /// Bulk imports the specified triples.
+        /// </summary>
+        /// <param name="triples">The triples.</param>
+        void ImportTriples(IEnumerable<UriTriple> triples);
 
         /// <summary>
         /// Deletes the triple with the specified ID.

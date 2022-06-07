@@ -267,18 +267,34 @@ namespace Cadmus.Graph.Sql
         #endregion
 
         #region URI Lookup
-        private static int AddUri(string uri, QueryFactory qf)
+        private static int AddUri(string uri, QueryFactory qf,
+            IDbTransaction? trans = null)
         {
             // if the URI already exists, just return its ID
-            int id = qf.Query("uri_lookup")
-                       .Where("uri", uri).Get<int>().FirstOrDefault();
-            if (id > 0) return id;
-
-            // else insert it
-            return qf.Query("uri_lookup").InsertGetId<int>(new
+            if (trans == null)
             {
-                uri
-            });
+                int id = qf.Query("uri_lookup")
+                           .Where("uri", uri).Get<int>().FirstOrDefault();
+                if (id > 0) return id;
+
+                // else insert it
+                return qf.Query("uri_lookup").InsertGetId<int>(new
+                {
+                    uri
+                });
+            }
+            else
+            {
+                int id = qf.Query("uri_lookup")
+                           .Where("uri", uri).Get<int>(trans).FirstOrDefault();
+                if (id > 0) return id;
+
+                // else insert it
+                return qf.Query("uri_lookup").InsertGetId<int>(new
+                {
+                    uri
+                }, trans);
+            }
         }
 
         /// <summary>
@@ -443,20 +459,24 @@ namespace Cadmus.Graph.Sql
             var d = qf.Query("node")
               .Join("uri_lookup AS ul", "node.id", "ul.id")
               .Where("node.id", id)
-              .Select("node.is_class", "node.tag", "node.label",
+              .Select("node.id", "node.is_class", "node.tag", "node.label",
                       "node.source_type", "node.sid", "ul.uri")
               .Get().FirstOrDefault();
             return d == null ? null : GetUriNode(d);
         }
 
-        private static UriNode? GetNodeByUri(string uri, QueryFactory qf)
+        private static UriNode? GetNodeByUri(string uri, QueryFactory qf,
+            IDbTransaction? trans = null)
         {
-            var d = qf.Query("node")
+            Query query = qf.Query("node")
               .Join("uri_lookup AS ul", "node.id", "ul.id")
               .Where("uri", uri)
               .Select("node.id", "node.is_class", "node.tag", "node.label",
-                      "node.source_type", "node.sid")
-              .Get().FirstOrDefault();
+                      "node.source_type", "node.sid");
+
+            var d = trans != null
+                ? query.Get(trans).FirstOrDefault(trans)
+                : query.Get().FirstOrDefault();
             return d == null ? null : GetUriNode(d);
         }
 
@@ -497,7 +517,8 @@ namespace Cadmus.Graph.Sql
             });
         }
 
-        private void AddNode(Node node, bool noUpdate, QueryFactory qf)
+        private void AddNode(Node node, bool noUpdate, QueryFactory qf,
+            IDbTransaction? trans = null)
         {
             var d = new
             {
@@ -508,22 +529,33 @@ namespace Cadmus.Graph.Sql
                 source_type = node.SourceType,
                 sid = node.Sid
             };
-            if (qf.Query("node").Where("id", node.Id).Exists())
+            if (trans == null)
             {
-                if (noUpdate) return;
-                qf.Query("node").Where("id", node.Id).Update(d);
+                if (qf.Query("node").Where("id", node.Id).Exists())
+                {
+                    if (noUpdate) return;
+                    qf.Query("node").Where("id", node.Id).Update(d);
+                }
+                else qf.Query("node").Insert(d);
             }
             else
             {
-                qf.Query("node").Insert(d);
+                if (qf.Query("node").Where("id", node.Id).Exists(trans))
+                {
+                    if (noUpdate) return;
+                    qf.Query("node").Where("id", node.Id).Update(d, trans);
+                }
+                else qf.Query("node").Insert(d, trans);
             }
 
-            var asIds = GetASubIds(qf);
-            UpdateNodeClasses(node.Id, asIds.Item1, asIds.Item2, qf);
+            var asIds = GetASubIds(qf, trans);
+            UpdateNodeClasses(node.Id, asIds.Item1, asIds.Item2, qf, trans);
         }
 
         /// <summary>
-        /// Adds or updates the specified node.
+        /// Adds or updates the specified node. Note that it is assumed that
+        /// the node's ID has been set, either because the node already exists,
+        /// or because its ID has been calculated with <see cref="AddUri(string)"/>.
         /// </summary>
         /// <param name="node">The node.</param>
         /// <param name="noUpdate">True to avoid updating an existing node.
@@ -536,6 +568,54 @@ namespace Cadmus.Graph.Sql
 
             using QueryFactory qf = GetQueryFactory();
             AddNode(node, noUpdate, qf);
+        }
+
+        private static void ImportNode(UriNode node, QueryFactory qf,
+            IDbTransaction trans, int aId, int subId)
+        {
+            var d = new
+            {
+                Id = AddUri(node.Uri!, qf, trans),
+                is_class = node.IsClass,
+                label = node.Label,
+                tag = node.Tag,
+                source_type = node.SourceType,
+                sid = node.Sid
+            };
+            qf.Query("node").Insert(d, trans);
+            UpdateNodeClasses(node.Id, aId, subId, qf, trans);
+        }
+
+        /// <summary>
+        /// Bulk imports the specified nodes. Note that here the nodes being
+        /// imported are assumed to have a URI, while their ID will be
+        /// calculated during import according to the URI value. Nodes without
+        /// URI will not be imported.
+        /// </summary>
+        /// <param name="nodes">The nodes.</param>
+        public void ImportNodes(IEnumerable<UriNode> nodes)
+        {
+            if (nodes is null) throw new ArgumentNullException(nameof(nodes));
+
+            using QueryFactory qf = GetQueryFactory();
+            IDbTransaction trans = qf.Connection.BeginTransaction();
+            try
+            {
+                var asIds = GetASubIds(qf, trans);
+
+                foreach (UriNode node in nodes)
+                {
+                    if (node.Uri != null)
+                        ImportNode(node, qf, trans, asIds.Item1, asIds.Item2);
+                }
+
+                trans.Commit();
+            }
+            catch (Exception)
+            {
+                trans.Rollback();
+                throw;
+            }
         }
 
         private static void DeleteNode(int id, QueryFactory qf) =>
@@ -1502,6 +1582,56 @@ namespace Cadmus.Graph.Sql
             AddTriple(triple, qf);
         }
 
+        /// <summary>
+        /// Bulk imports the specified triples. Note that it is assumed that
+        /// all the triple's non-literal terms have a URI; if it is missing,
+        /// the triple will not be imported. The URI is used to generate the
+        /// corresponding numeric IDs used internally.
+        /// </summary>
+        /// <param name="triples">The triples.</param>
+        public void ImportTriples(IEnumerable<UriTriple> triples)
+        {
+            if (triples is null) throw new ArgumentNullException(nameof(triples));
+
+            using QueryFactory qf = GetQueryFactory();
+            var trans = qf.Connection.BeginTransaction();
+            try
+            {
+                foreach (UriTriple triple in triples)
+                {
+                    if (triple.SubjectUri == null || triple.PredicateUri == null ||
+                        (triple.ObjectLiteral == null && triple.ObjectUri == null))
+                    {
+                        continue;
+                    }
+                    triple.SubjectId = AddUri(triple.SubjectUri, qf, trans);
+                    triple.PredicateId = AddUri(triple.PredicateUri, qf, trans);
+                    if (triple.ObjectUri != null)
+                        triple.ObjectId = AddUri(triple.ObjectUri);
+
+                    triple.Id = qf.Query("triple").InsertGetId<int>(new
+                    {
+                        s_id = triple.SubjectId,
+                        p_id = triple.PredicateId,
+                        o_id = triple.ObjectId == 0 ? null : (int?)triple.ObjectId,
+                        o_lit = triple.ObjectLiteral,
+                        o_lit_ix = triple.ObjectLiteralIx,
+                        o_lit_type = triple.LiteralType,
+                        o_lit_lang = triple.LiteralLanguage,
+                        o_lit_n = triple.LiteralNumber,
+                        sid = triple.Sid,
+                        tag = triple.Tag,
+                    }, trans);
+                }
+                trans.Commit();
+            }
+            catch (Exception)
+            {
+                trans.Rollback();
+                throw;
+            }
+        }
+
         private void DeleteTriple(int id, QueryFactory qf)
         {
             // get the triple to delete as its deletion might affect
@@ -1720,10 +1850,11 @@ namespace Cadmus.Graph.Sql
         #endregion
 
         #region Node Classes
-        private Tuple<int, int> GetASubIds(QueryFactory qf)
+        private Tuple<int, int> GetASubIds(QueryFactory qf,
+            IDbTransaction? trans = null)
         {
             // rdf:type and rdfs:subClassOf must exist
-            Node? a = GetNodeByUri("rdf:type", qf);
+            Node? a = GetNodeByUri("rdf:type", qf, trans);
             if (a == null)
             {
                 a = new Node
@@ -1732,10 +1863,10 @@ namespace Cadmus.Graph.Sql
                     Label = "is-a",
                     Tag = "property"
                 };
-                AddNode(a, true, qf);
+                AddNode(a, true, qf, trans);
             }
 
-            Node? sub = GetNodeByUri("rdfs:subClassOf", qf);
+            Node? sub = GetNodeByUri("rdfs:subClassOf", qf, trans);
             if (sub == null)
             {
                 sub = new Node
@@ -1744,14 +1875,20 @@ namespace Cadmus.Graph.Sql
                     Label = "rdfs:subClassOf",
                     Tag = "property"
                 };
-                AddNode(sub, true, qf);
+                AddNode(sub, true, qf, trans);
             }
             return Tuple.Create(a.Id, sub.Id);
         }
 
         private static void UpdateNodeClasses(int nodeId, int aId, int subId,
-            QueryFactory qf) =>
-            qf.Statement($"CALL populate_node_class({nodeId},{aId},{subId});");
+            QueryFactory qf, IDbTransaction? trans = null)
+        {
+            if (trans == null)
+                qf.Statement($"CALL populate_node_class({nodeId},{aId},{subId});");
+            else
+                qf.Statement($"CALL populate_node_class({nodeId},{aId},{subId});",
+                    trans);
+        }
 
         /// <summary>
         /// Adds the specified parameter to <paramref name="command"/>.

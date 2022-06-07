@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using Xunit;
 
 namespace Cadmus.Graph.Sql.Test
@@ -1030,6 +1031,41 @@ namespace Cadmus.Graph.Sql.Test
 
             Assert.NotNull(repository.GetTriple(1));
             Assert.Null(repository.GetTriple(2));
+        }
+
+        private static void AddPetrarchGraph(IGraphRepository repository)
+        {
+            IGraphPresetReader reader = new JsonGraphPresetReader();
+
+            // nodes
+            using (Stream stream = GetResourceStream("Petrarch-n.json"))
+            {
+                ItemFlusher<UriNode> nodeFlusher = new(nodes =>
+                {
+                    repository.ImportNodes(nodes);
+                });
+                foreach (UriNode node in reader.ReadNodes(stream))
+                    nodeFlusher.Add(node);
+            }
+
+            // triples
+            using (Stream stream = GetResourceStream("Petrarch-t.json"))
+            {
+                ItemFlusher<UriTriple> tripleFlusher = new(triples =>
+                {
+                    repository.ImportTriples(triples);
+                });
+                foreach (UriTriple triple in reader.ReadTriples(stream))
+                    tripleFlusher.Add(triple);
+            }
+        }
+
+        protected void DoGetTripleGroups_Ok()
+        {
+            Reset();
+            IGraphRepository repository = GetRepository();
+
+            // TODO
         }
         #endregion
 
