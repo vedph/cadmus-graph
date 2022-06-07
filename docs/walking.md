@@ -1,5 +1,10 @@
 # Walking Graph
 
+- [Walking Graph](#walking-graph)
+  - [Walker Filters](#walker-filters)
+    - [Filtering when Projecting Triple Groups](#filtering-when-projecting-triple-groups)
+    - [Filtering when Projecting Nodes](#filtering-when-projecting-nodes)
+
 When editing the graph, it is often useful to explore it starting from a specified node.
 
 The idea is that you start focusing on a single node, e.g. a person; and then you can virtually walk across all its links to other nodes, freely choosing one path after another. So, instead of expanding all the edges and nodes from a single node, which would quickly become messy and confusing, we are letting users pick just want they want to see.
@@ -18,7 +23,11 @@ In our example, the `rdfs:label` shape will be connected to 3 literal values, wh
 
 ![walking graph - 1](img/graph-walk-0.png)
 
+>Note: this is done via repository `GetTripleGroups`, which receives the paging, filtering, and sorting parameters, and returns the requested page with triple predicates and their totals.
+
 So, we start with a minimalist visualization, where the origin node is linked to shapes representing groups of triples linked to that node, with their count. Users can now start walking in any direction: for instance, they might choose to pick the `rdfs:label` shape linked to the origin node. This will expand that shape by connecting it to a paged and eventually further filtered set of nodes.
+
+>Note: this is done via repository `GetLinkedNodes` and `GetLinkedLiterals`.
 
 Once we have nodes, the walking process can cyclically resume from them, by focusing on each desired node in turn. Say we focus on the `rdfs:label` property groups: in this case, this expands into 3 literals, representing 3 labels attached to Petrarch in different languages:
 
@@ -43,3 +52,80 @@ So, in the end we just have 3 types of shapes in this graph:
 1. shapes representing non-literal nodes (N). These project groups of predicates from an origin node.
 2. shapes representing property groups (P), i.e. groups of links sharing the same predicate, and the same node as one of the terms of the triple, either the subject ("outbound links") or the object ("inbound links"). These project nodes from a predicate (in turn connected to another node, being either its subject or its object).
 3. shapes representing literals (L). These are terminals and do not project anything.
+
+## Walker Filters
+
+While walking, the nodes in the graph work also has handles to control paging, filtering, and sorting of triples and nodes.
+
+### Filtering when Projecting Triple Groups
+
+When projecting triple groups from an origin node, the available parameters for filtering triples vary according to the set of triples:
+
+(1a) outbound links to non-literals (`TripleFilter`):
+
+- _subject ID_: equal to the origin node for outbound links.
+- _SID_: the triple SID or SID prefix to match for further filtering.
+- _tag_: the tag to match for further filtering.
+- _predicate IDs_ whitelist and/or blacklist: optional lists of predicates IDs for further filtering.
+- _sort_: by URI and/or count, ascending or descending, in any valid combination.
+
+(1b) outbound links to literals (`TripleFilter`):
+
+- _subject ID_: as above.
+- _SID_: as above.
+- _tag_: as above.
+- _predicate IDs_ whitelist and/or blacklist: as above.
+- _sort_: as above.
+
+- _literal pattern_: an optional regular expression pattern to be matched by the literal's value.
+- _literal type_: the optional data type of the literal.
+- _literal language_: the optional language of the literal.
+- _minimum literal number_: the optional minimum numeric value of the literal.
+- _maximum literal number_: the optional maximum numeric value of the literal.
+
+(1c) inbound links (by definition there is no literal here; `TripleFilter`):
+
+- _object ID_: equal to the origin node for inbound links.
+- _SID_.
+- _tag_.
+- _predicate IDs_ whitelist and/or blacklist.
+- _sort_.
+
+### Filtering when Projecting Nodes
+
+When projecting nodes from a triples group, the available parameters for filtering nodes are:
+
+(2a) outbound group (origin node is subject), non literals (`LinkedNodeFilter`):
+
+- _other node's ID_: this is the subject node ID.
+- _predicate ID_: the predicate ID corresponding to the triples group.
+- _UID_: the optional portion of the node's UID to match.
+- _is class_: optional filter to include/exclude class nodes.
+- _tag_: the optional tag to match.
+- _label_: the optional portion of label to match.
+- _source type_: the optional source type to match.
+- _SID_: the optional node SID or SID prefix to match for further filtering.
+- _class IDs_: the optional classes IDs to match only those nodes inside any of the listed classes.
+
+(2b) outbound group (origin node is subject), literals (`LinkedLiteralFilter`):
+
+- _subject ID_: the subject ID corresponding to the origin node.
+- _predicate ID_: the predicate ID corresponding to the triples group.
+
+- _literal pattern_.
+- _literal type_.
+- _literal language_.
+- _minimum literal number_.
+- _maximum literal number_.
+
+(2c) inbound group (origin node is object; no literals involved by definition; `LinkedNodeFilter`):
+
+- _other node's ID_: this is the object node ID.
+- _predicate ID_: the predicate ID corresponding to the triples group.
+- _UID_.
+- _is class_.
+- _tag_.
+- _label_.
+- _source type_.
+- _SID_.
+- _class IDs_.
