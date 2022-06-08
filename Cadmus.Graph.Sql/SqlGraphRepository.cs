@@ -267,34 +267,33 @@ namespace Cadmus.Graph.Sql
         #endregion
 
         #region URI Lookup
-        private static int AddUri(string uri, QueryFactory qf,
-            IDbTransaction? trans = null)
+        private static Tuple<int, bool> AddUri(string uri, QueryFactory qf,
+            IDbTransaction trans)
         {
             // if the URI already exists, just return its ID
-            if (trans == null)
-            {
-                int id = qf.Query("uri_lookup")
-                           .Where("uri", uri).Get<int>().FirstOrDefault();
-                if (id > 0) return id;
+            int id = qf.Query("uri_lookup")
+                        .Where("uri", uri).Get<int>(trans).FirstOrDefault();
+            if (id > 0) return Tuple.Create(id, false);
 
-                // else insert it
-                return qf.Query("uri_lookup").InsertGetId<int>(new
-                {
-                    uri
-                });
-            }
-            else
+            // else insert it
+            return Tuple.Create(qf.Query("uri_lookup").InsertGetId<int>(new
             {
-                int id = qf.Query("uri_lookup")
-                           .Where("uri", uri).Get<int>(trans).FirstOrDefault();
-                if (id > 0) return id;
+                uri
+            }, trans), true);
+        }
 
-                // else insert it
-                return qf.Query("uri_lookup").InsertGetId<int>(new
-                {
-                    uri
-                }, trans);
-            }
+        private static int AddUri(string uri, QueryFactory qf)
+        {
+            // if the URI already exists, just return its ID
+            int id = qf.Query("uri_lookup")
+                        .Where("uri", uri).Get<int>().FirstOrDefault();
+            if (id > 0) return id;
+
+            // else insert it
+            return qf.Query("uri_lookup").InsertGetId<int>(new
+            {
+                uri
+            });
         }
 
         /// <summary>
@@ -576,17 +575,21 @@ namespace Cadmus.Graph.Sql
         private static void ImportNode(UriNode node, QueryFactory qf,
             IDbTransaction trans, int aId, int subId)
         {
-            var d = new
+            var t = AddUri(node.Uri!, qf, trans);
+            if (t.Item2)
             {
-                Id = AddUri(node.Uri!, qf, trans),
-                is_class = node.IsClass,
-                label = node.Label,
-                tag = node.Tag,
-                source_type = node.SourceType,
-                sid = node.Sid
-            };
-            qf.Query("node").Insert(d, trans);
-            UpdateNodeClasses(node.Id, aId, subId, qf, trans);
+                var d = new
+                {
+                    Id = t.Item1,
+                    is_class = node.IsClass,
+                    label = node.Label,
+                    tag = node.Tag,
+                    source_type = node.SourceType,
+                    sid = node.Sid
+                };
+                qf.Query("node").Insert(d, trans);
+                UpdateNodeClasses(node.Id, aId, subId, qf, trans);
+            }
         }
 
         /// <summary>
@@ -1362,14 +1365,24 @@ namespace Cadmus.Graph.Sql
 
         private void ApplyTripleFilter(TripleFilter filter, Query query)
         {
+            // subject
             if (filter.SubjectId > 0)
                 query.Where("s_id", filter.SubjectId);
 
+            // predicate
             if (filter.PredicateIds?.Count > 0)
                 query.WhereIn("p_id", filter.PredicateIds);
             if (filter.NotPredicateIds?.Count > 0)
                 query.WhereNotIn("p_id", filter.PredicateIds);
 
+            // has literal and object ID
+            if (filter.HasLiteralObject != null)
+            {
+                if (filter.HasLiteralObject.Value)
+                    query.WhereNull("o_id");
+                else
+                    query.WhereNotNull("o_id");
+            }
             if (filter.ObjectId > 0)
                 query.Where("o_id", filter.ObjectId);
 
@@ -1607,10 +1620,49 @@ namespace Cadmus.Graph.Sql
                     {
                         continue;
                     }
-                    triple.SubjectId = AddUri(triple.SubjectUri, qf, trans);
-                    triple.PredicateId = AddUri(triple.PredicateUri, qf, trans);
+
+                    // add subject - the node is added if not present
+                    var t = AddUri(triple.SubjectUri, qf, trans);
+                    triple.SubjectId = t.Item1;
+                    if (t.Item2)
+                    {
+                        AddNode(new Node
+                        {
+                            Id = t.Item1,
+                            Label = triple.SubjectUri,
+                            Sid = triple.Sid,
+                        }, false, qf, trans);
+                    }
+
+                    // add predicate - the node is added if not present
+                    t = AddUri(triple.PredicateUri, qf, trans);
+                    triple.PredicateId = t.Item1;
+                    if (t.Item2)
+                    {
+                        AddNode(new Node
+                        {
+                            Id = t.Item1,
+                            Label = triple.PredicateUri,
+                            Sid = triple.Sid,
+                            Tag = Node.TAG_PROPERTY
+                        }, false, qf, trans);
+                    }
+
+                    // add object if it's a node
                     if (triple.ObjectUri != null)
-                        triple.ObjectId = AddUri(triple.ObjectUri);
+                    {
+                        t = AddUri(triple.ObjectUri, qf, trans);
+                        triple.ObjectId = t.Item1;
+                        if (t.Item2)
+                        {
+                            AddNode(new Node
+                            {
+                                Id = t.Item1,
+                                Label = triple.ObjectUri,
+                                Sid = triple.Sid
+                            }, false, qf, trans);
+                        }
+                    }
 
                     triple.Id = qf.Query("triple").InsertGetId<int>(new
                     {
@@ -1704,8 +1756,8 @@ namespace Cadmus.Graph.Sql
             }
 
             // complete query and get page
-            query.Select("COUNT(p_id) AS cnt")
-                 .Select("ul.uri")
+            query.Select("ul.uri")
+                 .SelectRaw("COUNT(p_id) AS cnt")
                  .Join("uri_lookup AS ul", "p_id", "ul.id");
             foreach (char c in sort)
             {
@@ -1733,7 +1785,7 @@ namespace Cadmus.Graph.Sql
                 {
                     PredicateId = d.p_id,
                     PredicateUri = d.uri,
-                    Count = d.cnt
+                    Count = (int)d.cnt
                 });
             }
             return new DataPage<TripleGroup>(filter.PageNumber, filter.PageSize,

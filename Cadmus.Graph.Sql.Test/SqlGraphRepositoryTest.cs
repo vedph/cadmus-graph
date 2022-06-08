@@ -1056,7 +1056,7 @@ namespace Cadmus.Graph.Sql.Test
             }
         }
 
-        protected void DoGetTripleGroups_Subject_Ok()
+        protected void DoGetTripleGroups_Ok()
         {
             Reset();
             IGraphRepository repository = GetRepository();
@@ -1065,14 +1065,29 @@ namespace Cadmus.Graph.Sql.Test
             UriNode? petrarch = repository.GetNodeByUri("x:guys/francesco_petrarca");
             Assert.NotNull(petrarch);
 
+            // get outbound links
             DataPage<TripleGroup> page = repository.GetTripleGroups(new TripleFilter
             {
-                SubjectId = petrarch!.Id
+                SubjectId = petrarch!.Id,
+                HasLiteralObject = false,
             });
-
             Assert.Equal(1, page.Total);
+            // x:guys/francesco_petrarca rdf:type foaf:Person
             Assert.Equal("rdf:type", page.Items[0].PredicateUri);
             Assert.Equal(1, page.Items[0].Count);
+
+            // get inbound links
+            page = repository.GetTripleGroups(new TripleFilter
+            {
+                ObjectId = petrarch!.Id
+            });
+            Assert.Equal(2, page.Total);
+            // x:events/death crm:p98_brought_into_life x:guys/francesco_petrarca
+            Assert.Equal("crm:p93_took_out_of_existence", page.Items[0].PredicateUri);
+            Assert.Equal(1, page.Items[0].Count);
+            // x:events/birth crm:p98_brought_into_life x:guys/francesco_petrarca
+            Assert.Equal("crm:p98_brought_into_life", page.Items[1].PredicateUri);
+            Assert.Equal(1, page.Items[1].Count);
         }
         #endregion
 

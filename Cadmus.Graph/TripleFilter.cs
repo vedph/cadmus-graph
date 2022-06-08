@@ -25,6 +25,13 @@ namespace Cadmus.Graph
         public HashSet<int>? NotPredicateIds { get; set; }
 
         /// <summary>
+        /// Gets or sets a value equal to true to match only triples having
+        /// a literal object, false to match only triples having a non-literal
+        /// object, or null to disable this filter.
+        /// </summary>
+        public bool? HasLiteralObject { get; set; }
+
+        /// <summary>
         /// Gets or sets the object identifier to match.
         /// </summary>
         public int ObjectId { get; set; }
