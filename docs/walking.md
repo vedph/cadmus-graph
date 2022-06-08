@@ -42,6 +42,7 @@ Of course, in turn these nodes are connected to other nodes in the graph; but at
 This first step is shown in Figure 1:
 
 ![walking graph - 1](img/graph-walk-0.png)
+
 *Figure 1 - Walking from origin node*
 
 With relation to the origin node, the first 3 triples are outbound, while the last 2 triples are inbound:
@@ -58,6 +59,7 @@ So, we start with a minimalist visualization, where the origin node is linked to
 Say that now the user picks the `rdfs:label` shape linked to the origin node. In this case, this expands into 3 literals, representing 3 labels attached to Petrarch in different languages. The result is represented in Figure 2.
 
 ![walking graph - 2](img/graph-walk-1.png)
+
 *Figure 2 - Walking from the rdfs:label group*
 
 >Note: this is done via repository `GetLinkedNodes` and `GetLinkedLiterals`.
@@ -69,6 +71,7 @@ Once we have nodes, the walking process can cyclically resume from them, by focu
 Going on, the user now picks the `crm:P98_brought_into_life` property group, connected to the origin node as an inbound link. It projects a further node, which is the `petrarch_birth` event (Figure 3).
 
 ![walking graph - 3](img/graph-walk-2.png)
+
 *Figure 3 - Walking from the crm:P98_brought_into_life group*
 
 ## Example: Step 4
@@ -76,14 +79,16 @@ Going on, the user now picks the `crm:P98_brought_into_life` property group, con
 Again, the user picks the newly added `petrarch_birth` node. This projects another property group, corresponding to predicate `a` (Figure 4).
 
 ![walking graph - 4](img/graph-walk-3.png)
+
 *Figure 4 - Walking from the petrarch_birth node*
 
 ## Example: Step 5
 
-Finally, the user picks this newly added `a` group, which in turn projects a `crm:E67_birth` node, which is the object of the triple. In other terms, this means that the `petrarch_birth` event is classified as a birth event.
+Finally, the user picks this newly added `a` group, which in turn projects a `crm:E67_birth` node, which is the object of the triple. In other terms, this means that the `petrarch_birth` event is classified as a birth event (Figure 5).
 
 ![walking graph - 5](img/graph-walk-4.png)
-*Figure 3 - Walking from the a group of petrarch_birth node*
+
+*Figure 5 - Walking from the a group of petrarch_birth node*
 
 The example might continue indefinitely, visualizing a graph built by progressive additions, yet compact and readable thanks to paging and filtering. We are thus walking the graph piece by piece, driven only by our choices. This helps users focus on their paths, without being confused by the huge amount of other connections. Each property group shape is the handle used to further refine filtering for its projections, and for navigating across their pages.
 
