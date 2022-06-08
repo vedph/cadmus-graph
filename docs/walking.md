@@ -1,6 +1,11 @@
 # Walking Graph
 
 - [Walking Graph](#walking-graph)
+  - [Example: Step 1](#example-step-1)
+  - [Example: Step 2](#example-step-2)
+  - [Example: Step 3](#example-step-3)
+  - [Example: Step 4](#example-step-4)
+  - [Example: Step 5](#example-step-5)
   - [Walker Filters](#walker-filters)
     - [Filtering when Projecting Triple Groups](#filtering-when-projecting-triple-groups)
     - [Filtering when Projecting Nodes](#filtering-when-projecting-nodes)
@@ -11,47 +16,84 @@ The idea is that you start focusing on a single node, e.g. a person; and then yo
 
 For instance, say you start from the node representing Petrarch; you can see a list of links connected to it. As these might quickly grow, we cannot display all of them at once: it would be both confusing and slow. Rather, we adopt a filtering and paging strategy, consisting of three sets of links:
 
-- "outbound" links, i.e. triples where our chosen origin node is the _subject_ (and having a non-literal object).
-- "literal" links, i.e. triples where our chosen origin node is the subject of a triple having a _literal_ as its object.
-- "inbound" links, i.e. triples where our chosen origin node is the _object_.
+- "outbound" links: links to nodes, i.e. triples where our chosen origin node is the subject of a triple having a non-literal node as its object.
+- "literal" links (always outbound by definition): links to literals, i.e. triples where our chosen origin node is the subject of a triple having a _literal_ node as its object.
+- "inbound" links, i.e. triples where our chosen origin node is the _object_. On the other end (the subject end) we will necessarily have a non literal node.
 
 Each of these sets has its filters and paging options, so that users can further refine the visualization by removing unnecessary links and nodes.
 
-To avoid polluting the visualization and provide a visual anchor for filtering and paging, we don't directly represent links on the node; rather, we represent groups of links, each with a number equal to the count of all the links of a specific type. So, if our origin node is the subject of 3 triples with predicate equal to `rdfs:label` (and a literal object), then a single line labeled `rdfs:label` will start from that node, and end into a shape with 3 as its label. This shape represents the group of all the triples sharing the same subject and predicate, and will be part of the "outbound" links. The same will happen for all the other link sets ("inbound" and "literal").
+To avoid polluting the visualization and provide a visual anchor for filtering and paging, we don't directly represent links on the node; rather, we represent groups of links, each with a number equal to the count of all the links of a specific type.
 
-In our example, the `rdfs:label` shape will be connected to 3 literal values, which will be displayed as nodes linked to that shape. Also, the origin node happens to be the object of 2 other triples: one with predicate `crm:P98_brought_into_life` (whose subject is a birth event), and another with predicate `crm:P93_took_out_of_existence` (whose subject is a death event). This is the first outcome:
+## Example: Step 1
+
+For instance, say we have these triples connected to the origin node representing Petrarch:
+
+```turtle
+x:guys/francesco_petrarca rdfs:label "Petrarca"@ita
+x:guys/francesco_petrarca rdfs:label "Petrarch"@eng
+x:guys/francesco_petrarca rdfs:label "Petrarcha"@lat
+
+x:events/birth crm:P98_brought_into_life x:guys/francesco_petrarca
+x:events/death crm:P93_took_out_of_existence x:guys/francesco_petrarca
+```
+
+Of course, in turn these nodes are connected to other nodes in the graph; but at start we limit ourselves to the triples involving our origin node, either as a subject or as an object.
+
+This first step is shown in Figure 1:
 
 ![walking graph - 1](img/graph-walk-0.png)
+*Figure 1 - Walking from origin node*
 
->Note: this is done via repository `GetTripleGroups`, which receives the paging, filtering, and sorting parameters, and returns the requested page with triple predicates and their totals.
+With relation to the origin node, the first 3 triples are outbound, while the last 2 triples are inbound:
 
-So, we start with a minimalist visualization, where the origin node is linked to shapes representing groups of triples linked to that node, with their count. Users can now start walking in any direction: for instance, they might choose to pick the `rdfs:label` shape linked to the origin node. This will expand that shape by connecting it to a paged and eventually further filtered set of nodes.
+- the outbound triples all share the same predicate (`rdfs:label`), so we just have a single shape out of the origin node, with its count=3. Eventually, we might also want to draw these shapes proportionally to their counts.
+- the inbound triples have each one its own predicate; so we have two shapes connected to the origin node, with their count=1.
+
+>Note: getting a page of groups of triples connected to an origin node is done via repository `GetTripleGroups`, which receives the paging, filtering, and sorting parameters, and returns the requested page with triple predicates and their totals.
+
+So, we start with a minimalist visualization, where the origin node is linked to shapes representing groups of triples linked to that node, with their count. The user can now start walking in any direction.
+
+## Example: Step 2
+
+Say that now the user picks the `rdfs:label` shape linked to the origin node. In this case, this expands into 3 literals, representing 3 labels attached to Petrarch in different languages. The result is represented in Figure 2.
+
+![walking graph - 2](img/graph-walk-1.png)
+*Figure 2 - Walking from the rdfs:label group*
 
 >Note: this is done via repository `GetLinkedNodes` and `GetLinkedLiterals`.
 
-Once we have nodes, the walking process can cyclically resume from them, by focusing on each desired node in turn. Say we focus on the `rdfs:label` property groups: in this case, this expands into 3 literals, representing 3 labels attached to Petrarch in different languages:
+Once we have nodes, the walking process can cyclically resume from them, by focusing on each desired node in turn.
 
-![walking graph - 2](img/graph-walk-1.png)
+## Example: Step 3
 
-Again, let us now focus on the `crm:P98_brought_into_life` property group, connected to the origin node with an inbound link. It projects a further node, which is the `petrarch_birth` event.
+Going on, the user now picks the `crm:P98_brought_into_life` property group, connected to the origin node as an inbound link. It projects a further node, which is the `petrarch_birth` event (Figure 3).
 
 ![walking graph - 3](img/graph-walk-2.png)
+*Figure 3 - Walking from the crm:P98_brought_into_life group*
 
-Shifting the focus on it, we get another property group projected, corresponding to predicate `a`:
+## Example: Step 4
+
+Again, the user picks the newly added `petrarch_birth` node. This projects another property group, corresponding to predicate `a` (Figure 4).
 
 ![walking graph - 4](img/graph-walk-3.png)
+*Figure 4 - Walking from the petrarch_birth node*
 
-Again, let us focus on that `a` group: it projects a `crm:E67_birth` node, which is the object of the triple. In other terms, this means that the `petrarch_birth` event is classified as a birth event.
+## Example: Step 5
+
+Finally, the user picks this newly added `a` group, which in turn projects a `crm:E67_birth` node, which is the object of the triple. In other terms, this means that the `petrarch_birth` event is classified as a birth event.
 
 ![walking graph - 5](img/graph-walk-4.png)
+*Figure 3 - Walking from the a group of petrarch_birth node*
 
-As you can see, we are thus walking the graph piece by piece, driven only by our choices. This helps users focus on their paths, without being confused by the huge amount of other connections. Each property group shape is the handle used to further refine filtering for its projections, and for navigating across their pages.
+The example might continue indefinitely, visualizing a graph built by progressive additions, yet compact and readable thanks to paging and filtering. We are thus walking the graph piece by piece, driven only by our choices. This helps users focus on their paths, without being confused by the huge amount of other connections. Each property group shape is the handle used to further refine filtering for its projections, and for navigating across their pages.
 
 So, in the end we just have 3 types of shapes in this graph:
 
 1. shapes representing non-literal nodes (N). These project groups of predicates from an origin node.
 2. shapes representing property groups (P), i.e. groups of links sharing the same predicate, and the same node as one of the terms of the triple, either the subject ("outbound links") or the object ("inbound links"). These project nodes from a predicate (in turn connected to another node, being either its subject or its object).
 3. shapes representing literals (L). These are terminals and do not project anything.
+
+TODO
 
 ## Walker Filters
 
