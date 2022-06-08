@@ -1065,7 +1065,7 @@ namespace Cadmus.Graph.Sql.Test
             UriNode? petrarch = repository.GetNodeByUri("x:guys/francesco_petrarca");
             Assert.NotNull(petrarch);
 
-            // get outbound links
+            // 1) get outbound links
             DataPage<TripleGroup> page = repository.GetTripleGroups(new TripleFilter
             {
                 SubjectId = petrarch!.Id,
@@ -1076,7 +1076,7 @@ namespace Cadmus.Graph.Sql.Test
             Assert.Equal("rdf:type", page.Items[0].PredicateUri);
             Assert.Equal(1, page.Items[0].Count);
 
-            // get inbound links
+            // 2) get inbound links
             page = repository.GetTripleGroups(new TripleFilter
             {
                 ObjectId = petrarch!.Id
@@ -1088,6 +1088,17 @@ namespace Cadmus.Graph.Sql.Test
             // x:events/birth crm:p98_brought_into_life x:guys/francesco_petrarca
             Assert.Equal("crm:p98_brought_into_life", page.Items[1].PredicateUri);
             Assert.Equal(1, page.Items[1].Count);
+
+            // 3) get outbound literals
+            page = repository.GetTripleGroups(new TripleFilter
+            {
+                SubjectId = petrarch!.Id,
+                HasLiteralObject = true,
+            });
+            Assert.Equal(1, page.Total);
+            // x:guys/francesco_petrarca rdfs:label "Francesco Petrarca"@it
+            Assert.Equal("rdfs:label", page.Items[0].PredicateUri);
+            Assert.Equal(1, page.Items[0].Count);
         }
         #endregion
 

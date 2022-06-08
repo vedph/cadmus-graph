@@ -5,6 +5,12 @@
     "ObjectUri": "foaf:Person"
   },
   {
+    "SubjectUri": "x:guys/francesco_petrarca",
+    "PredicateUri": "rdfs:label",
+    "ObjectLiteral": "Francesco Petrarca",
+    "LiteralLanguage": "it"
+  },
+  {
     "SubjectUri": "x:events/birth",
     "PredicateUri": "rdf:type",
     "ObjectUri": "crm:e67_birth",
