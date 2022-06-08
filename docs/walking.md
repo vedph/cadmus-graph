@@ -67,6 +67,7 @@ When projecting triple groups from an origin node, the available parameters for 
 - _SID_: the triple SID or SID prefix to match for further filtering.
 - _tag_: the tag to match for further filtering.
 - _predicate IDs_ whitelist and/or blacklist: optional lists of predicates IDs for further filtering.
+- _has literal object_: false.
 - _sort_: by URI and/or count, ascending or descending, in any valid combination.
 
 (1b) outbound links to literals (`TripleFilter`):
@@ -75,6 +76,7 @@ When projecting triple groups from an origin node, the available parameters for 
 - _SID_: as above.
 - _tag_: as above.
 - _predicate IDs_ whitelist and/or blacklist: as above.
+- _has literal object_: true.
 - _sort_: as above.
 
 - _literal pattern_: an optional regular expression pattern to be matched by the literal's value.

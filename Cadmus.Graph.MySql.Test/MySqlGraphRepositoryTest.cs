@@ -135,6 +135,9 @@ namespace Cadmus.Graph.MySql.Test
 
         [Fact]
         public void DeleteNode_Existing_Ok() => DoDeleteNode_Existing_Ok();
+
+        [Fact]
+        public void GetLinkedNodes_Ok() => DoGetLinkedNodes_Ok();
         #endregion
 
         #region Property

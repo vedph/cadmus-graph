@@ -580,6 +580,23 @@ namespace Cadmus.Graph.Sql.Test
 
             Assert.Null(repository.GetNode(argos.Id));
         }
+
+        protected void DoGetLinkedNodes_Ok()
+        {
+            Reset();
+            IGraphRepository repository = GetRepository();
+            AddPetrarchGraph(repository);
+            // origin node
+            UriNode? petrarch = repository.GetNodeByUri("x:guys/francesco_petrarca");
+            Assert.NotNull(petrarch);
+
+            // outbound nodes
+            // TODO
+
+            // outbound literals
+            // x:guys/francesco_petrarca rdfs:label "Francesco Petrarca"
+            // TODO
+        }
         #endregion
 
         #region Property
