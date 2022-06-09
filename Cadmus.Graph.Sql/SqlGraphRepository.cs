@@ -741,7 +741,7 @@ namespace Cadmus.Graph.Sql
                  .Skip(filter.GetSkipCount()).Limit(filter.PageSize);
 
             List<UriTriple> triples = new(filter.PageSize);
-            foreach (var d in query.Get()) triples.Add(GetUriNode(d));
+            foreach (var d in query.Get()) triples.Add(GetUriTriple(d));
             return new DataPage<UriTriple>(filter.PageNumber, filter.PageSize,
                 total, triples);
         }
@@ -1404,6 +1404,27 @@ namespace Cadmus.Graph.Sql
             }
         }
 
+        private static UriTriple GetUriTriple(dynamic d)
+        {
+            return new UriTriple
+            {
+                Id = d.id,
+                SubjectId = d.s_id,
+                PredicateId = d.p_id,
+                ObjectId = d.o_id ?? 0,
+                ObjectLiteral = d.o_lit,
+                ObjectLiteralIx = d.o_lit_ix,
+                LiteralType = d.o_lit_type,
+                LiteralLanguage = d.o_lit_lang,
+                LiteralNumber = d.o_lit_n,
+                Sid = d.sid,
+                Tag = d.tag,
+                SubjectUri = d.s_uri,
+                PredicateUri = d.p_uri,
+                ObjectUri = d.o_uri
+            };
+        }
+
         /// <summary>
         /// Gets the specified page of triples.
         /// </summary>
@@ -1442,26 +1463,7 @@ namespace Cadmus.Graph.Sql
             if (filter.PageSize > 0) query.Limit(filter.PageSize);
 
             List<UriTriple> triples = new();
-            foreach (var d in query.Get())
-            {
-                triples.Add(new UriTriple
-                {
-                    Id = d.id,
-                    SubjectId = d.s_id,
-                    PredicateId = d.p_id,
-                    ObjectId = d.o_id ?? 0,
-                    ObjectLiteral = d.o_lit,
-                    ObjectLiteralIx = d.o_lit_ix,
-                    LiteralType = d.o_lit_type,
-                    LiteralLanguage = d.o_lit_lang,
-                    LiteralNumber = d.o_lit_n,
-                    Sid = d.sid,
-                    Tag = d.tag,
-                    SubjectUri = d.s_uri,
-                    PredicateUri = d.p_uri,
-                    ObjectUri = d.o_uri
-                });
-            }
+            foreach (var d in query.Get()) triples.Add(GetUriTriple(d));
             return new DataPage<UriTriple>(filter.PageNumber,
                 filter.PageSize, total, triples);
         }
@@ -1485,23 +1487,7 @@ namespace Cadmus.Graph.Sql
                 "uls.uri AS s_uri",
                 "ulp.uri AS p_uri", "ulo.uri AS o_uri")
                 .Get().FirstOrDefault();
-            return d == null ? null : new UriTriple
-            {
-                Id = id,
-                SubjectId = d.s_id,
-                PredicateId = d.p_id,
-                ObjectId = d.o_id ?? 0,
-                ObjectLiteral = d.o_lit,
-                ObjectLiteralIx = d.o_lit_ix,
-                LiteralType = d.o_lit_type,
-                LiteralLanguage = d.o_lit_lang,
-                LiteralNumber = d.o_lit_n,
-                Sid = d.sid,
-                Tag = d.tag,
-                SubjectUri = d.s_uri,
-                PredicateUri = d.p_uri,
-                ObjectUri = d.o_uri
-            };
+            return d == null ? null : GetUriTriple(d);
         }
 
         private static int FindTripleByValue(Triple triple, QueryFactory qf)

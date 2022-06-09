@@ -133,9 +133,9 @@ The filter model (`TripleFilter`) includes these properties:
 
 When walking from a property group, the group can project nodes of three types:
 
-1. **outbound** non-literals: required filters are _predicate ID_ = group's property ID; _subject ID_ = the ID of the subject node linked to this property group; _literal_ = false.
-2. **outbound** literals: required filters are _predicate ID_ = group's property ID; _subject ID_ = the ID of the subject node linked to this property group; _literal_ = true.
-3. **inbound**: required filters are _predicate ID_ = group's property ID; _object ID_ = the ID of the object node linked to this property group (literal false is implied by the fact that the nodes being fetched are subjects).
+1. **outbound** non-literals: required filters are _predicate ID_ = group's property ID; _subject ID_ = the ID of the subject node linked to this property group. The result is a page of nodes.
+2. **outbound** literals: required filters are _predicate ID_ = group's property ID; _subject ID_ = the ID of the subject node linked to this property group. The result is a page of triples.
+3. **inbound**: required filters are _predicate ID_ = group's property ID; _object ID_ = the ID of the object node linked to this property group (literal=false is implied by the fact that the nodes being fetched are subjects). The result is a page of nodes.
 
 The filter model is different:
 

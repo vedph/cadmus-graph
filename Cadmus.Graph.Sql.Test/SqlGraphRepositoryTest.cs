@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using Xunit;
 
 namespace Cadmus.Graph.Sql.Test
@@ -590,12 +589,51 @@ namespace Cadmus.Graph.Sql.Test
             UriNode? petrarch = repository.GetNodeByUri("x:guys/francesco_petrarca");
             Assert.NotNull(petrarch);
 
-            // outbound nodes
-            // TODO
+            // outbound (non-literal) nodes from property group rdf:type:
+            // - x:guys/francesco_petrarca rdf:type foaf:Person
+            // rdf:type
+            UriNode? a = repository.GetNodeByUri("rdf:type");
+            Assert.NotNull(a);
 
-            // outbound literals
-            // x:guys/francesco_petrarca rdfs:label "Francesco Petrarca"
-            // TODO
+            DataPage<UriNode> nodePage = repository.GetLinkedNodes(
+                new LinkedNodeFilter
+            {
+                PredicateId = a!.Id,
+                OtherNodeId = petrarch!.Id,
+                IsObject = true
+            });
+            Assert.Equal(1, nodePage.Total);
+            Assert.Equal("foaf:Person", nodePage.Items[0].Uri);
+
+            // outbound literals nodes from property group rdfs:label:
+            // - x:guys/francesco_petrarca rdfs:label "Francesco Petrarca"@it
+            // rdfs:label
+            UriNode? label = repository.GetNodeByUri("rdfs:label");
+            Assert.NotNull(label);
+
+            DataPage<UriTriple> triplePage = repository.GetLinkedLiterals(
+                new LinkedLiteralFilter
+            {
+                PredicateId = label!.Id,
+                SubjectId = petrarch.Id
+            });
+            Assert.Equal(1, triplePage.Total);
+            Assert.Equal("Francesco Petrarca", triplePage.Items[0].ObjectLiteral);
+
+            // inbound nodes from property group p98:
+            // - crm:P98_brought_into_life x:guys/francesco_petrarca
+            UriNode? p98 = repository.GetNodeByUri("crm:p98_brought_into_life");
+            Assert.NotNull(p98);
+
+            nodePage = repository.GetLinkedNodes(
+                new LinkedNodeFilter
+                {
+                    PredicateId = p98!.Id,
+                    OtherNodeId = petrarch!.Id,
+                    IsObject = false
+                });
+            Assert.Equal(1, nodePage.Total);
+            Assert.Equal("x:events/birth", nodePage.Items[0].Uri);
         }
         #endregion
 
