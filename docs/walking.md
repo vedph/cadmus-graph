@@ -7,8 +7,8 @@
   - [Example: Step 4](#example-step-4)
   - [Example: Step 5](#example-step-5)
   - [Walker Filters](#walker-filters)
-    - [Filtering when Projecting Triple Groups](#filtering-when-projecting-triple-groups)
-    - [Filtering when Projecting Nodes](#filtering-when-projecting-nodes)
+    - [Walking from Node](#walking-from-node)
+    - [Walking from Property Group](#walking-from-property-group)
 
 When editing the graph, it is often useful to explore it starting from a specified node.
 
@@ -98,83 +98,71 @@ So, in the end we just have 3 types of shapes in this graph:
 2. shapes representing property groups (P), i.e. groups of links sharing the same predicate, and the same node as one of the terms of the triple, either the subject ("outbound links") or the object ("inbound links"). These project nodes from a predicate (in turn connected to another node, being either its subject or its object).
 3. shapes representing literals (L). These are terminals and do not project anything.
 
-TODO
-
 ## Walker Filters
 
 While walking, the nodes in the graph work also has handles to control paging, filtering, and sorting of triples and nodes.
 
-### Filtering when Projecting Triple Groups
+There are two scenarios in walking, according to the current origin: from node, or from a properties group.
 
-When projecting triple groups from an origin node, the available parameters for filtering triples vary according to the set of triples:
+### Walking from Node
 
-(1a) outbound links to non-literals (`TripleFilter`):
+When walking from a node, the node can project property groups, either outbound (the node being the subject) or inbound (the node being the object):
 
-- _subject ID_: equal to the origin node for outbound links.
-- _SID_: the triple SID or SID prefix to match for further filtering.
-- _tag_: the tag to match for further filtering.
-- _predicate IDs_ whitelist and/or blacklist: optional lists of predicates IDs for further filtering.
-- _has literal object_: false.
-- _sort_: by URI and/or count, ascending or descending, in any valid combination.
+1. **outbound**: required filter is _subject ID_ = origin node ID.
+2. **inbound**: required filter is _object ID_ = origin node ID.
 
-(1b) outbound links to literals (`TripleFilter`):
+The filter model (`TripleFilter`) includes these properties:
 
-- _subject ID_: as above.
-- _SID_: as above.
-- _tag_: as above.
-- _predicate IDs_ whitelist and/or blacklist: as above.
-- _has literal object_: true.
-- _sort_: as above.
+- `PageNumber`
+- `PageSize`
+- `SubjectId`: equal to the origin node for outbound links.
+- `PredicateIds`: a whitelist of predicate IDs. At least 1 of these must be matched.
+- `NotPredicateIds`: a blacklist of predicate IDs. None of these must be matched.
+- `HasLiteralObject`: true to match only triples having a literal object; false for the inverse; null to match both.
+- `ObjectId`: the ID of the triple's object to match.
+- `Sid`: the SID to match.
+- `IsSidPrefix`: true to treat the SID filter as a prefix.
+- `Tag`: the tag to match (empty to match null tags, null to ignore tags in matching).
+- `LiteralPattern`: the pattern of the triple's literal object value to match.
+- `LiteralType`: the type of the triple's literal object to match.
+- `LiteralLanguage`: the language of the triple's literal object to match.
+- `MinLiteralNumber`: the minimum numeric value for a numeric literal object.
+- `MaxLiteralNumber`: the maximum numeric value for a numeric literal object.
 
-- _literal pattern_: an optional regular expression pattern to be matched by the literal's value.
-- _literal type_: the optional data type of the literal.
-- _literal language_: the optional language of the literal.
-- _minimum literal number_: the optional minimum numeric value of the literal.
-- _maximum literal number_: the optional maximum numeric value of the literal.
+### Walking from Property Group
 
-(1c) inbound links (by definition there is no literal here; `TripleFilter`):
+When walking from a property group, the group can project nodes of three types:
 
-- _object ID_: equal to the origin node for inbound links.
-- _SID_.
-- _tag_.
-- _predicate IDs_ whitelist and/or blacklist.
-- _sort_.
+1. **outbound** non-literals: required filters are _predicate ID_ = group's property ID; _subject ID_ = the ID of the subject node linked to this property group; _literal_ = false.
+2. **outbound** literals: required filters are _predicate ID_ = group's property ID; _subject ID_ = the ID of the subject node linked to this property group; _literal_ = true.
+3. **inbound**: required filters are _predicate ID_ = group's property ID; _object ID_ = the ID of the object node linked to this property group (literal false is implied by the fact that the nodes being fetched are subjects).
 
-### Filtering when Projecting Nodes
+The filter model is different:
 
-When projecting nodes from a triples group, the available parameters for filtering nodes are:
+(1) linked node (`LinkedNodeFilter`):
 
-(2a) outbound group (origin node is subject), non literals (`LinkedNodeFilter`):
+- `PageNumber`
+- `PageSize`
+- `OtherNodeId`: the other node identifier, which is the subject node ID when `IsObject` is true, otherwise the object node ID.
+- `PredicateId`: the predicate ID to match.
+- `IsObject`: true if the node to match is the object of the triple; false if it's the subject.
+- `Uid`: any portion of the node ID to match.
+- `IsClass`: true to match nodes representing classes; false to match nodes not representing classes; null to match both.
+- `Tag`: the tag to match (empty to match null tags, null to ignore tags in matching).
+- `Label`: any portion of the label to match.
+- `SourceType`: the source type to match.
+- `Sid`: the SID to match.
+- `IsSidPrefix`: true to treat the SID filter as a prefix.
+- `ClassIds`: the classes IDs to match. When specified, the node must derive either directly or indirectly from any of the classes.
 
-- _other node's ID_: this is the subject node ID.
-- _predicate ID_: the predicate ID corresponding to the triples group.
-- _UID_: the optional portion of the node's UID to match.
-- _is class_: optional filter to include/exclude class nodes.
-- _tag_: the optional tag to match.
-- _label_: the optional portion of label to match.
-- _source type_: the optional source type to match.
-- _SID_: the optional node SID or SID prefix to match for further filtering.
-- _class IDs_: the optional classes IDs to match only those nodes inside any of the listed classes.
+(2) linked literal (`LinkedLiteralFilter`):
 
-(2b) outbound group (origin node is subject), literals (`LinkedLiteralFilter`):
-
-- _subject ID_: the subject ID corresponding to the origin node.
-- _predicate ID_: the predicate ID corresponding to the triples group.
-
-- _literal pattern_.
-- _literal type_.
-- _literal language_.
-- _minimum literal number_.
-- _maximum literal number_.
-
-(2c) inbound group (origin node is object; no literals involved by definition; `LinkedNodeFilter`):
-
-- _other node's ID_: this is the object node ID.
-- _predicate ID_: the predicate ID corresponding to the triples group.
-- _UID_.
-- _is class_.
-- _tag_.
-- _label_.
-- _source type_.
-- _SID_.
-- _class IDs_.
+- `PageNumber`
+- `PageSize`
+- `SubjectId`: the subject ID in the triple including the literal to match.
+- `PredicateId`: the property identifier in the triple including the  literal to match.
+- `LiteralPattern`: the pattern of the triple's literal object value to match.
+- `LiteralType`: the type of the triple's literal object to match.
+- `LiteralLanguage`: the language of the triple's literal object to match.
+- `MinLiteralNumber`: the minimum numeric value for a numeric literal object.
+- `MaxLiteralNumber`: the maximum numeric value for a numeric literal object.

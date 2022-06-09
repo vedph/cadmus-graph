@@ -16,11 +16,13 @@ namespace Cadmus.Graph
 
         /// <summary>
         /// Gets or sets the predicate node identifier which must be matched.
+        /// At least 1 of these must match.
         /// </summary>
         public HashSet<int>? PredicateIds { get; set; }
 
         /// <summary>
         /// Gets or sets the predicate node identifier which must NOT be matched.
+        /// None of these must match.
         /// </summary>
         public HashSet<int>? NotPredicateIds { get; set; }
 
