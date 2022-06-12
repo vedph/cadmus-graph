@@ -90,6 +90,13 @@ namespace Cadmus.Graph.Api
                 WebApplication app = builder.Build();
 
                 // middleware
+                app.UseCors(builder =>
+                {
+                    // open everything, we don't care, that's a playground
+                    builder.AllowAnyOrigin()
+                           .AllowAnyMethod()
+                           .AllowAnyHeader();
+                });
                 app.UseSerilogRequestLogging();
 
                 // configure the HTTP request pipeline

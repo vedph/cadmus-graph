@@ -24,6 +24,14 @@ namespace Cadmus.Graph.Api.Controllers
             return Ok(node);
         }
 
+        [HttpGet("api/graph/nodes-by-uri")]
+        public ActionResult GetNodeByUri([FromQuery] string uri)
+        {
+            UriNode? node = _repository.GetNodeByUri(uri);
+            if (node == null) return NotFound();
+            return Ok(node);
+        }
+
         [HttpGet("api/graph/walk/triples")]
         public DataPage<TripleGroup> GetTripleGroups([FromQuery]
             TripleFilterBindingModel model)
