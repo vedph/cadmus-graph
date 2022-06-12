@@ -19,7 +19,35 @@ namespace Cadmus.Graph.Api.Services
             _serviceProvider = serviceProvider;
         }
 
+        static private Stream GetResourceStream(string name) =>
+            typeof(DatabaseSeedService).Assembly.GetManifestResourceStream(
+            "Cadmus.Graph.Api.Assets." + name)!;
+
+        private static void FillGraph(IGraphRepository repository)
+        {
+            IGraphPresetReader reader = new JsonGraphPresetReader();
+
+            // nodes
+            using (Stream stream = GetResourceStream("Petrarch-n.json"))
+            using (ItemFlusher<UriNode> nodeFlusher = new(nodes =>
+                repository.ImportNodes(nodes)))
+            {
+                foreach (UriNode node in reader.ReadNodes(stream))
+                    nodeFlusher.Add(node);
+            }
+
+            // triples
+            using (Stream stream = GetResourceStream("Petrarch-t.json"))
+            using (ItemFlusher<UriTriple> tripleFlusher = new(triples =>
+                repository.ImportTriples(triples)))
+            {
+                foreach (UriTriple triple in reader.ReadTriples(stream))
+                    tripleFlusher.Add(triple);
+            }
+        }
+
         private static void SeedGraphDatabase(
+            IGraphRepository repository,
             IConfiguration config,
             ILogger? logger)
         {
@@ -37,6 +65,9 @@ namespace Cadmus.Graph.Api.Services
             // else create and seed it
             logger?.LogInformation($"Creating database {db}");
             dbManager.CreateDatabase(db, MySqlGraphRepository.GetSchema(), null);
+
+            // fill with sample data
+            FillGraph(repository);
         }
 
         private static Task SeedGraphDatabaseAsync(IServiceProvider serviceProvider)
@@ -66,8 +97,11 @@ namespace Cadmus.Graph.Api.Services
                         .GetService<ILoggerFactory>()?
                         .CreateLogger(typeof(DatabaseSeedService));
 
+                    IGraphRepository repository =
+                        serviceProvider.GetService<IGraphRepository>()!;
+
                     Console.WriteLine("Seeding database...");
-                    SeedGraphDatabase(config, logger);
+                    SeedGraphDatabase(repository, config, logger);
                     Console.WriteLine("Seeding completed");
                     return Task.CompletedTask;
                 });

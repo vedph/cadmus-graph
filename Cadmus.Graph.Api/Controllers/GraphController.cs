@@ -28,9 +28,8 @@ namespace Cadmus.Graph.Api.Controllers
         public DataPage<TripleGroup> GetTripleGroups([FromQuery]
             TripleFilterBindingModel model)
         {
-            DataPage<TripleGroup> page = _repository.GetTripleGroups(
+            return _repository.GetTripleGroups(
                 model.ToTripleFilter(), model.Sort ?? "Cu");
-            return page;
         }
     }
 }
