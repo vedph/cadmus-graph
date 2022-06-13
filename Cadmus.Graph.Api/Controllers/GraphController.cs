@@ -39,5 +39,19 @@ namespace Cadmus.Graph.Api.Controllers
             return _repository.GetTripleGroups(
                 model.ToTripleFilter(), model.Sort ?? "Cu");
         }
+
+        [HttpGet("api/graph/walk/nodes")]
+        public DataPage<UriNode> GetLinkedNodes([FromQuery]
+            LinkedNodeFilterBindingModel model)
+        {
+            return _repository.GetLinkedNodes(model.ToLinkedNodeFilter());
+        }
+
+        [HttpGet("api/graph/walk/nodes/literal")]
+        public DataPage<UriTriple> GetLinkedLiterals([FromQuery]
+            LinkedLiteralFilterBindingModel model)
+        {
+            return _repository.GetLinkedLiterals(model.ToLinkedLiteralFilter());
+        }
     }
 }
