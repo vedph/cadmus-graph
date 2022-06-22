@@ -11,7 +11,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cadmus.Graph.Test", "Cadmus
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E3E593EC-1A3F-4BD2-9C1E-5F9022BDB9EC}"
 	ProjectSection(SolutionItems) = preProject
+		Dockerfile = Dockerfile
 		InstallToFeed.bat = InstallToFeed.bat
+		nginx.conf = nginx.conf
 		Pack.bat = Pack.bat
 		Push.bat = Push.bat
 		README.md = README.md
@@ -25,7 +27,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cadmus.Graph.MySql.Test", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cadmus.Graph.Sql.Test", "Cadmus.Graph.Sql.Test\Cadmus.Graph.Sql.Test.csproj", "{A25E37C6-7B0D-408E-8CA7-7B4524FC6D26}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cadmus.Graph.Api", "Cadmus.Graph.Api\Cadmus.Graph.Api.csproj", "{7B2EA935-26B9-4B95-93E8-2BF544BE2662}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cadmus.Graph.Api", "Cadmus.Graph.Api\Cadmus.Graph.Api.csproj", "{7B2EA935-26B9-4B95-93E8-2BF544BE2662}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
