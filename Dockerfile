@@ -14,3 +14,4 @@ WORKDIR /usr/share/nginx/html
 COPY --from=publish /app/publish/wwwroot .
 COPY nginx.conf /etc/nginx/nginx.conf
 RUN rm /etc/nginx/conf.d/default.conf
+EXPOSE 80
