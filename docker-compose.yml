@@ -1,0 +1,7 @@
+version: "3.7"
+
+services:
+  graph-demo-app:
+    image: vedph2020/cadmus-graph-demo:latest
+    ports:
+      - 8080:80

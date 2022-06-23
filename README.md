@@ -20,6 +20,14 @@ To run:
 docker run -p 8080:80 --name graphdemo vedph2020/cadmus-graph-demo:latest
 ```
 
+or just use the `docker-compose.yml` file from this solution, saving it in some folder, entering it from a terminal window, and running:
+
+```bash
+docker compose up
+```
+
+(or `docker-compose` -mind the dash- if using the old composer).
+
 ## History
 
 ### 0.0.4
