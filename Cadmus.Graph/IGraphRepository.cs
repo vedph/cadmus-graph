@@ -99,6 +99,13 @@ namespace Cadmus.Graph
         UriNode? GetNodeByUri(string uri);
 
         /// <summary>
+        /// Gets all the nodes with the specified IDs.
+        /// </summary>
+        /// <param name="ids">The nodes IDs.</param>
+        /// <returns>List of nodes (or null), one per ID.</returns>
+        IList<UriNode?> GetNodes(IList<int> ids);
+
+        /// <summary>
         /// Adds or updates the specified node.
         /// </summary>
         /// <param name="node">The node.</param>

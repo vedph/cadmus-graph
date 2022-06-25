@@ -24,6 +24,12 @@ namespace Cadmus.Graph.Api.Controllers
             return Ok(node);
         }
 
+        [HttpGet("api/graph/nodes-set")]
+        public IList<UriNode?> GetNodes([FromQuery] IList<int> ids)
+        {
+            return _repository.GetNodes(ids);
+        }
+
         [HttpGet("api/graph/nodes-by-uri")]
         public ActionResult GetNodeByUri([FromQuery] string uri)
         {

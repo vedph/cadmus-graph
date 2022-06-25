@@ -447,6 +447,17 @@ namespace Cadmus.Graph.Sql
                 total, nodes);
         }
 
+        private UriNode? GetNode(int id, QueryFactory qf)
+        {
+            var d = qf.Query("node")
+              .Join("uri_lookup AS ul", "node.id", "ul.id")
+              .Where("node.id", id)
+              .Select("node.id", "node.is_class", "node.tag", "node.label",
+                      "node.source_type", "node.sid", "ul.uri")
+              .Get().FirstOrDefault();
+            return d == null ? null : GetUriNode(d);
+        }
+
         /// <summary>
         /// Gets the node with the specified ID.
         /// </summary>
@@ -455,13 +466,7 @@ namespace Cadmus.Graph.Sql
         public UriNode? GetNode(int id)
         {
             using QueryFactory qf = GetQueryFactory();
-            var d = qf.Query("node")
-              .Join("uri_lookup AS ul", "node.id", "ul.id")
-              .Where("node.id", id)
-              .Select("node.id", "node.is_class", "node.tag", "node.label",
-                      "node.source_type", "node.sid", "ul.uri")
-              .Get().FirstOrDefault();
-            return d == null ? null : GetUriNode(d);
+            return GetNode(id, qf);
         }
 
         private static UriNode? GetNodeByUri(string uri, QueryFactory qf,
@@ -491,6 +496,21 @@ namespace Cadmus.Graph.Sql
 
             using QueryFactory qf = GetQueryFactory();
             return GetNodeByUri(uri, qf);
+        }
+
+        /// <summary>
+        /// Gets all the nodes with the specified IDs.
+        /// </summary>
+        /// <param name="ids">The nodes IDs.</param>
+        /// <returns>List of nodes (or null), one per ID.</returns>
+        public IList<UriNode?> GetNodes(IList<int> ids)
+        {
+            if (ids is null) throw new ArgumentNullException(nameof(ids));
+
+            using QueryFactory qf = GetQueryFactory();
+            List<UriNode?> nodes = new(ids.Count);
+            foreach (int id in ids) nodes.Add(GetNode(id, qf));
+            return nodes;
         }
 
         /// <summary>
