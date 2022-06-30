@@ -736,7 +736,8 @@ namespace Cadmus.Graph.Sql
             // literals from specified predicate
             var query = qf.Query("triple")
                 .Where("s_id", filter.SubjectId)
-                .Where("p_id", filter.PredicateId);
+                .Where("p_id", filter.PredicateId)
+                .WhereNull("o_id");
 
             // plus additional filters
             ApplyLiteralFilter(filter, query);
