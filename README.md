@@ -30,6 +30,8 @@ docker compose up
 
 ## History
 
+- 2022-07-11: fix missing URI in get linked literals.
+
 ### 0.0.4
 
 - 2022-05-31: refactored adapters and updated dependencies from `Cadmus` 4.0.0.

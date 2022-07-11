@@ -757,7 +757,8 @@ namespace Cadmus.Graph.Sql
                  .Select("triple.id", "triple.s_id", "triple.p_id", "triple.o_id",
                          "triple.o_lit", "triple.o_lit_type", "triple.o_lit_lang",
                          "triple.o_lit_ix", "triple.o_lit_n", "triple.sid",
-                         "triple.tag")
+                         "triple.tag",
+                         "uls.uri AS s_uri", "ulp.uri AS p_uri")
                  .OrderBy("triple.o_lit_ix", "triple.id")
                  .Skip(filter.GetSkipCount()).Limit(filter.PageSize);
 

@@ -13,49 +13,49 @@
   },
   {
     "Uri": "x:events/birth",
-    "Label": "x:events/birth",
+    "Label": "birth",
     "SourceType": 2,
     "Sid": "bdd152f1-2ae2-4189-8a4a-e3d68c6a9d7e/birth"
   },
   {
     "Uri": "x:places/arezzo",
-    "Label": "x:places/arezzo",
+    "Label": "Arezzo",
     "SourceType": 2,
     "Sid": "bdd152f1-2ae2-4189-8a4a-e3d68c6a9d7e/birth/chronotope"
   },
   {
     "Uri": "x:timespans/ts",
-    "Label": "x:timespans/ts",
+    "Label": "timespan",
     "SourceType": 2,
     "Sid": "bdd152f1-2ae2-4189-8a4a-e3d68c6a9d7e/birth/chronotope"
   },
   {
     "Uri": "x:guys/eletta_cangiani",
-    "Label": "x:guys/eletta_cangiani",
+    "Label": "Eletta Cangiani",
     "SourceType": 2,
     "Sid": "bdd152f1-2ae2-4189-8a4a-e3d68c6a9d7e/birth/related"
   },
   {
     "Uri": "x:guys/ser_petracco",
-    "Label": "x:guys/ser_petracco",
+    "Label": "Ser Petracco",
     "SourceType": 2,
     "Sid": "bdd152f1-2ae2-4189-8a4a-e3d68c6a9d7e/birth/related"
   },
   {
     "Uri": "x:events/death",
-    "Label": "x:events/death",
+    "Label": "death",
     "SourceType": 2,
     "Sid": "bdd152f1-2ae2-4189-8a4a-e3d68c6a9d7e/death"
   },
   {
     "Uri": "x:places/arqua",
-    "Label": "x:places/arqua",
+    "Label": "Arquà",
     "SourceType": 2,
     "Sid": "bdd152f1-2ae2-4189-8a4a-e3d68c6a9d7e/death/chronotope"
   },
   {
     "Uri": "x:timespans/ts#1",
-    "Label": "x:timespans/ts#1",
+    "Label": "timespan",
     "SourceType": 2,
     "Sid": "bdd152f1-2ae2-4189-8a4a-e3d68c6a9d7e/death/chronotope"
   }
