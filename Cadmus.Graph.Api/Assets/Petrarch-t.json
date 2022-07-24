@@ -128,5 +128,48 @@
     "ObjectLiteral": "1374 AD",
     "ObjectLanguage": "en",
     "Sid": "bdd152f1-2ae2-4189-8a4a-e3d68c6a9d7e/death/chronotope"
+  },
+  {
+    "SubjectUri": "x:events/meeting-petrarca-barbato-dangio",
+    "PredicateUri": "rdf:type",
+    "ObjectUri": "crm:E5_event",
+    "Sid": "bdd152f1-2ae2-4189-8a4a-e3d68c6a9d7e/meeting-petrarca-barbato-dangio"
+  },
+  {
+    "SubjectUri": "x:guys/francesco_petrarca",
+    "PredicateUri": "crm:P11i_participated_in",
+    "ObjectUri": "x:events/meeting-petrarca-barbato-dangio",
+    "Sid": "13d82c6c-655c-455a-b571-2bcae4ab48c6/meeting-petrarca-barbato-dangio"
+  },
+  {
+    "SubjectUri": "x:places/napoli",
+    "PredicateUri": "rdf:type",
+    "ObjectUri": "crm:E53_place",
+    "Sid": "13d82c6c-655c-455a-b571-2bcae4ab48c6/meeting-petrarca-barbato-dangio/chronotope"
+  },
+  {
+    "SubjectUri": "x:events/meeting-petrarca-barbato-dangio",
+    "PredicateUri": "crm:P7_took_place_at",
+    "ObjectUri": "x:places/napoli",
+    "Sid": "13d82c6c-655c-455a-b571-2bcae4ab48c6/meeting-petrarca-barbato-dangio/chronotope"
+  },
+  {
+    "SubjectUri": "x:events/meeting-petrarca-barbato-dangio",
+    "PredicateUri": "crm:P4_has_time_span",
+    "ObjectUri": "x:timespans/ts#2",
+    "Sid": "13d82c6c-655c-455a-b571-2bcae4ab48c6/meeting-petrarca-barbato-dangio/chronotope"
+  },
+  {
+    "SubjectUri": "x:timespans/ts#2",
+    "PredicateUri": "crm:P82_at_some_time_within",
+    "ObjectLiteral": "1341",
+    "LiteralType": "xs:float",
+    "Sid": "13d82c6c-655c-455a-b571-2bcae4ab48c6/meeting-petrarca-barbato-dangio/chronotope"
+  },
+  {
+    "SubjectUri": "x:timespans/ts#2",
+    "PredicateUri": "crm:p87_is_identified_by",
+    "ObjectLiteral": "1341 AD",
+    "Sid": "13d82c6c-655c-455a-b571-2bcae4ab48c6/meeting-petrarca-barbato-dangio/chronotope"
   }
 ]

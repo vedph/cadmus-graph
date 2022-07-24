@@ -1,6 +1,6 @@
 ﻿[
   {
-    "name": "birth event",
+    "name": "birth",
     "sourceType": 2,
     "facetFilter": "person",
     "partTypeFilter": "it.vedph.historical-events",
@@ -99,7 +99,7 @@
     ]
   },
   {
-    "name": "death event",
+    "name": "death",
     "sourceType": 2,
     "facetFilter": "person",
     "partTypeFilter": "it.vedph.historical-events",
@@ -155,6 +155,83 @@
           },
           {
             "name": "death event - chronotope - date",
+            "source": "date",
+            "output": {
+              "metadata": {
+                "date_value": "{!_hdate({@.} & value)}",
+                "date_text": "{!_hdate({@.} & text)}"
+              },
+              "nodes": {
+                "timespan": "x:timespans/ts"
+              },
+              "triples": [
+                "{?event} crm:P4_has_time_span {?timespan}",
+                "{?timespan} crm:P82_at_some_time_within \"{$date_value}\"^^xs:float",
+                "{?timespan} crm:P87_is_identified_by \"{$date_text}\"@en"
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "met Barbato and R.D'Angiò'",
+    "sourceType": 2,
+    "facetFilter": "person",
+    "partTypeFilter": "it.vedph.historical-events",
+    "description": "Map meeting event",
+    "source": "events[?type=='person.meeting']",
+    "output": {
+      "metadata": {
+        "eid-sid": "{$part-id}/{@eid}"
+      }
+    },
+    "children": [
+      {
+        "name": "meeting event - eid",
+        "source": "eid",
+        "sid": "{$eid-sid}",
+        "output": {
+          "nodes": {
+            "event": "x:events/{$.}"
+          },
+          "triples": [
+            "{?event} a crm:E5_Event",
+            "{$item-uri} crm:P11i_participated_in {?event}"
+          ]
+        }
+      },
+      {
+        "name": "meeting event - note",
+        "source": "note",
+        "sid": "{$eid-sid}/note",
+        "output": {
+          "nodes": {
+            "note": "x:notes/n"
+          },
+          "triples": [ "{?event} crm:P3_has_note \"{$.}\"" ]
+        }
+      },
+      {
+        "name": "meeting event - chronotope",
+        "source": "chronotope",
+        "sid": "{$eid-sid}/chronotope",
+        "children": [
+          {
+            "source": "place",
+            "output": {
+              "nodes": {
+                "place": "x:places/{@value}"
+              },
+              "triples": [
+                "{?place} a crm:E53_Place",
+                "{?event} crm:P7_took_place_at {?place}"
+              ]
+            }
+          },
+          {
+            "name": "meeting event - chronotope - date",
             "source": "date",
             "output": {
               "metadata": {

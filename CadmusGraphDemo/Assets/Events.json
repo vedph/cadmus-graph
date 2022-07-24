@@ -39,6 +39,31 @@
         }
       },
       "description": "Petrarch died in 1374 at Arquà."
+    },
+    {
+      "eid": "meeting-petrarca-barbato-dangio",
+      "type": "person.meeting",
+      "chronotope": {
+        "place": {
+          "value": "Napoli"
+        },
+        "date": {
+          "a": {
+            "value": 1341
+          }
+        }
+      },
+      "description": "Petrarch met Barbato da Sulmona and Roberto d'Angiò at Naples in 1341.",
+      "relatedEntities": [
+        {
+          "relation": "participant",
+          "id": "barbato_da_sulmona"
+        },
+        {
+          "relation": "participant",
+          "id": "roberto_dangio"
+        }
+      ]
     }
   ]
 }

@@ -58,5 +58,23 @@
     "Label": "timespan",
     "SourceType": 2,
     "Sid": "bdd152f1-2ae2-4189-8a4a-e3d68c6a9d7e/death/chronotope"
+  },
+  {
+    "Uri": "x:events/meeting-petrarca-barbato-dangio",
+    "Label": "meeting",
+    "SourceType": 2,
+    "Sid": "bdd152f1-2ae2-4189-8a4a-e3d68c6a9d7e/meeting-petrarca-barbato-dangio"
+  },
+  {
+    "Uri": "x:places/napoli",
+    "Label": "Napoli",
+    "SourceType": 2,
+    "Sid": "bdd152f1-2ae2-4189-8a4a-e3d68c6a9d7e/meeting-petrarca-barbato-dangio/chronotope"
+  },
+  {
+    "Uri": "x:timespans/ts#2",
+    "Label": "timespan",
+    "SourceType": 2,
+    "Sid": "bdd152f1-2ae2-4189-8a4a-e3d68c6a9d7e/meeting-petrarca-barbato-dangio/chronotope"
   }
 ]
