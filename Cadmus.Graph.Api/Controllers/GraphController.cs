@@ -16,6 +16,13 @@ namespace Cadmus.Graph.Api.Controllers
                 ?? throw new ArgumentNullException(nameof(repository));
         }
 
+        [HttpGet("api/graph/nodes")]
+        public DataPage<UriNode> GetNodes([FromQuery]
+            NodeFilterBindingModel model)
+        {
+            return _repository.GetNodes(model.ToNodeFilter());
+        }
+
         [HttpGet("api/graph/nodes/{id}", Name = "GetNode")]
         public ActionResult GetNode([FromRoute] int id)
         {
@@ -25,7 +32,7 @@ namespace Cadmus.Graph.Api.Controllers
         }
 
         [HttpGet("api/graph/nodes-set")]
-        public IList<UriNode?> GetNodes([FromQuery] IList<int> ids)
+        public IList<UriNode?> GetNodeSet([FromQuery] IList<int> ids)
         {
             return _repository.GetNodes(ids);
         }
