@@ -63,11 +63,15 @@ docker compose -f docker-compose-api.yml up
 
 ### API History
 
+- 2022-08-04: updated packages.
+
 #### 0.0.1
 
 - 2022-07-29: first image for testing.
 
 ### Demo History
+
+- 2022-08-04: updated packages.
 
 #### 0.0.4
 
