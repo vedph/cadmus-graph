@@ -73,6 +73,10 @@ docker compose -f docker-compose-api.yml up
 
 - 2022-08-04: updated packages.
 
+#### 0.0.5
+
+- 2022-08-14: updated packages.
+
 #### 0.0.4
 
 - 2022-05-31: refactored adapters and updated dependencies from `Cadmus` 4.0.0.
