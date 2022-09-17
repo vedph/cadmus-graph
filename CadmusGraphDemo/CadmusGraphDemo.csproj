@@ -4,9 +4,9 @@
     <TargetFramework>net6.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Version>0.0.5</Version>
-    <FileVersion>0.0.5</FileVersion>
-    <AssemblyVersion>0.0.5</AssemblyVersion>
+    <Version>0.0.6</Version>
+    <FileVersion>0.0.6</FileVersion>
+    <AssemblyVersion>0.0.6</AssemblyVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,8 +20,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.8" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.8" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.9" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.9" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>
