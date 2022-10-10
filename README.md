@@ -58,6 +58,9 @@ docker compose -f docker-compose-api.yml up
 
 ## History
 
+### 0.0.8
+
+- 2022-10-10: updated packages.
 - 2022-10-03: updated packages.
 - 2022-09-17: updated packages.
 - 2022-07-28: added get nodes endpoint to API.
