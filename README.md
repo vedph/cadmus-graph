@@ -5,10 +5,14 @@
     - [Demo](#demo)
     - [API](#api)
   - [History](#history)
+    - [0.0.9](#009)
+    - [0.0.8](#008)
     - [API History](#api-history)
-    - [Demo History](#demo-history)
-      - [0.0.4](#004)
       - [0.0.1](#001)
+    - [Demo History](#demo-history)
+      - [0.0.5](#005)
+      - [0.0.4](#004)
+      - [0.0.1](#001-1)
 
 This library represents a enhanced graph mapping tool for Cadmus, bypassing pins and directly using JSON-encoded objects, whatever their type.
 
@@ -58,6 +62,9 @@ docker compose -f docker-compose-api.yml up
 
 ## History
 
+### 0.0.9
+
+- 2022-11-03: updated packages.
 - 2022-10-14: updated packages.
 
 ### 0.0.8

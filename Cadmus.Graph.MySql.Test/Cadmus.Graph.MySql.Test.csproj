@@ -5,9 +5,9 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
-    <Version>0.0.8</Version>
-    <FileVersion>0.0.8</FileVersion>
-    <AssemblyVersion>0.0.8</AssemblyVersion>
+    <Version>0.0.9</Version>
+    <FileVersion>0.0.9</FileVersion>
+    <AssemblyVersion>0.0.9</AssemblyVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -28,7 +28,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="coverlet.collector" Version="3.1.2">
+    <PackageReference Include="coverlet.collector" Version="3.2.0">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
