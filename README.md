@@ -62,6 +62,10 @@ docker compose -f docker-compose-api.yml up
 
 ## History
 
+### 0.1.0
+
+- 2022-11-04: updated packages (nullability enabled in Cadmus core).
+
 ### 0.0.9
 
 - 2022-11-03: updated packages.

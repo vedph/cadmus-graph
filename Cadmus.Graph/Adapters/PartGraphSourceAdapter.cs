@@ -46,7 +46,7 @@ namespace Cadmus.Graph.Adapters
             metadata[M_PART_ID] = part.Id;
             metadata[ItemGraphSourceAdapter.M_ITEM_ID] = part.ItemId;
             metadata[M_PART_TYPE_ID] = part.TypeId;
-            metadata[M_PART_ROLE_ID] = part.RoleId;
+            if (part.RoleId != null) metadata[M_PART_ROLE_ID] = part.RoleId;
 
             return part;
         }
