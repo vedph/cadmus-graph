@@ -1,7 +1,15 @@
 ﻿using Cadmus.Graph.MySql;
 using Fusi.DbManager.MySql;
+using Microsoft.Extensions.Configuration;
 using Polly;
+using System;
 using System.Data.Common;
+using System.Threading.Tasks;
+using System.IO;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
+using System.Threading;
 
 namespace Cadmus.Graph.Api.Services
 {
@@ -52,13 +60,13 @@ namespace Cadmus.Graph.Api.Services
             ILogger? logger)
         {
             // nope if database exists
-            string cst = config.GetConnectionString("Template");
-            string db = config.GetValue<string>("DatabaseName");
+            string cst = config.GetConnectionString("Template")!;
+            string db = config.GetValue<string>("DatabaseName")!;
 
             MySqlDbManager dbManager = new(cst);
             if (dbManager.Exists(db))
             {
-                logger?.LogInformation($"Database {db} exists");
+                logger?.LogInformation("Database {DatabaseName} exists", db);
                 return;
             }
 

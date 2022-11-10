@@ -6,12 +6,11 @@ using System.Collections;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Hosting;
 using Serilog;
-using System.Diagnostics;
 using Microsoft.Extensions.Hosting;
-using Serilog.Events;
 using Cadmus.Graph.Api.Services;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Cadmus.Graph.Api
 {
@@ -56,8 +55,8 @@ namespace Cadmus.Graph.Api
                 // add services to the container
                 builder.Services.AddScoped<IGraphRepository>(provider =>
                 {
-                    var config = provider.GetService<IConfiguration>();
-                    string cst = config.GetConnectionString("Template");
+                    var config = provider.GetService<IConfiguration>()!;
+                    string cst = config.GetConnectionString("Template")!;
                     var repository = new MySqlGraphRepository();
                     repository.Configure(new SqlOptions
                     {

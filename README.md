@@ -62,6 +62,10 @@ docker compose -f docker-compose-api.yml up
 
 ## History
 
+### 1.0.0
+
+- 2022-11-10: upgraded to NET 7.
+
 ### 0.1.1
 
 - 2022-11-04: updated packages.
