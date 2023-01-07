@@ -12,7 +12,7 @@ namespace Cadmus.Graph.Macros
     /// Historical date macro. This parses a <see cref="HistoricalDate"/> from
     /// the received context, and returns either its sort value or its textual
     /// representation.
-    /// <para>Tag: node-mapping-macro.historical-date.</para>
+    /// <para>Tag: node-mapping-macro.historical-date</para>.
     /// </summary>
     [Tag("node-mapping-macro.historical-date")]
     public sealed class HistoricalDateMacro : INodeMappingMacro

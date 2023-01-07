@@ -159,7 +159,7 @@ Expressions select data from the source. The syntax of an expression depends on 
 
 Currently the only implementation is JSON-based, so expressions are [JMES paths](https://jmespath.org/). This is a very powerful selection and transformation language, which should cover most of the mapping requirements.
 
-For instance, say you are mapping an event object having an `eid` property equal to some string: you can select the value of this string with the placeholder `@{eid}`.
+For instance, say you are mapping an event object having an `eid` property equal to some string: you can select the value of this string with the placeholder `{@eid}`.
 
 ### Node Keys (?)
 

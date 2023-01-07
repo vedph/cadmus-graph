@@ -2,7 +2,7 @@
 
 To allow for more generic reuse, the [mappings](mappings.md) used to project data on the semantic graph are designed to be weakly coupled to the type of their source objects.
 
-For this reason, a layer is added between source objects and mappings, in the form of adapters. A graph source adapter is a component implementing an interface (`IGraphSourceAdapter`), which dictates that the component must have a function receiving an item or a part, together with a dictionary of metadata; and emitting an object (or null) adapted to the plugged into the mapping process.
+For this reason, a layer is added between source objects and mappings, in the form of adapters. A graph source adapter is a component implementing an interface (`IGraphSourceAdapter`), which dictates that the component must have a function receiving an item or a part, together with a dictionary of metadata; and emitting an object (or null) adapted to be plugged into the mapping process.
 
 Currently, the implementation of the adapter layer is limited to the components required by a JSON-based mapper; this is a very general scenario, where any type of object, serialized as JSON, gets mapped into a set of nodes and/or triples. So, this should cover the majority of usage cases.
 
