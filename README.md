@@ -5,6 +5,11 @@
     - [Demo](#demo)
     - [API](#api)
   - [History](#history)
+    - [2.0.2](#202)
+    - [1.0.1](#101)
+    - [1.0.0](#100)
+    - [0.1.1](#011)
+    - [0.1.0](#010)
     - [0.0.9](#009)
     - [0.0.8](#008)
     - [API History](#api-history)
@@ -17,6 +22,8 @@
 This library represents a enhanced graph mapping tool for Cadmus, bypassing pins and directly using JSON-encoded objects, whatever their type.
 
 For more information see the [documentation](docs/index.md) (still incomplete).
+
+👀 [Cadmus Page](https://myrmex.github.io/overview/cadmus/)
 
 ## Docker
 
