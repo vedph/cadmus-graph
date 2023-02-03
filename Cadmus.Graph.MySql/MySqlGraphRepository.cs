@@ -1,5 +1,5 @@
 ﻿using Cadmus.Graph.Sql;
-using Fusi.Tools.Config;
+using Fusi.Tools.Configuration;
 using MySql.Data.MySqlClient;
 using SqlKata.Compilers;
 using System.Data;

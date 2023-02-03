@@ -1,6 +1,6 @@
 ﻿using Cadmus.Graph.Adapters;
 using Fusi.Antiquity.Chronology;
-using Fusi.Tools.Config;
+using Fusi.Tools.Configuration;
 using System;
 using System.Diagnostics;
 using System.Globalization;

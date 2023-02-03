@@ -1,7 +1,7 @@
 ﻿using Cadmus.Core.Config;
 using Cadmus.Index.Sql;
 using Fusi.Tools;
-using Fusi.Tools.Config;
+using Fusi.Tools.Configuration;
 using Fusi.Tools.Data;
 using Microsoft.Extensions.Caching.Memory;
 using SqlKata;

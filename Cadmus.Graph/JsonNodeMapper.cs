@@ -1,4 +1,4 @@
-﻿using Fusi.Tools.Config;
+﻿using Fusi.Tools.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Text.Json;
