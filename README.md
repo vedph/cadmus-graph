@@ -58,7 +58,7 @@ docker compose up
 To **build** the image:
 
 ```bash
-docker build . -f Dockerfile-api -t vedph2020/cadmus-graph-api:0.0.1 -t vedph2020/cadmus-graph-api:latest
+docker build . -f Dockerfile-api -t vedph2020/cadmus-graph-api:0.1.0 -t vedph2020/cadmus-graph-api:latest
 ```
 
 To **run** the API, use the `docker-compose-api.yml` file as explained above. Please notice that you either have to rename it as `docker-compose.yml`, or use the `-f FileName` option like this:
