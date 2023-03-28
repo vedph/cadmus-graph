@@ -8,92 +8,91 @@ using System;
 using System.Linq;
 // using DevLab.JmesPath;
 
-namespace Cadmus.Graph.Test
+namespace Cadmus.Graph.Test;
+
+public sealed class JsonNodeMapperTest
 {
-    public sealed class JsonNodeMapperTest
+    //private readonly string _json =
+    //    "{ \"id\": " +
+    //    "\"colors\", \"entries\": " +
+    //    "[ { \"id\": \"r\", \"value\": \"red\" }, " +
+    //    "{ \"id\": \"g\", \"value\": \"green\" }, " +
+    //    "{ \"id\": \"b\", \"value\": \"blue\" } ], " +
+    //    "\"size\": { \"w\": 21, \"h\": 29.7 } } ";
+
+    private static Stream GetResourceStream(string name)
     {
-        //private readonly string _json =
-        //    "{ \"id\": " +
-        //    "\"colors\", \"entries\": " +
-        //    "[ { \"id\": \"r\", \"value\": \"red\" }, " +
-        //    "{ \"id\": \"g\", \"value\": \"green\" }, " +
-        //    "{ \"id\": \"b\", \"value\": \"blue\" } ], " +
-        //    "\"size\": { \"w\": 21, \"h\": 29.7 } } ";
+        return Assembly.GetExecutingAssembly()!
+            .GetManifestResourceStream($"Cadmus.Graph.Test.Assets.{name}")!;
+    }
 
-        private static Stream GetResourceStream(string name)
+    private static string LoadResourceText(string name)
+    {
+        using StreamReader reader = new(GetResourceStream(name),
+            Encoding.UTF8);
+        return reader.ReadToEnd();
+    }
+
+    private static IList<NodeMapping> LoadMappings(string name)
+    {
+        using StreamReader reader = new(GetResourceStream(name),
+            Encoding.UTF8);
+
+        JsonSerializerOptions options = new()
         {
-            return Assembly.GetExecutingAssembly()!
-                .GetManifestResourceStream($"Cadmus.Graph.Test.Assets.{name}")!;
-        }
+            AllowTrailingCommas = true,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            PropertyNameCaseInsensitive = true
+        };
+        options.Converters.Add(new NodeMappingOutputJsonConverter());
 
-        private static string LoadResourceText(string name)
-        {
-            using StreamReader reader = new(GetResourceStream(name),
-                Encoding.UTF8);
-            return reader.ReadToEnd();
-        }
+        return JsonSerializer.Deserialize<IList<NodeMapping>>(reader.ReadToEnd(),
+            options) ?? Array.Empty<NodeMapping>();
+    }
 
-        private static IList<NodeMapping> LoadMappings(string name)
-        {
-            using StreamReader reader = new(GetResourceStream(name),
-                Encoding.UTF8);
+    private static void ResetMapperMetadata(INodeMapper mapper)
+    {
+        mapper.Data.Clear();
 
-            JsonSerializerOptions options = new()
-            {
-                AllowTrailingCommas = true,
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                PropertyNameCaseInsensitive = true
-            };
-            options.Converters.Add(new NodeMappingOutputJsonConverter());
+        // mock metadata from item
+        mapper.Data["item-id"] = Guid.NewGuid().ToString();
+        mapper.Data["item-uri"] = "x:items/my-item";
+        mapper.Data["item-label"] = "Petrarch";
+        mapper.Data["group-id"] = "group";
+        mapper.Data["facet-id"] = "facet";
+        mapper.Data["flags"] = "3";
+        // mock metada from part
+        mapper.Data["part-id"] = Guid.NewGuid().ToString();
+    }
 
-            return JsonSerializer.Deserialize<IList<NodeMapping>>(reader.ReadToEnd(),
-                options) ?? Array.Empty<NodeMapping>();
-        }
+    [Fact]
+    public void Map_Birth()
+    {
+        // @@
+        //JmesPath jmes = new();
+        //string r = jmes.Transform(_json, "id");
+        //r = jmes.Transform(_json, "entries");
+        //r = jmes.Transform(_json, "entries[0].id");
+        //r = jmes.Transform(_json, "size");
+        //r = jmes.Transform(_json, "size.h");
+        //r = jmes.Transform(_json, "x");
+        // @@
 
-        private static void ResetMapperMetadata(INodeMapper mapper)
-        {
-            mapper.Data.Clear();
+        NodeMapping mapping = LoadMappings("Mappings.json")
+            .First(m => m.Name == "birth event");
+        GraphSet set = new();
 
-            // mock metadata from item
-            mapper.Data["item-id"] = Guid.NewGuid().ToString();
-            mapper.Data["item-uri"] = "x:items/my-item";
-            mapper.Data["item-label"] = "Petrarch";
-            mapper.Data["group-id"] = "group";
-            mapper.Data["facet-id"] = "facet";
-            mapper.Data["flags"] = "3";
-            // mock metada from part
-            mapper.Data["part-id"] = Guid.NewGuid().ToString();
-        }
+        JsonNodeMapper mapper = new();
+        ResetMapperMetadata(mapper);
+        string json = LoadResourceText("Events.json");
+        mapper.Map(json, mapping, set);
 
-        [Fact]
-        public void Map_Birth()
-        {
-            // @@
-            //JmesPath jmes = new();
-            //string r = jmes.Transform(_json, "id");
-            //r = jmes.Transform(_json, "entries");
-            //r = jmes.Transform(_json, "entries[0].id");
-            //r = jmes.Transform(_json, "size");
-            //r = jmes.Transform(_json, "size.h");
-            //r = jmes.Transform(_json, "x");
-            // @@
+        // TODO add assertions like:
+        Assert.Equal(5, set.Nodes.Count);
+        Assert.Equal(9, set.Triples.Count);
 
-            NodeMapping mapping = LoadMappings("Mappings.json")
-                .First(m => m.Name == "birth event");
-            GraphSet set = new();
-
-            JsonNodeMapper mapper = new();
-            ResetMapperMetadata(mapper);
-            string json = LoadResourceText("Events.json");
-            mapper.Map(json, mapping, set);
-
-            // TODO add assertions like:
-            Assert.Equal(5, set.Nodes.Count);
-            Assert.Equal(9, set.Triples.Count);
-
-            //JmesPath jmes = new();
-            //string? x = jmes.Transform(_json, "id");
-            //JsonDocument doc = JsonDocument.Parse(x);
-        }
+        //JmesPath jmes = new();
+        //string? x = jmes.Transform(_json, "id");
+        //JsonDocument doc = JsonDocument.Parse(x);
     }
 }

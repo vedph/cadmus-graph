@@ -11,132 +11,131 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using System.Threading;
 
-namespace Cadmus.Graph.Api.Services
+namespace Cadmus.Graph.Api.Services;
+
+/// <summary>
+/// Database seed service.
+/// See https://andrewlock.net/running-async-tasks-on-app-startup-in-asp-net-core-3.
+/// </summary>
+/// <seealso cref="IHostedService" />
+public sealed class DatabaseSeedService : IHostedService
 {
-    /// <summary>
-    /// Database seed service.
-    /// See https://andrewlock.net/running-async-tasks-on-app-startup-in-asp-net-core-3.
-    /// </summary>
-    /// <seealso cref="IHostedService" />
-    public sealed class DatabaseSeedService : IHostedService
+    private readonly IServiceProvider _serviceProvider;
+
+    public DatabaseSeedService(IServiceProvider serviceProvider)
     {
-        private readonly IServiceProvider _serviceProvider;
+        _serviceProvider = serviceProvider;
+    }
 
-        public DatabaseSeedService(IServiceProvider serviceProvider)
+    static private Stream GetResourceStream(string name) =>
+        typeof(DatabaseSeedService).Assembly.GetManifestResourceStream(
+        "Cadmus.Graph.Api.Assets." + name)!;
+
+    private static void FillGraph(IGraphRepository repository)
+    {
+        IGraphPresetReader reader = new JsonGraphPresetReader();
+
+        // nodes
+        using (Stream stream = GetResourceStream("Petrarch-n.json"))
+        using (ItemFlusher<UriNode> nodeFlusher = new(nodes =>
+            repository.ImportNodes(nodes)))
         {
-            _serviceProvider = serviceProvider;
+            foreach (UriNode node in reader.ReadNodes(stream))
+                nodeFlusher.Add(node);
         }
 
-        static private Stream GetResourceStream(string name) =>
-            typeof(DatabaseSeedService).Assembly.GetManifestResourceStream(
-            "Cadmus.Graph.Api.Assets." + name)!;
-
-        private static void FillGraph(IGraphRepository repository)
+        // triples
+        using (Stream stream = GetResourceStream("Petrarch-t.json"))
+        using (ItemFlusher<UriTriple> tripleFlusher = new(triples =>
+            repository.ImportTriples(triples)))
         {
-            IGraphPresetReader reader = new JsonGraphPresetReader();
+            foreach (UriTriple triple in reader.ReadTriples(stream))
+                tripleFlusher.Add(triple);
+        }
+    }
 
-            // nodes
-            using (Stream stream = GetResourceStream("Petrarch-n.json"))
-            using (ItemFlusher<UriNode> nodeFlusher = new(nodes =>
-                repository.ImportNodes(nodes)))
-            {
-                foreach (UriNode node in reader.ReadNodes(stream))
-                    nodeFlusher.Add(node);
-            }
+    private static void SeedGraphDatabase(
+        IGraphRepository repository,
+        IConfiguration config,
+        ILogger? logger)
+    {
+        // nope if database exists
+        string cst = config.GetConnectionString("Template")!;
+        string db = config.GetValue<string>("DatabaseName")!;
 
-            // triples
-            using (Stream stream = GetResourceStream("Petrarch-t.json"))
-            using (ItemFlusher<UriTriple> tripleFlusher = new(triples =>
-                repository.ImportTriples(triples)))
-            {
-                foreach (UriTriple triple in reader.ReadTriples(stream))
-                    tripleFlusher.Add(triple);
-            }
+        MySqlDbManager dbManager = new(cst);
+        if (dbManager.Exists(db))
+        {
+            logger?.LogInformation("Database {DatabaseName} exists", db);
+            return;
         }
 
-        private static void SeedGraphDatabase(
-            IGraphRepository repository,
-            IConfiguration config,
-            ILogger? logger)
-        {
-            // nope if database exists
-            string cst = config.GetConnectionString("Template")!;
-            string db = config.GetValue<string>("DatabaseName")!;
+        // else create and seed it
+        logger?.LogInformation($"Creating database {db}");
+        dbManager.CreateDatabase(db, MySqlGraphRepository.GetSchema(), null);
 
-            MySqlDbManager dbManager = new(cst);
-            if (dbManager.Exists(db))
+        // fill with sample data
+        FillGraph(repository);
+    }
+
+    private static Task SeedGraphDatabaseAsync(IServiceProvider serviceProvider)
+    {
+        return Policy.Handle<DbException>()
+            .WaitAndRetry(new[]
             {
-                logger?.LogInformation("Database {DatabaseName} exists", db);
-                return;
-            }
-
-            // else create and seed it
-            logger?.LogInformation($"Creating database {db}");
-            dbManager.CreateDatabase(db, MySqlGraphRepository.GetSchema(), null);
-
-            // fill with sample data
-            FillGraph(repository);
-        }
-
-        private static Task SeedGraphDatabaseAsync(IServiceProvider serviceProvider)
-        {
-            return Policy.Handle<DbException>()
-                .WaitAndRetry(new[]
-                {
-                    TimeSpan.FromSeconds(10),
-                    TimeSpan.FromSeconds(30),
-                    TimeSpan.FromSeconds(60)
-                }, (exception, timeSpan, _) =>
-                {
-                    ILogger? logger = serviceProvider
-                        .GetService<ILoggerFactory>()?
-                        .CreateLogger(typeof(DatabaseSeedService));
-
-                    string message = "Unable to connect to DB" +
-                        $" (sleep {timeSpan}): {exception.Message}";
-                    Console.WriteLine(message);
-                    logger?.LogError(exception, message);
-                }).Execute(() =>
-                {
-                    IConfiguration config =
-                        serviceProvider.GetService<IConfiguration>()!;
-
-                    ILogger? logger = serviceProvider
-                        .GetService<ILoggerFactory>()?
-                        .CreateLogger(typeof(DatabaseSeedService));
-
-                    IGraphRepository repository =
-                        serviceProvider.GetService<IGraphRepository>()!;
-
-                    Console.WriteLine("Seeding database...");
-                    SeedGraphDatabase(repository, config, logger);
-                    Console.WriteLine("Seeding completed");
-                    return Task.CompletedTask;
-                });
-        }
-
-        public async Task StartAsync(CancellationToken cancellationToken)
-        {
-            using var scope = _serviceProvider.CreateScope();
-            IServiceProvider serviceProvider = scope.ServiceProvider;
-
-            try
+                TimeSpan.FromSeconds(10),
+                TimeSpan.FromSeconds(30),
+                TimeSpan.FromSeconds(60)
+            }, (exception, timeSpan, _) =>
             {
-                await SeedGraphDatabaseAsync(serviceProvider);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.ToString());
-                ILogger? logger = serviceProvider.GetService<ILoggerFactory>()!
+                ILogger? logger = serviceProvider
+                    .GetService<ILoggerFactory>()?
                     .CreateLogger(typeof(DatabaseSeedService));
-                logger.LogError(ex, ex.Message);
-                throw;
-            }
-        }
 
-        public Task StopAsync(CancellationToken cancellationToken)
+                string message = "Unable to connect to DB" +
+                    $" (sleep {timeSpan}): {exception.Message}";
+                Console.WriteLine(message);
+                logger?.LogError(exception, message);
+            }).Execute(() =>
+            {
+                IConfiguration config =
+                    serviceProvider.GetService<IConfiguration>()!;
+
+                ILogger? logger = serviceProvider
+                    .GetService<ILoggerFactory>()?
+                    .CreateLogger(typeof(DatabaseSeedService));
+
+                IGraphRepository repository =
+                    serviceProvider.GetService<IGraphRepository>()!;
+
+                Console.WriteLine("Seeding database...");
+                SeedGraphDatabase(repository, config, logger);
+                Console.WriteLine("Seeding completed");
+                return Task.CompletedTask;
+            });
+    }
+
+    public async Task StartAsync(CancellationToken cancellationToken)
+    {
+        using var scope = _serviceProvider.CreateScope();
+        IServiceProvider serviceProvider = scope.ServiceProvider;
+
+        try
         {
-            return Task.CompletedTask;
+            await SeedGraphDatabaseAsync(serviceProvider);
         }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.ToString());
+            ILogger? logger = serviceProvider.GetService<ILoggerFactory>()!
+                .CreateLogger(typeof(DatabaseSeedService));
+            logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
+    public Task StopAsync(CancellationToken cancellationToken)
+    {
+        return Task.CompletedTask;
     }
 }

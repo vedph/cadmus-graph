@@ -31,10 +31,10 @@
     <span style="flex: 0 0 auto">@Model.MappingCount</span>
     <button style="flex: 0 0 auto" class="btn btn-primary" @onclick="Map">Apply</button>
     @if (Model.IsRunning)
-    {
-        <span style="flex: 0 0 auto">running...</span>
-        <div style="flex: 0 0 auto" class="spinner"></div>
-    }
+{
+    <span style="flex: 0 0 auto">running...</span>
+    <div style="flex: 0 0 auto" class="spinner"></div>
+}
 </div>
 
 @if (Model.Graph != null)
@@ -51,13 +51,13 @@
         </thead>
         <tbody>
             @foreach(var node in Model.Graph.Nodes)
-            {
-                <tr>
+        {
+            <tr>
                     <td>@node.Label</td>
                     <td style="color:#5bb858">@node.Uri</td>
                     <td><small>@node.Sid</small></td>
                 </tr>
-            }
+        }
         </tbody>
     </table>
 
@@ -73,23 +73,23 @@
         </thead>
         <tbody>
             @foreach(var triple in Model.Graph.Triples)
-            {
-                <tr>
+        {
+            <tr>
                     <td style="color:#5bb858">@triple.SubjectUri</td>
                     <td style="color:#b8585b">@triple.PredicateUri</td>
                     <td style="color:#585eb8">
                         @if (triple.ObjectUri != null)
-                        {
-                            @triple.ObjectUri
-                        }
-                        else
-                        {
-                            @triple.ObjectLiteral
-                        }
+                    {
+                        @triple.ObjectUri
+                    }
+                    else
+                    {
+                        @triple.ObjectLiteral
+                    }
                     </td>
                     <td><small>@triple.Sid</small></td>
                 </tr>
-            }
+        }
         </tbody>
     </table>
 }

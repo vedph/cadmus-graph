@@ -69,6 +69,10 @@ docker compose -f docker-compose-api.yml up
 
 ## History
 
+### 2.0.3
+
+- 2023-03-28: updated packages.
+
 ### 2.0.2
 
 - 2023-02-01: migrated to new components factory. This is a breaking change for backend components, please see [this page](https://myrmex.github.io/overview/cadmus/dev/history/#2023-02-01---backend-infrastructure-upgrade). Anyway, in the end you just have to update your libraries and a single namespace reference. Benefits include:

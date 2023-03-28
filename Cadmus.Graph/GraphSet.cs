@@ -2,132 +2,131 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Cadmus.Graph
+namespace Cadmus.Graph;
+
+/// <summary>
+/// A set of graph nodes and triples, derived from one or more mapping
+/// sessions.
+/// </summary>
+public class GraphSet
 {
     /// <summary>
-    /// A set of graph nodes and triples, derived from one or more mapping
-    /// sessions.
+    /// Gets the nodes.
     /// </summary>
-    public class GraphSet
+    public IList<UriNode> Nodes { get; }
+
+    /// <summary>
+    /// Gets the triples.
+    /// </summary>
+    public IList<UriTriple> Triples { get; }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GraphSet"/> class.
+    /// </summary>
+    public GraphSet()
     {
-        /// <summary>
-        /// Gets the nodes.
-        /// </summary>
-        public IList<UriNode> Nodes { get; }
+        Nodes = new List<UriNode>();
+        Triples = new List<UriTriple>();
+    }
 
-        /// <summary>
-        /// Gets the triples.
-        /// </summary>
-        public IList<UriTriple> Triples { get; }
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GraphSet"/> class.
+    /// </summary>
+    /// <param name="nodes">The nodes.</param>
+    /// <param name="triples">The triples.</param>
+    /// <exception cref="ArgumentNullException">nodes or triples</exception>
+    public GraphSet(IList<UriNode> nodes, IList<UriTriple> triples)
+    {
+        Nodes = nodes ?? throw new ArgumentNullException(nameof(nodes));
+        Triples = triples ?? throw new ArgumentNullException(nameof(triples));
+    }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="GraphSet"/> class.
-        /// </summary>
-        public GraphSet()
+    /// <summary>
+    /// Adds the specified nodes to this set, unless they already exist.
+    /// </summary>
+    /// <param name="nodes">The nodes.</param>
+    /// <exception cref="ArgumentNullException">nodes</exception>
+    public void AddNodes(IList<UriNode> nodes)
+    {
+        if (nodes == null) throw new ArgumentNullException(nameof(nodes));
+
+        foreach (UriNode node in nodes)
         {
-            Nodes = new List<UriNode>();
-            Triples = new List<UriTriple>();
+            if (Nodes.All(n => n.Id != node.Id))
+                Nodes.Add(node);
         }
+    }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="GraphSet"/> class.
-        /// </summary>
-        /// <param name="nodes">The nodes.</param>
-        /// <param name="triples">The triples.</param>
-        /// <exception cref="ArgumentNullException">nodes or triples</exception>
-        public GraphSet(IList<UriNode> nodes, IList<UriTriple> triples)
+    /// <summary>
+    /// Adds the specified triples to this set, unless they already exist.
+    /// </summary>
+    /// <param name="triples">The triples.</param>
+    /// <exception cref="ArgumentNullException">nodes</exception>
+    public void AddTriples(IList<UriTriple> triples)
+    {
+        if (triples == null) throw new ArgumentNullException(nameof(triples));
+
+        foreach (UriTriple triple in triples)
         {
-            Nodes = nodes ?? throw new ArgumentNullException(nameof(nodes));
-            Triples = triples ?? throw new ArgumentNullException(nameof(triples));
-        }
-
-        /// <summary>
-        /// Adds the specified nodes to this set, unless they already exist.
-        /// </summary>
-        /// <param name="nodes">The nodes.</param>
-        /// <exception cref="ArgumentNullException">nodes</exception>
-        public void AddNodes(IList<UriNode> nodes)
-        {
-            if (nodes == null) throw new ArgumentNullException(nameof(nodes));
-
-            foreach (UriNode node in nodes)
+            if (Triples.All(t => t.SubjectId != triple.SubjectId ||
+                t.PredicateId != triple.PredicateId ||
+                t.ObjectId != triple.ObjectId ||
+                t.ObjectLiteral != triple.ObjectLiteral))
             {
-                if (Nodes.All(n => n.Id != node.Id))
-                    Nodes.Add(node);
+                Triples.Add(triple);
             }
         }
+    }
 
-        /// <summary>
-        /// Adds the specified triples to this set, unless they already exist.
-        /// </summary>
-        /// <param name="triples">The triples.</param>
-        /// <exception cref="ArgumentNullException">nodes</exception>
-        public void AddTriples(IList<UriTriple> triples)
+    /// <summary>
+    /// Gets groups of nodes having the same SID's GUID. Usually a set contains
+    /// entries from a single GUID source, but some of them may have a null
+    /// SID (=the nodes generated as objects of a triple).
+    /// </summary>
+    /// <returns>Dictionary.</returns>
+    public IDictionary<string, IList<UriNode>> GetNodesByGuid()
+    {
+        Dictionary<string, IList<UriNode>> dct = new();
+
+        foreach (UriNode triple in Nodes)
         {
-            if (triples == null) throw new ArgumentNullException(nameof(triples));
+            string key = triple.Sid?[..36] ?? "";
 
-            foreach (UriTriple triple in triples)
-            {
-                if (Triples.All(t => t.SubjectId != triple.SubjectId ||
-                    t.PredicateId != triple.PredicateId ||
-                    t.ObjectId != triple.ObjectId ||
-                    t.ObjectLiteral != triple.ObjectLiteral))
-                {
-                    Triples.Add(triple);
-                }
-            }
+            if (!dct.ContainsKey(key)) dct[key] = new List<UriNode>();
+            dct[key].Add(triple);
         }
+        return dct;
+    }
 
-        /// <summary>
-        /// Gets groups of nodes having the same SID's GUID. Usually a set contains
-        /// entries from a single GUID source, but some of them may have a null
-        /// SID (=the nodes generated as objects of a triple).
-        /// </summary>
-        /// <returns>Dictionary.</returns>
-        public IDictionary<string, IList<UriNode>> GetNodesByGuid()
+    /// <summary>
+    /// Gets groups of triples having the same SID's GUID. Usually a set
+    /// contains entries from a single GUID source, but this enforces
+    /// the update constraints.
+    /// </summary>
+    /// <returns>Dictionary.</returns>
+    public IDictionary<string, IList<UriTriple>> GetTriplesByGuid()
+    {
+        Dictionary<string, IList<UriTriple>> dct =
+            new();
+
+        foreach (UriTriple triple in Triples)
         {
-            Dictionary<string, IList<UriNode>> dct = new();
+            string key = triple.Sid?[..36] ?? "";
 
-            foreach (UriNode triple in Nodes)
-            {
-                string key = triple.Sid?[..36] ?? "";
-
-                if (!dct.ContainsKey(key)) dct[key] = new List<UriNode>();
-                dct[key].Add(triple);
-            }
-            return dct;
+            if (!dct.ContainsKey(key)) dct[key] = new List<UriTriple>();
+            dct[key].Add(triple);
         }
+        return dct;
+    }
 
-        /// <summary>
-        /// Gets groups of triples having the same SID's GUID. Usually a set
-        /// contains entries from a single GUID source, but this enforces
-        /// the update constraints.
-        /// </summary>
-        /// <returns>Dictionary.</returns>
-        public IDictionary<string, IList<UriTriple>> GetTriplesByGuid()
-        {
-            Dictionary<string, IList<UriTriple>> dct =
-                new();
-
-            foreach (UriTriple triple in Triples)
-            {
-                string key = triple.Sid?[..36] ?? "";
-
-                if (!dct.ContainsKey(key)) dct[key] = new List<UriTriple>();
-                dct[key].Add(triple);
-            }
-            return dct;
-        }
-
-        /// <summary>
-        /// Converts to string.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="string" /> that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            return $"N: {Nodes.Count} | T: {Triples.Count}";
-        }
+    /// <summary>
+    /// Converts to string.
+    /// </summary>
+    /// <returns>
+    /// A <see cref="string" /> that represents this instance.
+    /// </returns>
+    public override string ToString()
+    {
+        return $"N: {Nodes.Count} | T: {Triples.Count}";
     }
 }

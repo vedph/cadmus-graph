@@ -12,113 +12,112 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Cadmus.Graph.Api
-{
-    public static class Program
-    {
-        private static void DumpEnvironmentVars()
-        {
-            Console.WriteLine("ENVIRONMENT VARIABLES:");
-            IDictionary dct = Environment.GetEnvironmentVariables();
-            List<string> keys = new();
-            var enumerator = dct.GetEnumerator();
-            while (enumerator.MoveNext())
-            {
-                keys.Add(((DictionaryEntry)enumerator.Current).Key.ToString()!);
-            }
+namespace Cadmus.Graph.Api;
 
-            foreach (string key in keys.OrderBy(s => s))
-                Console.WriteLine($"{key} = {dct[key]}");
+public static class Program
+{
+    private static void DumpEnvironmentVars()
+    {
+        Console.WriteLine("ENVIRONMENT VARIABLES:");
+        IDictionary dct = Environment.GetEnvironmentVariables();
+        List<string> keys = new();
+        var enumerator = dct.GetEnumerator();
+        while (enumerator.MoveNext())
+        {
+            keys.Add(((DictionaryEntry)enumerator.Current).Key.ToString()!);
         }
 
-        public static void Main(string[] args)
+        foreach (string key in keys.OrderBy(s => s))
+            Console.WriteLine($"{key} = {dct[key]}");
+    }
+
+    public static void Main(string[] args)
+    {
+        // setup logger: see instructions at:
+        // https://github.com/datalust/dotnet6-serilog-example
+
+        Log.Logger = new LoggerConfiguration()
+            .WriteTo.Console()
+            .CreateBootstrapLogger();
+
+        Log.Information("Starting up");
+
+        try
         {
-            // setup logger: see instructions at:
-            // https://github.com/datalust/dotnet6-serilog-example
+            Log.Information("Starting Cadmus Graph API host");
+            DumpEnvironmentVars();
 
-            Log.Logger = new LoggerConfiguration()
-                .WriteTo.Console()
-                .CreateBootstrapLogger();
+            WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+            // more config sources
+            builder.Configuration.AddEnvironmentVariables();
+            builder.Configuration.AddCommandLine(args);
 
-            Log.Information("Starting up");
-
-            try
+            // add services to the container
+            builder.Services.AddScoped<IGraphRepository>(provider =>
             {
-                Log.Information("Starting Cadmus Graph API host");
-                DumpEnvironmentVars();
-
-                WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
-                // more config sources
-                builder.Configuration.AddEnvironmentVariables();
-                builder.Configuration.AddCommandLine(args);
-
-                // add services to the container
-                builder.Services.AddScoped<IGraphRepository>(provider =>
+                var config = provider.GetService<IConfiguration>()!;
+                string cst = config.GetConnectionString("Template")!;
+                var repository = new MySqlGraphRepository();
+                repository.Configure(new SqlOptions
                 {
-                    var config = provider.GetService<IConfiguration>()!;
-                    string cst = config.GetConnectionString("Template")!;
-                    var repository = new MySqlGraphRepository();
-                    repository.Configure(new SqlOptions
-                    {
-                        ConnectionString = string.Format(cst,
-                            config.GetValue<string>("DatabaseName") ?? "cadmus-graph")
-                    });
-                    return repository;
+                    ConnectionString = string.Format(cst,
+                        config.GetValue<string>("DatabaseName") ?? "cadmus-graph")
                 });
+                return repository;
+            });
 
-                builder.Services.AddControllers();
+            builder.Services.AddControllers();
 
-                // more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-                builder.Services.AddEndpointsApiExplorer();
-                builder.Services.AddSwaggerGen();
+            // more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+            builder.Services.AddEndpointsApiExplorer();
+            builder.Services.AddSwaggerGen();
 
-                // setup log (config is read from appsettings.json under Serilog)
-                builder.Host.UseSerilog((ctx, lc) => lc
-                    .WriteTo.Console()
-                    .Enrich.FromLogContext()
-                    .WriteTo.Console()
+            // setup log (config is read from appsettings.json under Serilog)
+            builder.Host.UseSerilog((ctx, lc) => lc
+                .WriteTo.Console()
+                .Enrich.FromLogContext()
+                .WriteTo.Console()
 //#if DEBUG
 //                    .WriteTo.File("cadmus-graph-log.txt", rollingInterval: RollingInterval.Day)
 //#endif
-                    .ReadFrom.Configuration(ctx.Configuration));
+                .ReadFrom.Configuration(ctx.Configuration));
 
-                // seed service
-                // https://andrewlock.net/running-async-tasks-on-app-startup-in-asp-net-core-3/
-                builder.Services.AddHostedService<DatabaseSeedService>();
+            // seed service
+            // https://andrewlock.net/running-async-tasks-on-app-startup-in-asp-net-core-3/
+            builder.Services.AddHostedService<DatabaseSeedService>();
 
-                WebApplication app = builder.Build();
+            WebApplication app = builder.Build();
 
-                // middleware
-                app.UseCors(builder =>
-                {
-                    // open everything, we don't care, that's a playground
-                    builder.AllowAnyOrigin()
-                           .AllowAnyMethod()
-                           .AllowAnyHeader();
-                });
-                app.UseSerilogRequestLogging();
-
-                // configure the HTTP request pipeline
-                if (app.Environment.IsDevelopment())
-                {
-                    app.UseSwagger();
-                    app.UseSwaggerUI();
-                }
-
-                app.UseAuthorization();
-                app.MapControllers();
-
-                app.Run();
-            }
-            catch (Exception ex)
+            // middleware
+            app.UseCors(builder =>
             {
-                Log.Fatal(ex, "Unhandled exception");
-            }
-            finally
+                // open everything, we don't care, that's a playground
+                builder.AllowAnyOrigin()
+                       .AllowAnyMethod()
+                       .AllowAnyHeader();
+            });
+            app.UseSerilogRequestLogging();
+
+            // configure the HTTP request pipeline
+            if (app.Environment.IsDevelopment())
             {
-                Log.Information("Shut down complete");
-                Log.CloseAndFlush();
+                app.UseSwagger();
+                app.UseSwaggerUI();
             }
+
+            app.UseAuthorization();
+            app.MapControllers();
+
+            app.Run();
+        }
+        catch (Exception ex)
+        {
+            Log.Fatal(ex, "Unhandled exception");
+        }
+        finally
+        {
+            Log.Information("Shut down complete");
+            Log.CloseAndFlush();
         }
     }
 }

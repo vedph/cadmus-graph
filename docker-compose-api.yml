@@ -31,8 +31,6 @@ services:
       - 5153:80
     depends_on:
       - cadmus-index
-    # wait for mongo before starting: https://github.com/vishnubob/wait-for-it
-    command: ["./wait-for-it.sh", "cadmus-mongo:27017", "--", "dotnet", "Cadmus.Graph.Api.dll"]
     environment:
       # for Windows use : as separator, for non Windows use __
       # (see https://github.com/aspnet/Configuration/issues/469)
