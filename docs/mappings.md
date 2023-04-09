@@ -8,6 +8,12 @@
     - [Entity ID (UID)](#entity-id-uid)
       - [UID Builder](#uid-builder)
   - [Mapping Rule](#mapping-rule)
+    - [JMES Path](#jmes-path)
+      - [Basic Expressions](#basic-expressions)
+      - [Lists](#lists)
+      - [Projections](#projections)
+      - [Multiselect](#multiselect)
+      - [Functions](#functions)
   - [Templates](#templates)
     - [Expressions (@)](#expressions-)
     - [Node Keys (?)](#node-keys-)
@@ -49,7 +55,7 @@ The algorithm building the SID is idempotent, so you can run it any time being c
 
 A SID is built with these components:
 
-a) for **items**:
+(a) for **items**:
 
 1. the _GUID_ of the source (item).
 2. if the node comes from a group or a facet, the suffix `|group` or `|facet`. On passage, note that the group ID can be composite (using slash, e.g. `alpha/beta`); in this case, a mapping producing nodes for groups emits several nodes, one for each component. The top component is the first in the group ID, followed by its children (in the above sample, `beta` is child of `alpha`). Each of these nodes has an additional suffix for the component ordinal, preceded by `|`.
@@ -60,7 +66,7 @@ Examples:
 - `76066733-6f81-48dd-a653-284d5be54cfb|group`: an entity derived from an item's group.
 - `76066733-6f81-48dd-a653-284d5be54cfb|group|2`: an entity derived from the 2nd component of an item's composite group.
 
-b) for **parts**:
+(b) for **parts**:
 
 1. the _GUID_ of the source (part).
 2. if the part has a role ID, the _role ID_ preceded by `#`.
@@ -115,11 +121,11 @@ This implementation ensures that whenever the mapping rules produce an UID for a
 
 A mapping rule is modeled as an object having a number of properties, defining:
 
-- its metadata (like source type, SID, description, etc.).
-- its input (used to match sources).
-- its output (which nodes and triples to emit).
+- its _metadata_ (like source type, SID, description, etc.).
+- its _input_ (used to match sources).
+- its _output_ (which nodes and triples to emit).
 
-In turn, each mapping rule can include any number of children rules. The model as it used in a JSON-based serialization is as follows:
+In turn, each mapping rule can include any number of _children rules_. The model as it used in a JSON-based serialization is as follows:
 
 - `sourceType`\*: the type of the source object, i.e. item (1) or part (2). This is meaningful for the root mapping only.
 - `sid`\*: the source ID (SID) of this mapping. This is meaningful for the root mapping only.
@@ -138,16 +144,69 @@ In turn, each mapping rule can include any number of children rules. The model a
 
 >Note: the source type is a number where 0=user, 1=item, 2=part, 3=thesaurus, 4=implicit (assigned to nodes automatically added because used in a triple without yet being present in the graph). This is not an enumerated value, so that you can eventually add new values by just defining new constants.
 
+### JMES Path
+
+- [tutorial](https://jmespath.org/tutorial.html)
+- [examples](https://jmespath.org/examples.html)
+
+This is just a short cheatsheet derived from the excellent JMES tutorial, which also provides interactive examples.
+
+#### Basic Expressions
+
+- identifier: `a` (null if not found)
+- subexpression: `a.b` (cascaded null if not found)
+
+#### Lists
+
+- index expression (list): `[1]` (0-based; negative=from end)
+- slicing: `start:stop:step` (all optional; stop is exclusive, step defaults to 1): `[0:4]` = first three elements, equivalent to `[:4]`.
+
+#### Projections
+
+Projections are evaluated as two steps:
+
+- left hand side (LHS): creates a JSON array of initial values.
+- right hand side (RHS): the expression to project for each element in the JSON array created by the LHS.
+
+If the result of the expression projected onto an individual array element is null, then that value is omitted from the collected set of results.
+
+There are 5 kinds of projections:
+
+- list projections, via a wildcard expression: `people[*].first` = property `first` of each item in `people`.
+- object projections, as above for objects: `ops.*.numArgs`.
+- flatten Projections: `[]` flattens a list (not recursively, just one level) as generated e.g. from concatenating two list projections, which would result in a list of lists: `reservations[*].instances[].state`.
+- slice Projections
+- filter Projections: filters the LHS side before evaluating the RHS side: `LHS [?EXPR OP EXPR]`: `machines[?state='running'].name`.
+
+You can stop a projection with a _Pipe Expression_: `people[*].first | [0]` = get 1st element if the list.
+
+#### Multiselect
+
+Multiselect allows you to create elements that don’t exist in a JSON document. A multiselect list creates a list, and a multiselect hash creates a JSON object.
+
+- `people[].[name, state.name]` = for each item in the list, create a list including the specified properties. Unlike a projection, the result of the expression is always included, even if the result is a null.
+- `people[].{name: name, state: state.name}` = as above but the result will be an object for each item.
+
+#### Functions
+
+A number of [functions](https://jmespath.org/specification.html#builtin-functions) is available for expressions. Functions can be combined with filter expressions, e.g.
+
+```txt
+myarray[?contains(@, 'foo') == `true`]
+```
+
+= finds all elements in `myarray` that contains the string `foo`.
+
 ## Templates
 
 Templates are extensively used in mappings to build node identifiers and triple values.
 
-A template has any number of placeholders conventionally delimited by `{}`, where the opening brace is followed by a single character representing the placeholder type:
+A template has any number of placeholders, delimited by `{}`, where the opening brace is followed by a single character representing the placeholder type:
 
-1. `{@...}` = expression: this represents the expression used to select some source data for the mapping.
-2. `{?...}` = node key: the key for a previously emitted node, eventually suffixed.
-3. `{$...}` = metadata: any metadata set during the mapping process.
-4. `{!...}` = macro: the output of a custom function, receiving the current data context from the source, and returning a string or null.
+1. `{@...}` = _expression_: this represents the expression used to select some source data for the mapping.
+2. `{?...}` = _node key_: the key for a previously emitted node, eventually suffixed.
+3. `{$...}` = _metadata_: any metadata set during the mapping process.
+4. `{!...}` = _macro_: the output of a custom function, receiving the current data context from the source, and returning a string or null.
 
 These placeholders can be freely nested. The mapping rules will take care of resolving them starting from the deepest ones.
 
@@ -165,7 +224,7 @@ For instance, say you are mapping an event object having an `eid` property equal
 
 During the mapping process, nodes emitted in the context of each mapping (including all its descendant mappings) are stored in a dictionary with the keys specified in the mapping itself for each node.
 
-For instance, say your event object emits a node corresponding to each of its events. The mapping output for each node specifies an arbitrary key used to refer to this node from other templates in the root mapping's context.
+For instance, say your event object emits a node for each of its events. The mapping output for each node specifies an arbitrary key, used to refer to this node from other templates in the root mapping's context.
 
 As a sample, consider this mapping fragment:
 
@@ -188,7 +247,7 @@ As a sample, consider this mapping fragment:
 }
 ```
 
-Here we map each birth event (`source`). For each of them, a child mapping matches the event's `eid` property, and outputs a node under the key "event", whose template is `x:events/{$.}`.
+Here we map each birth event (as specified by `source`). For each of them, a child mapping matches the event's `eid` property, and outputs a node under the key `event`, whose template is `x:events/{$.}`.
 
 As a node is a complex object, in a template placeholder you can pick different properties from it. These are specified by adding a **suffix** preceded by `:` to the node's key. Available suffixes are:
 
@@ -226,7 +285,7 @@ The macro syntax in the placeholder is very simple: it consists of the macro ID,
 !{some_macro(arg1 & arg2)}
 ```
 
-Some macros are built-in, and conventionally their ID start with an underscore. Currently there is one:
+Some macros are built-in, and conventionally their ID start with an underscore. Currently there is only one:
 
 - `_hdate(separator)` (tag `node-mapping-macro.historical-date`): this macro gets the JSON code representing a Cadmus historical date, and returns either its sort value or its human-friendly, machine parsable text value. The return type is defined by the second argument, which can be either `value` (the default) or `text`.
 
@@ -243,9 +302,9 @@ Should you want to disable this filtering, start the template with `!`, which be
 
 ## Sample
 
-As a sample, consider this historical events part. This contains any number of events, eventually with their place and/or time and directly related entities.
+As a sample, consider this historical events part. This contains any number of events, eventually with their place and/or time, and directly-related entities.
 
-In this sample, we have two events representing the birth of Petrarch in 1304 at Arezzo from ser Petracco and Eletta Cangiani, and his death at Arquà in 1374.
+In this sample, we have two events representing the birth of Petrarch in 1304 at Arezzo, from ser Petracco and Eletta Cangiani, and his death at Arquà in 1374.
 
 ### Sample Data
 
@@ -648,7 +707,7 @@ x:timespans/ts#1       | x:timespans/ts#1       | bdd152f1-2ae2-4189-8a4a-e3d68c
 
 Then, these are their triples:
 
-a) for birth:
+(a) for birth:
 
 - the event is classified as a birth event;
 - the event brought into life the entity corresponding to the item (=Petrarch);
@@ -659,7 +718,7 @@ a) for birth:
 - the birth had Eletta Cangiani as the mother;
 - the birth had ser Petracco as the father.
 
-b) for death:
+(b) for death:
 
 - the event is classified as a death event;
 - the event took out of existence the entity corresponding to the item (=Petrarch);
