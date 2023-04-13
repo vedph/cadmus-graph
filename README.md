@@ -69,6 +69,12 @@ docker compose -f docker-compose-api.yml up
 
 ## History
 
+### 2.0.5
+
+- 2023-04-13:
+  - added `NodeMappingDocument`.
+  - updated packages.
+
 ### 2.0.4
 
 - 2023-04-10: updated packages.
