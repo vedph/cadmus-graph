@@ -88,6 +88,7 @@ public partial class Demo
 
             // mock metadata from item
             _mapper.Data["item-id"] = Guid.NewGuid().ToString();
+            _mapper.Data["item-eid"] = "my-item-eid";
             _mapper.Data["item-uri"] = "x:guys/francesco_petrarca";
             _mapper.Data["item-label"] = "Petrarch";
             _mapper.Data["group-id"] = "group";
