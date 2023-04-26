@@ -5,6 +5,10 @@
     - [Demo](#demo)
     - [API](#api)
   - [History](#history)
+    - [2.0.6](#206)
+    - [2.0.5](#205)
+    - [2.0.4](#204)
+    - [2.0.3](#203)
     - [2.0.2](#202)
     - [1.0.1](#101)
     - [1.0.0](#100)
@@ -68,6 +72,12 @@ docker compose -f docker-compose-api.yml up
 ```
 
 ## History
+
+### 2.0.6
+
+- 2023-04-26:
+  - added `MetadataSupplier` to allow for additional metadata in graph updating.
+  - added `Cadmus.Graph.Extras` project including a metadata supplier for `item-eid` relying on `MetadataPart`.
 
 ### 2.0.5
 

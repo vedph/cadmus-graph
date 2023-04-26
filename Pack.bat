@@ -13,4 +13,7 @@ cd..
 cd .\Cadmus.Graph.Sql
 dotnet pack -c Debug -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg
 cd..
+cd .\Cadmus.Graph.Extras
+dotnet pack -c Debug -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg
+cd..
 pause

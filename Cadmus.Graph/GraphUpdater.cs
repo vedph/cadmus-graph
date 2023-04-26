@@ -15,7 +15,19 @@ public class GraphUpdater
     private readonly INodeMapper _mapper;
     private readonly ItemGraphSourceAdapter _itemAdapter;
     private readonly PartGraphSourceAdapter _partAdapter;
-    private readonly IDictionary<string, string> _metadata;
+
+    /// <summary>
+    /// Gets the metadata used by the updater. You can add more metadata
+    /// manually, or set the <see cref="MetadataSupplier"/> property so that
+    /// it will be invoked before each update. All metadata are automatically
+    /// reset after updating.
+    /// </summary>
+    public IDictionary<string, string> Metadata { get; }
+
+    /// <summary>
+    /// Gets or sets the optional metadata supplier to be used by this updater.
+    /// </summary>
+    public MetadataSupplier? MetadataSupplier { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="GraphUpdater"/> class.
@@ -28,17 +40,17 @@ public class GraphUpdater
         _mapper = new JsonNodeMapper();
         _itemAdapter = new ItemGraphSourceAdapter();
         _partAdapter = new PartGraphSourceAdapter();
-        _metadata = new Dictionary<string, string>();
+        Metadata = new Dictionary<string, string>();
     }
 
     private void Update(object data, RunNodeMappingFilter filter)
     {
-        _metadata.Clear();
         GraphSet set = new();
         foreach (NodeMapping mapping in _repository.FindMappings(filter))
             _mapper.Map(data, mapping, set);
 
         _repository.UpdateGraph(set);
+        Metadata.Clear();
     }
 
     /// <summary>
@@ -51,7 +63,9 @@ public class GraphUpdater
         if (item is null) throw new ArgumentNullException(nameof(item));
 
         _mapper.Context = new GraphSource(item);
-        var df = _itemAdapter.Adapt(_mapper.Context, _metadata);
+        MetadataSupplier?.Supply(_mapper.Context, Metadata);
+
+        var df = _itemAdapter.Adapt(_mapper.Context, Metadata);
         if (df.Item1 != null) Update(df.Item1, df.Item2);
     }
 
@@ -67,7 +81,9 @@ public class GraphUpdater
         if (part is null) throw new ArgumentNullException(nameof(part));
 
         _mapper.Context = new GraphSource(item, part);
-        var df = _partAdapter.Adapt(_mapper.Context, _metadata);
+        MetadataSupplier?.Supply(_mapper.Context, Metadata);
+
+        var df = _partAdapter.Adapt(_mapper.Context, Metadata);
         if (df.Item1 != null) Update(df.Item1, df.Item2);
     }
 }
