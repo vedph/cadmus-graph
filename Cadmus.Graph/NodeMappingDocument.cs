@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace Cadmus.Graph;
 
@@ -22,7 +23,7 @@ public class NodeMappingDocument
     /// Gets or sets the mappings in the document. These can be either
     /// references to named mappings, or inline mappings.
     /// </summary>
-    public List<DocNodeMapping> DocumentMappings { get; set; }
+    public List<NodeMapping> DocumentMappings { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="NodeMappingDocument"/> class.
@@ -33,43 +34,38 @@ public class NodeMappingDocument
         DocumentMappings = new();
     }
 
+    private void ResolveNamedMappings(NodeMapping mapping)
+    {
+        if (!mapping.HasChildren) return;
+
+        List<NodeMapping> children = mapping.Children.ToList();
+        for (int i = 0; i < children.Count; i++)
+        {
+            NodeMapping child = children[i];
+            if (child.Name != null && NamedMappings.TryGetValue(
+                child.Name, out NodeMapping? named))
+            {
+                mapping.Children[i] = named.Clone();
+                ResolveNamedMappings(named);
+            }
+        }
+    }
+
     /// <summary>
     /// Gets all the document's mappings, dereferencing those which are not
-    /// inlined. Note that multiple references to the same mapping will return
-    /// the same mapping object multiple times.
+    /// inlined.
     /// </summary>
-    /// <param name="ignoreMissingRefs">True to ignore any missing references,
-    /// false to throw an exception.</param>
     /// <returns>Mappings.</returns>
-    /// <exception cref="CadmusGraphException">Reference to unknown mapping
-    /// (when <paramref name="ignoreMissingRefs"/> is false)</exception>
-    public IEnumerable<NodeMapping> GetMappings(bool ignoreMissingRefs = false)
+    public IEnumerable<NodeMapping> GetMappings()
     {
-        foreach (DocNodeMapping mapping in DocumentMappings)
+        foreach (NodeMapping mapping in DocumentMappings)
         {
-            if (mapping.Value == null)
-            {
-                // ignore an empty mapping
-                if (mapping.ReferenceId == null) continue;
+            NodeMapping resolved = (NamedMappings.TryGetValue(
+                mapping.Name!, out NodeMapping? value) ? value : mapping).Clone();
 
-                // dereference a mapping reference
-                if (NamedMappings.TryGetValue(mapping.ReferenceId,
-                    out NodeMapping? m))
-                {
-                    yield return m;
-                }
-                // throw error if cannot be dereferenced and we're not ignoring this
-                else if (!ignoreMissingRefs)
-                {
-                    throw new CadmusGraphException(
-                        $"Reference to unknown mapping: \"{mapping.ReferenceId}\"");
-                }
-            }
-            else
-            {
-                // just return an inline mapping
-                yield return mapping.Value;
-            }
+            if (resolved.HasChildren) ResolveNamedMappings(resolved);
+
+            yield return resolved;
         }
     }
 
@@ -81,6 +77,6 @@ public class NodeMappingDocument
     /// </returns>
     public override string ToString()
     {
-        return $"Named: {NamedMappings.Count} - Document: {DocumentMappings.Count}";
+        return $"N: {NamedMappings.Count} - D: {DocumentMappings.Count}";
     }
 }

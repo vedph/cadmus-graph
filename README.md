@@ -5,6 +5,7 @@
     - [Demo](#demo)
     - [API](#api)
   - [History](#history)
+    - [2.0.11](#2011)
     - [2.0.6](#206)
     - [2.0.5](#205)
     - [2.0.4](#204)
@@ -72,6 +73,10 @@ docker compose -f docker-compose-api.yml up
 ```
 
 ## History
+
+### 2.0.11
+
+- 2023-04-28: fixes to `NodeMappingDocument` and its JSON serialization.
 
 ### 2.0.6
 

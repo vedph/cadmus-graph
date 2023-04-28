@@ -4,9 +4,9 @@
     <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <Version>2.0.8</Version>
-    <FileVersion>2.0.8</FileVersion>
-    <AssemblyVersion>2.0.8</AssemblyVersion>
+    <Version>2.0.11</Version>
+    <FileVersion>2.0.11</FileVersion>
+    <AssemblyVersion>2.0.11</AssemblyVersion>
 	<IncludeSymbols>true</IncludeSymbols>
 	<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 	<Authors>Daniele Fusi</Authors>

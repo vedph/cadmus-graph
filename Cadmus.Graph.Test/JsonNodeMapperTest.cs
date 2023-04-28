@@ -20,22 +20,9 @@ public sealed class JsonNodeMapperTest
     //    "{ \"id\": \"b\", \"value\": \"blue\" } ], " +
     //    "\"size\": { \"w\": 21, \"h\": 29.7 } } ";
 
-    private static Stream GetResourceStream(string name)
-    {
-        return Assembly.GetExecutingAssembly()!
-            .GetManifestResourceStream($"Cadmus.Graph.Test.Assets.{name}")!;
-    }
-
-    private static string LoadResourceText(string name)
-    {
-        using StreamReader reader = new(GetResourceStream(name),
-            Encoding.UTF8);
-        return reader.ReadToEnd();
-    }
-
     private static IList<NodeMapping> LoadMappings(string name)
     {
-        using StreamReader reader = new(GetResourceStream(name),
+        using StreamReader reader = new(TestHelper.GetResourceStream(name),
             Encoding.UTF8);
 
         JsonSerializerOptions options = new()
@@ -84,7 +71,7 @@ public sealed class JsonNodeMapperTest
 
         JsonNodeMapper mapper = new();
         ResetMapperMetadata(mapper);
-        string json = LoadResourceText("Events.json");
+        string json = TestHelper.LoadResourceText("Events.json");
         mapper.Map(json, mapping, set);
 
         // TODO add assertions like:

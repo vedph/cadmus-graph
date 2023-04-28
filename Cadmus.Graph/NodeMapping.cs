@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace Cadmus.Graph;
@@ -144,6 +145,33 @@ public class NodeMapping
             foreach (NodeMapping child in Children)
                 child.Visit(visitor);
         }
+    }
+
+    /// <summary>
+    /// Clones this instance, deep copying all the <see cref="NodeMapping"/>'s.
+    /// </summary>
+    /// <returns>New mapping object.</returns>
+    public virtual NodeMapping Clone()
+    {
+        return new NodeMapping
+        {
+            Id = Id,
+            ParentId = ParentId,
+            Ordinal = Ordinal,
+            Name = Name,
+            SourceType = SourceType,
+            FacetFilter = FacetFilter,
+            GroupFilter = GroupFilter,
+            FlagsFilter = FlagsFilter,
+            TitleFilter = TitleFilter,
+            PartTypeFilter = PartTypeFilter,
+            PartRoleFilter = PartRoleFilter,
+            Description = Description,
+            Source = Source,
+            Sid = Sid,
+            Output = Output,
+            Children = Children.Select(m => m.Clone()).ToList(),
+        };
     }
 
     /// <summary>

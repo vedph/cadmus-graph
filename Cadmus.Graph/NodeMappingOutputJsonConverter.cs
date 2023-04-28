@@ -135,12 +135,12 @@ public class NodeMappingOutputJsonConverter : JsonConverter<NodeMappingOutput>
     {
         if (value == null) return;
 
-        writer.WriteStartObject("output");
+        writer.WriteStartObject();
 
-        // nodes: []
+        // nodes
         if (value.HasNodes)
         {
-            writer.WriteStartArray();
+            writer.WriteStartObject("nodes");
             foreach (var p in value.Nodes)
             {
                 // "name":
@@ -150,18 +150,30 @@ public class NodeMappingOutputJsonConverter : JsonConverter<NodeMappingOutput>
                 writer.WriteStringValue(p.Value.ToString());
                 writer.WriteEndObject();
             }
-            writer.WriteEndArray();
+            writer.WriteEndObject();
         }
 
         // triples: []
         if (value.HasTriples)
         {
-            writer.WriteStartArray();
+            writer.WriteStartArray("triples");
             foreach (MappedTriple t in value.Triples)
             {
                 writer.WriteStringValue(t.ToString());
             }
             writer.WriteEndArray();
+        }
+
+        // metadata
+        if (value.HasMetadata)
+        {
+            writer.WriteStartObject("metadata");
+            foreach (var p in value.Metadata)
+            {
+                writer.WritePropertyName(p.Key);
+                writer.WriteStringValue(p.Value);
+            }
+            writer.WriteEndObject();
         }
 
         writer.WriteEndObject();
