@@ -254,10 +254,7 @@ public sealed class MySqlGraphRepositoryTest : SqlGraphRepositoryTest
     public void DeleteMapping_Existing_Ok() => DoDeleteMapping_Existing_Ok();
 
     [Fact]
-    public void GetMappings_NoDescendants_Ok() => DoGetMappings_NoDescendants_Ok();
-
-    [Fact]
-    public void GetMappings_Descendants_Ok() => DoGetMappings_Descendants_Ok();
+    public void GetMappings_Ok() => DoGetMappings_Ok();
 
     [Fact]
     public void FindMappings_Ok() => DoFindMappings_Ok();

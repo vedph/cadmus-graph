@@ -11,7 +11,9 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -1044,13 +1046,9 @@ public abstract class SqlGraphRepository : IConfigurable<SqlOptions>
     /// </summary>
     /// <param name="filter">The filter. Set page size=0 to get all
     /// the mappings at once.</param>
-    /// <param name="descendants">True to populate all the mappings with their
-    /// descendants.
-    /// </param>
     /// <returns>The page.</returns>
     /// <exception cref="ArgumentNullException">filter</exception>
-    public DataPage<NodeMapping> GetMappings(NodeMappingFilter filter,
-        bool descendants)
+    public DataPage<NodeMapping> GetMappings(NodeMappingFilter filter)
     {
         if (filter == null) throw new ArgumentNullException(nameof(filter));
 
@@ -1080,7 +1078,7 @@ public abstract class SqlGraphRepository : IConfigurable<SqlOptions>
         foreach (var d in query.Get())
         {
             NodeMapping mapping = DataToMapping(d);
-            mapping = GetPopulatedMapping(mapping, qf, descendants);
+            mapping = GetPopulatedMapping(mapping, qf, true);
             mappings.Add(mapping);
         }
 
@@ -1238,7 +1236,7 @@ public abstract class SqlGraphRepository : IConfigurable<SqlOptions>
     /// </summary>
     /// <param name="mapping">The mapping.</param>
     /// <exception cref="ArgumentNullException">mapping</exception>
-    public void AddMapping(NodeMapping mapping)
+    public int AddMapping(NodeMapping mapping)
     {
         if (mapping == null) throw new ArgumentNullException(nameof(mapping));
 
@@ -1249,6 +1247,7 @@ public abstract class SqlGraphRepository : IConfigurable<SqlOptions>
         {
             AddMapping(mapping, qf, trans);
             trans.Commit();
+            return mapping.Id;
         }
         catch (Exception)
         {
@@ -1354,6 +1353,64 @@ public abstract class SqlGraphRepository : IConfigurable<SqlOptions>
         }
 
         return mappings;
+    }
+
+    private static JsonSerializerOptions GetMappingJsonSerializerOptions()
+    {
+        JsonSerializerOptions options = new()
+        {
+            AllowTrailingCommas = true,
+            PropertyNameCaseInsensitive = true,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            WriteIndented = true,
+        };
+        options.Converters.Add(new NodeMappingOutputJsonConverter());
+        return options;
+    }
+
+    /// <summary>
+    /// Imports mappings from the specified JSON code representing a mappings
+    /// document.
+    /// </summary>
+    /// <param name="json">The json.</param>
+    /// <returns>The number of root mappings imported.</returns>
+    /// <exception cref="ArgumentNullException">json</exception>
+    /// <exception cref="InvalidDataException">Invalid JSON mappings document
+    /// </exception>
+    public int Import(string json)
+    {
+        if (json is null) throw new ArgumentNullException(nameof(json));
+
+        NodeMappingDocument? doc =
+            JsonSerializer.Deserialize<NodeMappingDocument>(json,
+            GetMappingJsonSerializerOptions())
+            ?? throw new InvalidDataException("Invalid JSON mappings document");
+
+        int n = 0;
+        foreach (NodeMapping mapping in doc.GetMappings())
+        {
+            AddMapping(mapping);
+            n++;
+        }
+        return n;
+    }
+
+    /// <summary>
+    /// Exports mappings to JSON code representing a mappings document.
+    /// </summary>
+    /// <returns>JSON.</returns>
+    public string Export()
+    {
+        NodeMappingDocument doc = new();
+        NodeMappingFilter filter = new();
+        DataPage<NodeMapping> page = GetMappings(filter);
+        do
+        {
+            doc.DocumentMappings.AddRange(page.Items);
+            filter.PageNumber++;
+        } while (filter.PageNumber < page.PageCount);
+
+        return JsonSerializer.Serialize(doc, GetMappingJsonSerializerOptions());
     }
     #endregion
 

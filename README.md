@@ -5,6 +5,7 @@
     - [Demo](#demo)
     - [API](#api)
   - [History](#history)
+    - [2.1.0](#210)
     - [2.0.11](#2011)
     - [2.0.6](#206)
     - [2.0.5](#205)
@@ -73,6 +74,12 @@ docker compose -f docker-compose-api.yml up
 ```
 
 ## History
+
+### 2.1.0
+
+- 2023-04-29:
+  - added `IMappingRepository` and slightly adapted the graph repository to implement it.
+  - added `RamMappingRepository`.
 
 ### 2.0.11
 

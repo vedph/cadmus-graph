@@ -12,7 +12,7 @@ namespace Cadmus.Graph;
 /// <summary>
 /// The nodes graph repository in the index.
 /// </summary>
-public interface IGraphRepository : IUidBuilder
+public interface IGraphRepository : IUidBuilder, IMappingRepository
 {
     /// <summary>
     /// Gets or sets the optional cache to use for mappings. This improves
@@ -85,6 +85,13 @@ public interface IGraphRepository : IUidBuilder
     DataPage<UriNode> GetNodes(NodeFilter filter);
 
     /// <summary>
+    /// Gets all the nodes with the specified IDs.
+    /// </summary>
+    /// <param name="ids">The nodes IDs.</param>
+    /// <returns>List of nodes (or null), one per ID.</returns>
+    IList<UriNode?> GetNodes(IList<int> ids);
+
+    /// <summary>
     /// Gets the node with the specified ID.
     /// </summary>
     /// <param name="id">The identifier.</param>
@@ -97,13 +104,6 @@ public interface IGraphRepository : IUidBuilder
     /// <param name="uri">The URI.</param>
     /// <returns>The node or null if not found.</returns>
     UriNode? GetNodeByUri(string uri);
-
-    /// <summary>
-    /// Gets all the nodes with the specified IDs.
-    /// </summary>
-    /// <param name="ids">The nodes IDs.</param>
-    /// <returns>List of nodes (or null), one per ID.</returns>
-    IList<UriNode?> GetNodes(IList<int> ids);
 
     /// <summary>
     /// Adds or updates the specified node.
@@ -176,42 +176,11 @@ public interface IGraphRepository : IUidBuilder
     void DeleteProperty(int id);
 
     /// <summary>
-    /// Gets the specified page of node mappings.
-    /// </summary>
-    /// <param name="filter">The filter. Set page size=0 to get all
-    /// the mappings at once.</param>
-    /// <param name="descendants">True to populate all the mappings with their
-    /// descendants.
-    /// </param>
-    /// <returns>The page.</returns>
-    DataPage<NodeMapping> GetMappings(NodeMappingFilter filter,
-        bool descendants);
-
-    /// <summary>
     /// Finds all the applicable mappings.
     /// </summary>
     /// <param name="filter">The filter to match.</param>
     /// <returns>List of mappings.</returns>
     IList<NodeMapping> FindMappings(RunNodeMappingFilter filter);
-
-    /// <summary>
-    /// Gets the node mapping witht the specified ID.
-    /// </summary>
-    /// <param name="id">The identifier.</param>
-    /// <returns>The mapping or null if not found.</returns>
-    NodeMapping? GetMapping(int id);
-
-    /// <summary>
-    /// Adds or updates the specified node mapping.
-    /// </summary>
-    /// <param name="mapping">The mapping.</param>
-    void AddMapping(NodeMapping mapping);
-
-    /// <summary>
-    /// Deletes the specified node mapping.
-    /// </summary>
-    /// <param name="id">The mapping identifier.</param>
-    void DeleteMapping(int id);
 
     /// <summary>
     /// Gets the specified page of triples.
