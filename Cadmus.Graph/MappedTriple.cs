@@ -27,6 +27,11 @@ public class MappedTriple
     /// </summary>
     public string? OL { get; set; }
 
+    /// <summary>
+    /// Parses the specified text as a mapped triple.
+    /// </summary>
+    /// <param name="text">The text.</param>
+    /// <returns>Triple or null if invalid.</returns>
     public static MappedTriple? Parse(string? text)
     {
         if (string.IsNullOrEmpty(text)) return null;

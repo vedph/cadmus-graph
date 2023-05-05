@@ -75,6 +75,8 @@ docker compose -f docker-compose-api.yml up
 
 ## History
 
+- 2023-05-05: added some comments.
+
 ### 2.1.0
 
 - 2023-04-29:

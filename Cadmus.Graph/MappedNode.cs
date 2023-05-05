@@ -35,7 +35,9 @@ public class MappedNode
         if (string.IsNullOrEmpty(text)) return null;
 
         Match m = Regex.Match(text,
-            @"^(?<u>[^ ]+)(?:\s+(?<l>[^[][^\s]*))?(?:\s+\[(?<t>[^]]+)\])?");
+            @"^(?<u>[^ ]+)(?:\s+(?<l>[^[][^\s]*))?(?:\s+\[(?<t>[^]]+)\])?",
+            RegexOptions.Compiled);
+
         return m.Success
             ? new MappedNode
             {

@@ -7,6 +7,25 @@ namespace Cadmus.Graph;
 /// <summary>
 /// JSON converter for <see cref="NodeMappingOutput"/>. This is used
 /// to serialize and deserialize mappings using a more human-readable format.
+/// <list type="bullet">
+/// <item>
+/// <term>nodes</term>
+/// <description>each node is serialized as the property of a <c>nodes</c>
+/// object, having its name equal to the node's key, with string value equal
+/// to <c>uri label [tag]</c>, where only <c>uri</c> is required.</description>
+/// </item>
+/// <item>
+/// <term>triples</term>
+/// <description>each triple is serialized as a string item of a <c>triples</c>
+/// array, with format <c>S P O</c> or <c>S P "literal"</c>.</description>
+/// </item>
+/// <item>
+/// <term>metadata</term>
+/// <description>each metadatum is serialized as a property of a <c>metadata</c>
+/// object, having its  name equal to the metadatum key, with string value
+/// equal to the metadatum value.</description>
+/// </item>
+/// </list>
 /// </summary>
 public class NodeMappingOutputJsonConverter : JsonConverter<NodeMappingOutput>
 {
@@ -19,18 +38,18 @@ public class NodeMappingOutputJsonConverter : JsonConverter<NodeMappingOutput>
         reader.Read();
         while (reader.TokenType != JsonTokenType.EndObject)
         {
-            string? name = reader.GetString();
-            if (reader.TokenType != JsonTokenType.PropertyName || name == null)
+            string? key = reader.GetString();
+            if (reader.TokenType != JsonTokenType.PropertyName || key == null)
                 throw new JsonException("Expected property for output.nodes object");
 
             reader.Read();
             string nodeText = reader.GetString()
                 ?? throw new JsonException(
-                    $"Expected string value after output.nodes['{name}']");
+                    $"Expected string value after output.nodes['{key}']");
 
-            MappedNode? node = MappedNode.Parse(nodeText);
-            if (node == null) throw new JsonException("Invalid node: " + nodeText);
-            output.Nodes[name] = node;
+            MappedNode? node = MappedNode.Parse(nodeText)
+                ?? throw new JsonException("Invalid node: " + nodeText);
+            output.Nodes[key] = node;
             reader.Read();
         }
     }
@@ -44,8 +63,7 @@ public class NodeMappingOutputJsonConverter : JsonConverter<NodeMappingOutput>
         reader.Read();
         while (reader.TokenType != JsonTokenType.EndArray)
         {
-            string? tripleText = reader.GetString();
-            if (tripleText == null)
+            string? tripleText = reader.GetString() ??
                 throw new JsonException("Expected string item in output.triples array");
             output.Triples.Add(MappedTriple.Parse(tripleText)
                 ?? throw new JsonException("Invalid triple: " + tripleText));
@@ -143,7 +161,7 @@ public class NodeMappingOutputJsonConverter : JsonConverter<NodeMappingOutput>
             writer.WriteStartObject("nodes");
             foreach (var p in value.Nodes)
             {
-                // "name":
+                // "key": "string-value"
                 writer.WriteStartObject(p.Key);
                 // "value" with form "uri label [tag]" where only "uri"
                 // is required
