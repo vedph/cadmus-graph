@@ -3,6 +3,7 @@ echo BUILD Cadmus packages
 del .\Cadmus.Graph\bin\Debug\*.*nupkg
 del .\Cadmus.Graph.MySql\bin\Debug\*.*nupkg
 del .\Cadmus.Graph.Sql\bin\Debug\*.*nupkg
+del .\Cadmus.Graph.Extras\bin\Debug\*.*nupkg
 
 cd .\Cadmus.Graph
 dotnet pack -c Debug -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg
