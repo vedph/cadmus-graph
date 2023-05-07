@@ -75,7 +75,9 @@ docker compose -f docker-compose-api.yml up
 
 ## History
 
-- 2023-05-07: moved expression computation before SID calculation in node mapper.
+- 2023-05-07:
+  - moved expression computation before SID calculation in node mapper.
+  - handle corner cases in `ResolveDataExpression`. Results may be a single primitive; a single primitive in a 1-item array; or an array or object, to be evaluated against a JMES expression.
 - 2023-05-05: added some comments.
 
 ### 2.1.0

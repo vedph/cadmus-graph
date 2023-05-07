@@ -39,6 +39,15 @@ public sealed class JsonNodeMapper : NodeMapper, INodeMapper
             return _doc.RootElement.ToString();
         }
 
+        // an array might include a single primitive, so return it
+        if (_doc.RootElement.ValueKind == JsonValueKind.Array
+            && _doc.RootElement.GetArrayLength() == 1
+            && _doc.RootElement[0].ValueKind != JsonValueKind.Object
+            && _doc.RootElement[0].ValueKind != JsonValueKind.Array)
+        {
+            return _doc.RootElement[0].ToString();
+        }
+
         // else evaluate expression from current object/array
         string json = JsonSerializer.Serialize(_doc.RootElement);
         string? result = _jmes.Transform(json, expression);
