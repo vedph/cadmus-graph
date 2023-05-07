@@ -55,7 +55,7 @@ public sealed class HistoricalDateMacro : INodeMappingMacro
 
         if (args.Length > 1 && args[1] == "text")
         {
-            return date?.ToString() ?? "";
+            return date?.ToString(CultureInfo.InvariantCulture) ?? "";
         }
 
         return date?.GetSortValue()

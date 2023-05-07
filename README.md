@@ -5,6 +5,7 @@
     - [Demo](#demo)
     - [API](#api)
   - [History](#history)
+    - [2.1.3](#213)
     - [2.1.0](#210)
     - [2.0.11](#2011)
     - [2.0.6](#206)
@@ -75,9 +76,12 @@ docker compose -f docker-compose-api.yml up
 
 ## History
 
+### 2.1.3
+
 - 2023-05-07:
   - moved expression computation before SID calculation in node mapper.
   - handle corner cases in `ResolveDataExpression`. Results may be a single primitive; a single primitive in a 1-item array; or an array or object, to be evaluated against a JMES expression.
+  - fixed culture in `_hdate` macro.
 - 2023-05-05: added some comments.
 
 ### 2.1.0
