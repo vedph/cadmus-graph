@@ -7,8 +7,6 @@ using System.Text;
 using System.Linq;
 using System.Globalization;
 using Cadmus.Graph.Adapters;
-using Fusi.Text.Unicode;
-using System.Text.RegularExpressions;
 
 namespace Cadmus.Graph;
 
@@ -151,8 +149,8 @@ public abstract class NodeMapper : DataDictionary
                 return ResolveNode(value);
 
             case TemplateNodeType.Metadatum:
-                if (Data.ContainsKey(value))
-                    return Data[value]?.ToString() ?? "";
+                if (Data.TryGetValue(value, out object? d))
+                    return d?.ToString() ?? "";
                 break;
 
             case TemplateNodeType.Expression:

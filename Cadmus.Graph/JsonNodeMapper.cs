@@ -58,7 +58,8 @@ public sealed class JsonNodeMapper : NodeMapper, INodeMapper
                 Uri = uri,
                 SourceType = _sourceType,
                 Sid = sid,
-                Label = p.Value.Label ?? uri
+                Label = string.IsNullOrEmpty(p.Value.Label) ?
+                    uri : ResolveTemplate(p.Value.Label, false)
             };
             ContextNodes[p.Key] = node;
             target.Nodes.Add(node);
@@ -131,12 +132,12 @@ public sealed class JsonNodeMapper : NodeMapper, INodeMapper
         Logger?.LogDebug($"Mapping {mapping}");
 
         // generate SID if required
-        if (string.IsNullOrEmpty(sid) && mapping.Sid != null)
-        {
-            _doc = JsonDocument.Parse(json);
-            sid = ResolveTemplate(mapping.Sid!, false);
-            if (!string.IsNullOrEmpty(sid)) _lastSid = sid;
-        }
+        //if (string.IsNullOrEmpty(sid) && mapping.Sid != null)
+        //{
+        //    _doc = JsonDocument.Parse(json);
+        //    sid = ResolveTemplate(mapping.Sid!, false);
+        //    if (!string.IsNullOrEmpty(sid)) _lastSid = sid;
+        //}
 
         // if we're dealing with an array's item, we do not want to compute
         // the mapping's expression, but just use the received json
@@ -160,6 +161,14 @@ public sealed class JsonNodeMapper : NodeMapper, INodeMapper
 
         // get the result into the current document
         _doc = JsonDocument.Parse(result);
+
+        // generate SID if required
+        if (string.IsNullOrEmpty(sid) && mapping.Sid != null)
+        {
+            //_doc = JsonDocument.Parse(json);
+            sid = ResolveTemplate(mapping.Sid!, false);
+            if (!string.IsNullOrEmpty(sid)) _lastSid = sid;
+        }
 
         // process it according to its root type:
         switch (_doc.RootElement.ValueKind)

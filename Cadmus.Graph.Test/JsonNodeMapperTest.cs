@@ -1,7 +1,6 @@
 using Xunit;
 using System.Text.Json;
 using System.IO;
-using System.Reflection;
 using System.Text;
 using System.Collections.Generic;
 using System;
@@ -42,14 +41,14 @@ public sealed class JsonNodeMapperTest
         mapper.Data.Clear();
 
         // mock metadata from item
-        mapper.Data["item-id"] = Guid.NewGuid().ToString();
+        mapper.Data["item-id"] = "12345678-AAAA-BBBB-CCCC-123456789ABC";
         mapper.Data["item-uri"] = "x:items/my-item";
         mapper.Data["item-label"] = "Petrarch";
         mapper.Data["group-id"] = "group";
         mapper.Data["facet-id"] = "facet";
         mapper.Data["flags"] = "3";
         // mock metada from part
-        mapper.Data["part-id"] = Guid.NewGuid().ToString();
+        mapper.Data["part-id"] = "12345678-DDDD-EEEEE-FFFF-123456789ABC";
     }
 
     [Fact]
@@ -81,5 +80,41 @@ public sealed class JsonNodeMapperTest
         //JmesPath jmes = new();
         //string? x = jmes.Transform(_json, "id");
         //JsonDocument doc = JsonDocument.Parse(x);
+    }
+
+    [Fact]
+    public void Map_Work()
+    {
+        NodeMappingOutput output = new();
+        output.Nodes["work"] = new()
+        {
+            Uid = "itn:works/{$item-id}/{@value}",
+            Label = "itn:works/{@value}"
+        };
+        output.Triples.Add(new MappedTriple
+        {
+            S = "{?work}",
+            P = "rdf:type",
+            O = "itn:works/{@value}"
+        });
+        NodeMapping mapping = new()
+        {
+            Name = "work",
+            SourceType = 2,
+            FacetFilter = "work",
+            PartTypeFilter = "it.vedph.metadata",
+            Source = "metadata[?name=='eid']",
+            Sid = "{$part-id}/{@[0].value}",
+            Output = output
+        };
+        GraphSet set = new();
+        JsonNodeMapper mapper = new();
+        ResetMapperMetadata(mapper);
+        string json = "{\"metadata\": [{\"name\": \"eid\", \"value\":\"x\"}]}";
+
+        mapper.Map(json, mapping, set);
+
+        Assert.Equal(1, set.Nodes.Count);
+        Assert.Equal(1, set.Triples.Count);
     }
 }
