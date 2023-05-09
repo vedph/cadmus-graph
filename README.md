@@ -5,6 +5,7 @@
     - [Demo](#demo)
     - [API](#api)
   - [History](#history)
+    - [2.1.4](#214)
     - [2.1.3](#213)
     - [2.1.0](#210)
     - [2.0.11](#2011)
@@ -75,6 +76,10 @@ docker compose -f docker-compose-api.yml up
 ```
 
 ## History
+
+### 2.1.4
+
+- 2023-05-09: fixes to `MappedTriple` to string/parser to ensure that a literal is always wrapped in `""` eventually followed by `@lang` or `^^type`.
 
 ### 2.1.3
 
