@@ -161,12 +161,9 @@ public class NodeMappingOutputJsonConverter : JsonConverter<NodeMappingOutput>
             writer.WriteStartObject("nodes");
             foreach (var p in value.Nodes)
             {
-                // "key": "string-value"
-                writer.WriteStartObject(p.Key);
-                // "value" with form "uri label [tag]" where only "uri"
-                // is required
-                writer.WriteStringValue(p.Value.ToString());
-                writer.WriteEndObject();
+                // "key": "string-value" with form "uri label [tag]"
+                // where only "uri" is required
+                writer.WriteString(p.Key, p.Value.ToString());
             }
             writer.WriteEndObject();
         }
@@ -187,10 +184,7 @@ public class NodeMappingOutputJsonConverter : JsonConverter<NodeMappingOutput>
         {
             writer.WriteStartObject("metadata");
             foreach (var p in value.Metadata)
-            {
-                writer.WritePropertyName(p.Key);
-                writer.WriteStringValue(p.Value);
-            }
+                writer.WriteString(p.Key, p.Value);
             writer.WriteEndObject();
         }
 
