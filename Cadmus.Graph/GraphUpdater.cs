@@ -53,6 +53,27 @@ public class GraphUpdater
         Metadata.Clear();
     }
 
+    private GraphUpdaterExplanation Explain(object data,
+        RunNodeMappingFilter filter)
+    {
+        GraphUpdaterExplanation explanation = new()
+        {
+            Filter = filter
+        };
+        foreach (NodeMapping mapping in _repository.FindMappings(filter))
+        {
+            explanation.Mappings.Add(mapping);
+            _mapper.Map(data, mapping, explanation.Set);
+        }
+        // copy metadata to explanation metadata
+        foreach (KeyValuePair<string, string> p in Metadata)
+            explanation.Metadata.Add(p.Key, p.Value);
+
+        Metadata.Clear();
+
+        return explanation;
+    }
+
     /// <summary>
     /// Updates the graph from the specified item.
     /// </summary>
@@ -85,5 +106,43 @@ public class GraphUpdater
 
         var df = _partAdapter.Adapt(_mapper.Context, Metadata);
         if (df.Item1 != null) Update(df.Item1, df.Item2);
+    }
+
+    /// <summary>
+    /// Explains the update path for the specified item.
+    /// </summary>
+    /// <param name="item">The item.</param>
+    /// <returns>Explanation or null if item not found.</returns>
+    /// <exception cref="ArgumentNullException">item</exception>
+    public GraphUpdaterExplanation? Explain(IItem item)
+    {
+        if (item is null) throw new ArgumentNullException(nameof(item));
+
+        _mapper.Context = new GraphSource(item);
+        MetadataSupplier?.Supply(_mapper.Context, Metadata);
+
+        var df = _itemAdapter.Adapt(_mapper.Context, Metadata);
+        if (df.Item1 == null) return null;
+        return Explain(df.Item1, df.Item2);
+    }
+
+    /// <summary>
+    /// Explains the update path for the specified part.
+    /// </summary>
+    /// <param name="item">The item.</param>
+    /// <param name="part">The part.</param>
+    /// <returns>Explanation or null if item not found.</returns>
+    /// <exception cref="ArgumentNullException">item or part</exception>
+    public GraphUpdaterExplanation? Explain(IItem item, IPart part)
+    {
+        if (item is null) throw new ArgumentNullException(nameof(item));
+        if (part is null) throw new ArgumentNullException(nameof(part));
+
+        _mapper.Context = new GraphSource(item, part);
+        MetadataSupplier?.Supply(_mapper.Context, Metadata);
+
+        var df = _partAdapter.Adapt(_mapper.Context, Metadata);
+        if (df.Item1 == null) return null;
+        return Explain(df.Item1, df.Item2);
     }
 }

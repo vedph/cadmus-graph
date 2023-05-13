@@ -5,6 +5,7 @@
     - [Demo](#demo)
     - [API](#api)
   - [History](#history)
+    - [2.1.6](#216)
     - [2.1.5](#215)
     - [2.1.4](#214)
     - [2.1.3](#213)
@@ -77,6 +78,10 @@ docker compose -f docker-compose-api.yml up
 ```
 
 ## History
+
+### 2.1.6
+
+- 2023-05-13: added `GraphUpdate.Explain`.
 
 ### 2.1.5
 

@@ -110,7 +110,7 @@ public sealed class JsonNodeMapperTest
         GraphSet set = new();
         JsonNodeMapper mapper = new();
         ResetMapperMetadata(mapper);
-        string json = "{\"metadata\": [{\"name\": \"eid\", \"value\":\"x\"}]}";
+        const string json = "{\"metadata\": [{\"name\": \"eid\", \"value\":\"x\"}]}";
 
         mapper.Map(json, mapping, set);
 

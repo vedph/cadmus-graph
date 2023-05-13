@@ -52,7 +52,7 @@ public abstract class JsonGraphSourceAdapter
             throw new ArgumentNullException(nameof(metadata));
 
         RunNodeMappingFilter filter = new();
-        object? result = Adapt(source, new RunNodeMappingFilter(), metadata);
+        object? result = Adapt(source, filter, metadata);
 
         return Tuple.Create(
             (object?)JsonSerializer.Serialize(result, _options),
