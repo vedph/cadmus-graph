@@ -43,9 +43,18 @@ public class GraphUpdater
         Metadata = new Dictionary<string, string>();
     }
 
+    private void SetMapperMetadata()
+    {
+        _mapper.Data.Clear();
+        foreach (KeyValuePair<string, string> p in Metadata)
+            _mapper.Data.Add(p.Key, p.Value);
+    }
+
     private void Update(object data, RunNodeMappingFilter filter)
     {
+        SetMapperMetadata();
         GraphSet set = new();
+
         foreach (NodeMapping mapping in _repository.FindMappings(filter))
             _mapper.Map(data, mapping, set);
 
@@ -56,6 +65,7 @@ public class GraphUpdater
     private GraphUpdaterExplanation Explain(object data,
         RunNodeMappingFilter filter)
     {
+        SetMapperMetadata();
         GraphUpdaterExplanation explanation = new()
         {
             Filter = filter

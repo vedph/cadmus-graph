@@ -944,7 +944,10 @@ public abstract class SqlGraphRepository : IConfigurable<SqlOptions>
         }
 
         if (!string.IsNullOrEmpty(filter.Title))
-            query.Where("title_filter", filter.Title);
+        {
+            query.WhereRaw(SqlHelper.BuildRegexMatch("title_filter",
+                SqlHelper.SqlEncode(filter.Title, false, true, false)));
+        }
 
         if (!string.IsNullOrEmpty(filter.PartType))
             query.Where("part_type_filter", filter.PartType);

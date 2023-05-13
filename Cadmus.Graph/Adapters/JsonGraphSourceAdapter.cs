@@ -18,7 +18,10 @@ public abstract class JsonGraphSourceAdapter
     /// </summary>
     protected JsonGraphSourceAdapter()
     {
-        _options = new();
+        _options = new()
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        };
     }
 
     /// <summary>
@@ -46,10 +49,8 @@ public abstract class JsonGraphSourceAdapter
     public Tuple<object?, RunNodeMappingFilter> Adapt(
         GraphSource source, IDictionary<string, string> metadata)
     {
-        if (source is null)
-            throw new ArgumentNullException(nameof(source));
-        if (metadata is null)
-            throw new ArgumentNullException(nameof(metadata));
+        if (source is null) throw new ArgumentNullException(nameof(source));
+        if (metadata is null) throw new ArgumentNullException(nameof(metadata));
 
         RunNodeMappingFilter filter = new();
         object? result = Adapt(source, filter, metadata);

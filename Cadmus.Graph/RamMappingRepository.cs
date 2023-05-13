@@ -13,7 +13,7 @@ namespace Cadmus.Graph;
 /// RAM-based mappings repository.
 /// </summary>
 /// <seealso cref="IMappingRepository" />
-public sealed class RamMappingRepository : IMappingRepository
+public class RamMappingRepository : IMappingRepository
 {
     private int _nextId;
     private readonly JsonSerializerOptions _jsonOptions;
