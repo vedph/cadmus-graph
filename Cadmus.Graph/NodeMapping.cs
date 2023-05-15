@@ -113,21 +113,6 @@ public class NodeMapping
         Source = "";
     }
 
-    private static bool AppendFilter(string id, bool filter, StringBuilder sb,
-        string value)
-    {
-        if (!filter)
-        {
-            sb.Append('[');
-            filter = true;
-        }
-        else sb.Append(", ");
-
-        sb.Append(id).Append('=');
-        sb.Append(value);
-        return filter;
-    }
-
     /// <summary>
     /// Visits this mapping and all its descendants.
     /// </summary>
@@ -174,6 +159,21 @@ public class NodeMapping
         };
     }
 
+    private static bool AppendFilter(string id, bool filter, StringBuilder sb,
+        string value)
+    {
+        if (!filter)
+        {
+            sb.Append('[');
+            filter = true;
+        }
+        else sb.Append(", ");
+
+        sb.Append(id).Append('=');
+        sb.Append(value);
+        return filter;
+    }
+
     /// <summary>
     /// Converts to string.
     /// </summary>
@@ -184,7 +184,7 @@ public class NodeMapping
     {
         StringBuilder sb = new();
 
-        sb.Append('#').Append(Id).Append(" @").Append(SourceType);
+        sb.Append('#').Append(Id).Append(Name).Append(" @").Append(SourceType);
 
         bool filter = false;
         if (!string.IsNullOrEmpty(FacetFilter))
@@ -202,6 +202,8 @@ public class NodeMapping
             filter = AppendFilter("type", filter, sb, PartTypeFilter);
         if (!string.IsNullOrEmpty(PartRoleFilter))
             AppendFilter("role", filter, sb, PartRoleFilter);
+
+        if (filter) sb.Append(']');
 
         sb.Append(": ").Append(Source);
         if (Output != null) sb.Append(" -> ").Append(Output);

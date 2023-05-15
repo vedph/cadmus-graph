@@ -5,6 +5,7 @@
     - [Demo](#demo)
     - [API](#api)
   - [History](#history)
+    - [2.1.11](#2111)
     - [2.1.10](#2110)
     - [2.1.5](#215)
     - [2.1.4](#214)
@@ -78,6 +79,12 @@ docker compose -f docker-compose-api.yml up
 ```
 
 ## History
+
+### 2.1.11
+
+- 2023-05-15:
+  - updated packages.
+  - fixes to `NodeMapping.ToString`.
 
 ### 2.1.10
 
