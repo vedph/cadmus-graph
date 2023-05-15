@@ -1682,7 +1682,56 @@ public abstract class SqlGraphRepositoryTest
             ObjectId = nodeWork.Id,
         });
         Assert.Equal(1, page.Total);
-        // TODO
+        // event P3_has_note literal
+        page = repository.GetTriples(new TripleFilter
+        {
+            SubjectId = nodeEvent.Id,
+            PredicateIds = new HashSet<int>
+                { repository.GetNodeByUri("crm:p3_has_note")?.Id ?? 0 },
+        });
+        Assert.Equal(1, page.Total);
+        Assert.Equal(part.Events[0].Note, page.Items[0].ObjectLiteral);
+        // itn:places/arezzo a crm:e53_place
+        page = repository.GetTriples(new TripleFilter
+        {
+            SubjectId = nodePlace.Id,
+            PredicateIds = new HashSet<int> { nodeA.Id },
+            ObjectId = repository.GetNodeByUri("crm:e53_place")?.Id ?? 0,
+        });
+        Assert.Equal(1, page.Total);
+        // event P7_took_place_at itn:places/arezzo
+        page = repository.GetTriples(new TripleFilter
+        {
+            SubjectId = nodeEvent.Id,
+            PredicateIds = new HashSet<int>
+                { repository.GetNodeByUri("crm:p7_took_place_at")?.Id ?? 0 },
+            ObjectId = nodePlace.Id,
+        });
+        // event P4_has_time-span itn:timespans/ts
+        page = repository.GetTriples(new TripleFilter
+        {
+            SubjectId = nodeEvent.Id,
+            PredicateIds = new HashSet<int>
+                { repository.GetNodeByUri("crm:p4_has_time-span")?.Id ?? 0 },
+            ObjectId = nodeTs.Id,
+        });
+        Assert.Equal(1, page.Total);
+        // timespan/ts P82_at_some_time_within literal
+        page = repository.GetTriples(new TripleFilter
+        {
+            SubjectId = nodeTs.Id,
+            PredicateIds = new HashSet<int>
+                { repository.GetNodeByUri("crm:p82_at_some_time_within")?.Id ?? 0 },
+        });
+        Assert.Equal(1, page.Total);
+        // timespan/ts P87_is_identified_by literal
+        page = repository.GetTriples(new TripleFilter
+        {
+            SubjectId = nodeTs.Id,
+            PredicateIds = new HashSet<int>
+                { repository.GetNodeByUri("crm:p87_is_identified_by")?.Id ?? 0 },
+        });
+        Assert.Equal(1, page.Total);
     }
     #endregion
 }
