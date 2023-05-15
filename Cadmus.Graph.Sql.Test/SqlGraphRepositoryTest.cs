@@ -1552,7 +1552,7 @@ public abstract class SqlGraphRepositoryTest
         Assert.False(results[1].HasChildren);
     }
 
-    protected void UpdateGraph_Ok()
+    protected void DoUpdateGraph_Ok()
     {
         Reset();
         IGraphRepository repository = GetRepository();
@@ -1589,7 +1589,7 @@ public abstract class SqlGraphRepositoryTest
         {
             Eid = "alpha-send",
             Type = "text.send",
-            Description = "The alpha work is sent to Arezzo's bishop.",
+            Description = "The alpha work is sent to Petrarch.",
             Chronotopes = new List<AssertedChronotope>(new[]
             {
                 new AssertedChronotope
@@ -1600,10 +1600,19 @@ public abstract class SqlGraphRepositoryTest
                     },
                     Place = new AssertedPlace
                     {
-                        Value = "http://dbpedia.org/resource/Arezzo"
+                        Value = "Arezzo"
                     }
                 }
             }),
+            RelatedEntities = new List<RelatedEntity>
+            {
+                new RelatedEntity
+                {
+                    // dbr = http://dbpedia.org/resource/
+                    Id = "dbr:Petrarch",
+                    Relation = "text:reception:recipient"
+                }
+            },
             Note = "An editorial note about this event."
         });
         // setup updater (note that we discard metadata supplier for item's EID,
@@ -1611,11 +1620,47 @@ public abstract class SqlGraphRepositoryTest
         // dependencies)
         GraphUpdater updater = new(repository);
 
+        updater.Update(item, part);
+
+        // nodes
+        string eventUri = $"itn:events/{part.Id}/alpha-send";
+        string sid = $"{part.Id}/alpha-send";
+        // the expected work URI should end with the item's EID, but here
+        // the mapper has no access to it because for simplicity we have
+        // omitted the EID metadata supplier
+        string workUriPrefix = $"itn:works/{item.Id}/";
+        Node? nodeEvent = repository.GetNodeByUri(eventUri);
+        Assert.NotNull(nodeEvent);
+        Assert.False(nodeEvent.IsClass);
+        Assert.Equal(2, nodeEvent.SourceType);
+        Assert.Equal(sid, nodeEvent.Sid);
+        // place node
+        Node? nodePlace = repository.GetNodeByUri("itn:places/arezzo");
+        Assert.NotNull(nodePlace);
+        Assert.False(nodePlace.IsClass);
+        Assert.Equal(2, nodePlace.SourceType);
+        Assert.Equal(sid, nodePlace.Sid);
+        // timespan node
+        Node? nodeTs = repository.GetNodeByUri("itn:timespans/ts");
+        Assert.NotNull(nodeTs);
+        Assert.False(nodeTs.IsClass);
+        Assert.Equal(2, nodeTs.SourceType);
+        Assert.Equal(sid, nodeTs.Sid);
+        // work node
+        Node? nodeWork = repository.GetNodeByUri(workUriPrefix);
+        Assert.NotNull(nodeWork);
+        Assert.False(nodeWork.IsClass);
+        Assert.Equal(2, nodeWork.SourceType);
+        Assert.Equal(sid, nodeWork.Sid);
+
+        // triples
+        // event a E7_activity
+        DataPage<UriTriple> page = repository.GetTriples(new TripleFilter
+        {
+            SubjectId = nodeEvent.Id,
+            ObjectId = repository.GetNodeByUri("crm:e7_activity")?.Id ?? 0,
+        });
         // TODO
-
-        GraphUpdaterExplanation explanation = updater.Explain(item, part)!;
-
-        Assert.NotNull(explanation);
     }
     #endregion
 }
