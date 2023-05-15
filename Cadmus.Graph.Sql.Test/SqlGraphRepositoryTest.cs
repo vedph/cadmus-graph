@@ -1654,12 +1654,34 @@ public abstract class SqlGraphRepositoryTest
         Assert.Equal(sid, nodeWork.Sid);
 
         // triples
+        Node? nodeA = repository.GetNodeByUri("rdf:type");
+        Assert.NotNull(nodeA);
         // event a E7_activity
         DataPage<UriTriple> page = repository.GetTriples(new TripleFilter
         {
             SubjectId = nodeEvent.Id,
+            PredicateIds = new HashSet<int> { nodeA.Id },
             ObjectId = repository.GetNodeByUri("crm:e7_activity")?.Id ?? 0,
         });
+        Assert.Equal(1, page.Total);
+        // event P2_has_type text.send
+        page = repository.GetTriples(new TripleFilter
+        {
+            SubjectId = nodeEvent.Id,
+            PredicateIds = new HashSet<int>
+                { repository.GetNodeByUri("crm:p2_has_type")?.Id ?? 0 },
+            ObjectId = repository.GetNodeByUri("itn:event_types/text.send")?.Id ?? 0,
+        });
+        Assert.Equal(1, page.Total);
+        // event P16_used_specific_object work
+        page = repository.GetTriples(new TripleFilter
+        {
+            SubjectId = nodeEvent.Id,
+            PredicateIds = new HashSet<int>
+            { repository.GetNodeByUri("crm:p16_used_specific_object")?.Id ?? 0 },
+            ObjectId = nodeWork.Id,
+        });
+        Assert.Equal(1, page.Total);
         // TODO
     }
     #endregion
