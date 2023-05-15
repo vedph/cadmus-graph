@@ -20,7 +20,7 @@ public sealed class GraphUpdaterExplanation
     /// <summary>
     /// Gets the metadata for the update.
     /// </summary>
-    public IDictionary<string, string> Metadata { get; }
+    public IDictionary<string, object> Metadata { get; }
 
     /// <summary>
     /// Gets or sets the graph set produced by the mappings.
@@ -35,7 +35,7 @@ public sealed class GraphUpdaterExplanation
     {
         Filter = new RunNodeMappingFilter();
         Mappings = new List<NodeMapping>();
-        Metadata = new Dictionary<string, string>();
+        Metadata = new Dictionary<string, object>();
         Set = new();
     }
 

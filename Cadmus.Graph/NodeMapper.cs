@@ -15,6 +15,11 @@ namespace Cadmus.Graph;
 /// </summary>
 public abstract class NodeMapper : DataDictionary
 {
+    /// <summary>
+    /// The name of the mapper's applied mappings list in metadata.
+    /// </summary>
+    public const string APPLIED_MAPPING_LIST = "applied-mapping-list";
+
     private readonly Dictionary<string, INodeMappingMacro> _macros;
 
     /// <summary>
@@ -44,6 +49,13 @@ public abstract class NodeMapper : DataDictionary
     /// mapping a part you would still need to know about its parent item.
     /// </summary>
     public GraphSource? Context { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether applied mappings tracing is
+    /// enabled. This property is used by implementors to trace the list of
+    /// applied mappings in the metadata, under key <see cref="APPLIED_MAPPING_LIST"/>.
+    /// </summary>
+    public bool IsMappingTracingEnabled { get; set; }
 
     /// <summary>
     /// Gets or sets the context nodes of this mapper. These are the nodes
@@ -94,8 +106,8 @@ public abstract class NodeMapper : DataDictionary
             args = macro[(i + 1)..].Split(" & ");
         }
 
-        return _macros.ContainsKey(id)
-            ? _macros[id].Run(Context, args) ?? ""
+        return _macros.TryGetValue(id, out INodeMappingMacro? value)
+            ? value.Run(Context, args) ?? ""
             : "";
     }
 

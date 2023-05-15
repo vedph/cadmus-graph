@@ -54,7 +54,7 @@ public class MetadataSupplier
     /// <param name="metadata">The target metadata to update.</param>
     /// <param name="context">The optional context object.</param>
     /// <exception cref="ArgumentNullException">source or metadata</exception>
-    public void Supply(GraphSource source, IDictionary<string, string> metadata,
+    public void Supply(GraphSource source, IDictionary<string, object> metadata,
         object? context = null)
     {
         if (source is null) throw new ArgumentNullException(nameof(source));

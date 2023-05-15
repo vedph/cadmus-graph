@@ -5,6 +5,8 @@
     - [Demo](#demo)
     - [API](#api)
   - [History](#history)
+    - [2.2.0](#220)
+    - [2.1.12](#2112)
     - [2.1.11](#2111)
     - [2.1.10](#2110)
     - [2.1.5](#215)
@@ -79,6 +81,21 @@ docker compose -f docker-compose-api.yml up
 ```
 
 ## History
+
+### 2.2.2
+
+- 2023-05-15:
+  - fixes and tests for graph updater.
+
+### 2.2.0
+
+- 2023-05-15:
+  - replaced mapper metadata with a dictionary of objects rather than of strings, thus matching the underlying components implementations.
+  - added applied metadata tracing to node mapper and graph updater.
+
+### 2.1.12
+
+- 2023-05-15: fixes to mappings output population.
 
 ### 2.1.11
 

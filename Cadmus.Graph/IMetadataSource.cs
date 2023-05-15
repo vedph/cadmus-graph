@@ -18,6 +18,6 @@ public interface IMetadataSource
     /// <param name="repository">The optional Cadmus repository.</param>
     /// <param name="context">An optional context object, eventually used
     /// by implementors.</param>
-    void Supply(GraphSource source, IDictionary<string, string> metadata,
+    void Supply(GraphSource source, IDictionary<string, object> metadata,
         ICadmusRepository? repository, object? context = null);
 }

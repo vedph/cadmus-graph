@@ -84,34 +84,52 @@ internal class MockGraphRepository : RamMappingRepository, IGraphRepository
     private static IQueryable<NodeMapping> ApplyNodeMappingFilter(
         RunNodeMappingFilter filter, IQueryable<NodeMapping> mappings)
     {
+        // (in our RAM list all the mappings are top-level, so no parent ID
+        // filtering is required)
+
+        // source type is always present
         mappings = mappings.Where(m => m.SourceType == filter.SourceType);
 
         if (!string.IsNullOrEmpty(filter.Facet))
-            mappings = mappings.Where(m => m.FacetFilter == filter.Facet);
+        {
+            mappings = mappings.Where(m => m.FacetFilter == null
+                || m.FacetFilter == filter.Facet);
+        }
 
         if (!string.IsNullOrEmpty(filter.Group))
         {
             mappings = mappings.Where(m =>
+                m.GroupFilter == null ||
                 Regex.IsMatch(filter.Group, m.GroupFilter ?? ""));
         }
 
         if (filter.Flags.HasValue)
         {
             mappings = mappings.Where(m =>
+                m.FlagsFilter == null ||
                 (m.FlagsFilter & filter.Flags.Value) == filter.Flags.Value);
         }
 
         if (!string.IsNullOrEmpty(filter.Title))
         {
             mappings = mappings.Where(m =>
+                m.TitleFilter == null ||
                 Regex.IsMatch(filter.Title, m.TitleFilter ?? ""));
         }
 
         if (!string.IsNullOrEmpty(filter.PartType))
-            mappings = mappings.Where(m => m.PartTypeFilter == filter.PartType);
+        {
+            mappings = mappings.Where(m =>
+                m.PartTypeFilter == null ||
+                m.PartTypeFilter == filter.PartType);
+        }
 
         if (!string.IsNullOrEmpty(filter.PartRole))
-            mappings = mappings.Where(m => m.PartRoleFilter == filter.PartRole);
+        {
+            mappings = mappings.Where(m =>
+                m.PartRoleFilter == null ||
+                m.PartRoleFilter == filter.PartRole);
+        }
 
         return mappings;
     }

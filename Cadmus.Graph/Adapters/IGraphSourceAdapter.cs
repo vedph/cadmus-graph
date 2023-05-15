@@ -18,5 +18,5 @@ public interface IGraphSourceAdapter
     /// <returns>Tuple with 1=adaptation result or null and 2=filter for
     /// node mappings.</returns>
     Tuple<object?, RunNodeMappingFilter> Adapt(GraphSource source,
-        IDictionary<string, string> metadata);
+        IDictionary<string, object> metadata);
 }

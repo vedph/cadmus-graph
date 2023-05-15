@@ -184,7 +184,9 @@ public class NodeMapping
     {
         StringBuilder sb = new();
 
-        sb.Append('#').Append(Id).Append(Name).Append(" @").Append(SourceType);
+        sb.Append('#').Append(Id)
+          .Append(' ').Append(Name)
+          .Append(" @").Append(SourceType);
 
         bool filter = false;
         if (!string.IsNullOrEmpty(FacetFilter))
@@ -202,7 +204,6 @@ public class NodeMapping
             filter = AppendFilter("type", filter, sb, PartTypeFilter);
         if (!string.IsNullOrEmpty(PartRoleFilter))
             AppendFilter("role", filter, sb, PartRoleFilter);
-
         if (filter) sb.Append(']');
 
         sb.Append(": ").Append(Source);

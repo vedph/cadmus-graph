@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Text.Json;
 using DevLab.JmesPath;
+using System.Collections.Generic;
 
 namespace Cadmus.Graph;
 
@@ -139,6 +140,21 @@ public sealed class JsonNodeMapper : NodeMapper, INodeMapper
         GraphSet target, int itemIndex = -1)
     {
         Logger?.LogDebug($"Mapping {mapping}");
+
+        if (IsMappingTracingEnabled)
+        {
+            IList<NodeMapping>? traced = null;
+            if (Data.TryGetValue(APPLIED_MAPPING_LIST, out object? mappings))
+                traced = mappings as IList<NodeMapping>;
+            if (traced == null)
+            {
+                traced = new List<NodeMapping>();
+                Data[APPLIED_MAPPING_LIST] = traced;
+            }
+            // avoid sequences of duplicates (which happen in arrays)
+            if (traced.Count == 0 || traced[^1] != mapping)
+                traced.Add(mapping);
+        }
 
         // generate SID if required
         //if (string.IsNullOrEmpty(sid) && mapping.Sid != null)

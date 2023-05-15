@@ -1,10 +1,17 @@
+using Cadmus.Core;
 using Cadmus.Core.Config;
+using Cadmus.Core.Storage;
+using Cadmus.General.Parts;
+using Cadmus.Refs.Bricks;
+using Fusi.Antiquity.Chronology;
 using Fusi.DbManager;
 using Fusi.Tools.Data;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using Xunit;
 
 namespace Cadmus.Graph.Sql.Test;
@@ -1512,7 +1519,14 @@ public abstract class SqlGraphRepositoryTest
         IList<NodeMapping> mappings = GetMappings(3);
         mappings[0].Children.Add(new NodeMapping
         {
-            Name = "child"
+            Name = "child",
+            Output = new NodeMappingOutput
+            {
+                Metadata = new Dictionary<string, string>
+                {
+                    ["x"] = "y"
+                }
+            }
         });
         mappings[1].FacetFilter = "x";
         foreach (NodeMapping mapping in mappings)
@@ -1531,10 +1545,77 @@ public abstract class SqlGraphRepositoryTest
         Assert.NotNull(results[0].Output);
         Assert.True(results[0].HasChildren);
         Assert.Equal("child", results[0].Children[0].Name);
+        Assert.NotNull(results[0].Children[0].Output);
 
         Assert.Equal("m3", results[1].Name);
         Assert.NotNull(results[1].Output);
         Assert.False(results[1].HasChildren);
+    }
+
+    protected void UpdateGraph_Ok()
+    {
+        Reset();
+        IGraphRepository repository = GetRepository();
+        // load mappings
+        string json = TestHelper.LoadResourceText("MappingsDoc.json");
+        JsonSerializerOptions options = new()
+        {
+            AllowTrailingCommas = true,
+            PropertyNameCaseInsensitive = true,
+        };
+        options.Converters.Add(new NodeMappingOutputJsonConverter());
+        NodeMappingDocument doc = JsonSerializer.Deserialize<NodeMappingDocument>
+            (json, options)!;
+        // save mappings into DB
+        foreach (NodeMapping mapping in doc.GetMappings())
+            repository.AddMapping(mapping);
+        IItem item = new Item
+        {
+            Title = "Alpha work",
+            Description = "Alpha work description",
+            FacetId = "work",
+            SortKey = "alphawork",
+            UserId = "zeus",
+            CreatorId = "zeus"
+        };
+        HistoricalEventsPart part = new()
+        {
+            ItemId = item.Id,
+            RoleId = "txt",
+            UserId = "zeus",
+            CreatorId = "zeus"
+        };
+        part.Events.Add(new HistoricalEvent
+        {
+            Eid = "alpha-send",
+            Type = "text.send",
+            Description = "The alpha work is sent to Arezzo's bishop.",
+            Chronotopes = new List<AssertedChronotope>(new[]
+            {
+                new AssertedChronotope
+                {
+                    Date = new AssertedDate
+                    {
+                        A = Datation.Parse("1250 AD")!
+                    },
+                    Place = new AssertedPlace
+                    {
+                        Value = "http://dbpedia.org/resource/Arezzo"
+                    }
+                }
+            }),
+            Note = "An editorial note about this event."
+        });
+        // setup updater (note that we discard metadata supplier for item's EID,
+        // as it's not needed for this test and it would require additional
+        // dependencies)
+        GraphUpdater updater = new(repository);
+
+        // TODO
+
+        GraphUpdaterExplanation explanation = updater.Explain(item, part)!;
+
+        Assert.NotNull(explanation);
     }
     #endregion
 }

@@ -34,7 +34,7 @@ public abstract class JsonGraphSourceAdapter
     /// <param name="metadata">The metadata to set.</param>
     /// <returns>Adapted object or null.</returns>
     protected abstract object? Adapt(GraphSource source,
-        RunNodeMappingFilter filter, IDictionary<string, string> metadata);
+        RunNodeMappingFilter filter, IDictionary<string, object> metadata);
 
     /// <summary>
     /// Adapts the specified source.
@@ -47,7 +47,7 @@ public abstract class JsonGraphSourceAdapter
     /// </returns>
     /// <exception cref="ArgumentNullException">source or metadata</exception>
     public Tuple<object?, RunNodeMappingFilter> Adapt(
-        GraphSource source, IDictionary<string, string> metadata)
+        GraphSource source, IDictionary<string, object> metadata)
     {
         if (source is null) throw new ArgumentNullException(nameof(source));
         if (metadata is null) throw new ArgumentNullException(nameof(metadata));

@@ -5,9 +5,9 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
-    <Version>2.1.11</Version>
-    <FileVersion>2.1.11</FileVersion>
-    <AssemblyVersion>2.1.11</AssemblyVersion>
+    <Version>2.2.2</Version>
+    <FileVersion>2.2.2</FileVersion>
+    <AssemblyVersion>2.2.2</AssemblyVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,6 +16,7 @@
     <None Remove="Assets\MappingsDoc.json" />
     <None Remove="Assets\Nodes.json" />
     <None Remove="Assets\Thesauri.json" />
+    <None Remove="Assets\WorkMappingsDoc.json" />
   </ItemGroup>
 
   <ItemGroup>
@@ -24,9 +25,11 @@
     <EmbeddedResource Include="Assets\MappingsDoc.json" />
     <EmbeddedResource Include="Assets\Nodes.json" />
     <EmbeddedResource Include="Assets\Thesauri.json" />
+    <EmbeddedResource Include="Assets\WorkMappingsDoc.json" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Cadmus.General.Parts" Version="4.2.1" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.5.0" />
     <PackageReference Include="xunit" Version="2.4.2" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.5">

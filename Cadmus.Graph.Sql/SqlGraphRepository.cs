@@ -1096,6 +1096,7 @@ public abstract class SqlGraphRepository : IConfigurable<SqlOptions>
         {
             NodeMapping child = DataToMapping(d);
             mapping.Children.Add(child);
+            PopulateMappingOutput(child, qf);
             PopulateMappingDescendants(child, qf);
         }
     }
@@ -1272,9 +1273,8 @@ public abstract class SqlGraphRepository : IConfigurable<SqlOptions>
     private void ApplyRunNodeMappingsFilter(RunNodeMappingFilter filter,
         Query query)
     {
-        // top-level mappings only with specified source type
-        query.WhereNull("parent_id")
-             .Where("source_type", filter.SourceType);
+        // top-level mappings only, with the specified source type
+        query.WhereNull("parent_id").Where("source_type", filter.SourceType);
 
         // optional facet
         if (!string.IsNullOrEmpty(filter.Facet))
@@ -1350,8 +1350,7 @@ public abstract class SqlGraphRepository : IConfigurable<SqlOptions>
         foreach (var d in query.Get())
         {
             var mapping = DataToMapping(d);
-            PopulateMappingOutput(mapping, qf);
-            PopulateMappingDescendants(mapping, qf);
+            mapping = GetPopulatedMapping(mapping, qf, true);
             mappings.Add(mapping);
         }
 

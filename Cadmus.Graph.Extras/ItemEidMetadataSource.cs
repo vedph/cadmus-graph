@@ -26,7 +26,7 @@ public sealed class ItemEidMetadataSource : IMetadataSource
     /// <param name="context">The optional context.</param>
     /// <exception cref="ArgumentNullException">source or metadata or repository
     /// </exception>
-    public void Supply(GraphSource source, IDictionary<string, string> metadata,
+    public void Supply(GraphSource source, IDictionary<string, object> metadata,
         ICadmusRepository? repository, object? context = null)
     {
         if (source is null) throw new ArgumentNullException(nameof(source));

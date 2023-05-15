@@ -22,7 +22,7 @@ public class GraphUpdater
     /// it will be invoked before each update. All metadata are automatically
     /// reset after updating.
     /// </summary>
-    public IDictionary<string, string> Metadata { get; }
+    public IDictionary<string, object> Metadata { get; }
 
     /// <summary>
     /// Gets or sets the optional metadata supplier to be used by this updater.
@@ -37,16 +37,16 @@ public class GraphUpdater
     public GraphUpdater(IGraphRepository repository)
     {
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
-        _mapper = new JsonNodeMapper();
+        _mapper = new JsonNodeMapper { IsMappingTracingEnabled = true };
         _itemAdapter = new ItemGraphSourceAdapter();
         _partAdapter = new PartGraphSourceAdapter();
-        Metadata = new Dictionary<string, string>();
+        Metadata = new Dictionary<string, object>();
     }
 
     private void SetMapperMetadata()
     {
         _mapper.Data.Clear();
-        foreach (KeyValuePair<string, string> p in Metadata)
+        foreach (KeyValuePair<string, object> p in Metadata)
             _mapper.Data.Add(p.Key, p.Value);
     }
 
@@ -72,11 +72,19 @@ public class GraphUpdater
         };
         foreach (NodeMapping mapping in _repository.FindMappings(filter))
         {
-            explanation.Mappings.Add(mapping);
             _mapper.Map(data, mapping, explanation.Set);
+            if (_mapper.Data.TryGetValue(NodeMapper.APPLIED_MAPPING_LIST,
+                out object? o) && o is IList<NodeMapping> applied)
+            {
+                foreach (NodeMapping a in applied) explanation.Mappings.Add(a);
+            }
+            else
+            {
+                explanation.Mappings.Add(mapping);
+            }
         }
-        // copy metadata to explanation metadata
-        foreach (KeyValuePair<string, string> p in Metadata)
+        // copy adapted metadata to explanation metadata
+        foreach (KeyValuePair<string, object> p in Metadata)
             explanation.Metadata.Add(p.Key, p.Value);
 
         Metadata.Clear();

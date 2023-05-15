@@ -28,7 +28,7 @@ public sealed class PartGraphSourceAdapter : JsonGraphSourceAdapter,
     /// Adapted object or null.
     /// </returns>
     protected override object? Adapt(GraphSource source,
-        RunNodeMappingFilter filter, IDictionary<string, string> metadata)
+        RunNodeMappingFilter filter, IDictionary<string, object> metadata)
     {
         // item
         ItemGraphSourceAdapter.ExtractItemMetadata(source, filter, metadata);

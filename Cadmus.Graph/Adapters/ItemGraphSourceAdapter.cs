@@ -17,7 +17,7 @@ public sealed class ItemGraphSourceAdapter : JsonGraphSourceAdapter,
     public const string M_ITEM_GROUP = "item-group";
 
     internal static void ExtractItemMetadata(GraphSource source,
-        RunNodeMappingFilter filter, IDictionary<string, string> metadata)
+        RunNodeMappingFilter filter, IDictionary<string, object> metadata)
     {
         IItem? item = source.Item;
         if (item == null) return;
@@ -58,7 +58,7 @@ public sealed class ItemGraphSourceAdapter : JsonGraphSourceAdapter,
     /// Adapted object or null.
     /// </returns>
     protected override object? Adapt(GraphSource source,
-        RunNodeMappingFilter filter, IDictionary<string, string> metadata)
+        RunNodeMappingFilter filter, IDictionary<string, object> metadata)
     {
         ExtractItemMetadata(source, filter, metadata);
         return source.Item;
