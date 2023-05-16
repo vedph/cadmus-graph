@@ -5,6 +5,8 @@
     - [Demo](#demo)
     - [API](#api)
   - [History](#history)
+    - [2.2.3](#223)
+    - [2.2.2](#222)
     - [2.2.0](#220)
     - [2.1.12](#2112)
     - [2.1.11](#2111)
@@ -81,6 +83,10 @@ docker compose -f docker-compose-api.yml up
 ```
 
 ## History
+
+### 2.2.3
+
+- 2023-05-16: updated packages for index.
 
 ### 2.2.2
 
