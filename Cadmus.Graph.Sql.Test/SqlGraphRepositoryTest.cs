@@ -6,7 +6,6 @@ using Cadmus.Refs.Bricks;
 using Fusi.Antiquity.Chronology;
 using Fusi.DbManager;
 using Fusi.Tools.Data;
-using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -1554,6 +1553,8 @@ public abstract class SqlGraphRepositoryTest
 
     protected void DoUpdateGraph_Ok()
     {
+        const string ITEM_ID = "125b510b-6159-4396-b61c-5a4a40488ee8";
+        const string PART_ID = "dbf5c6aa-7781-45fd-accb-5c5365e2596f";
         Reset();
         IGraphRepository repository = GetRepository();
         // load mappings
@@ -1571,6 +1572,7 @@ public abstract class SqlGraphRepositoryTest
             repository.AddMapping(mapping);
         IItem item = new Item
         {
+            Id = ITEM_ID,
             Title = "Alpha work",
             Description = "Alpha work description",
             FacetId = "work",
@@ -1580,7 +1582,8 @@ public abstract class SqlGraphRepositoryTest
         };
         HistoricalEventsPart part = new()
         {
-            ItemId = item.Id,
+            Id = PART_ID,
+            ItemId = ITEM_ID,
             RoleId = "txt",
             UserId = "zeus",
             CreatorId = "zeus"
@@ -1650,7 +1653,7 @@ public abstract class SqlGraphRepositoryTest
         Node? nodeWork = repository.GetNodeByUri(workUriPrefix);
         Assert.NotNull(nodeWork);
         Assert.False(nodeWork.IsClass);
-        Assert.Equal(2, nodeWork.SourceType);
+        Assert.Equal(4, nodeWork.SourceType);
         Assert.Equal(sid, nodeWork.Sid);
 
         // triples
@@ -1707,6 +1710,7 @@ public abstract class SqlGraphRepositoryTest
                 { repository.GetNodeByUri("crm:p7_took_place_at")?.Id ?? 0 },
             ObjectId = nodePlace.Id,
         });
+        Assert.Equal(1, page.Total);
         // event P4_has_time-span itn:timespans/ts
         page = repository.GetTriples(new TripleFilter
         {
@@ -1724,6 +1728,8 @@ public abstract class SqlGraphRepositoryTest
                 { repository.GetNodeByUri("crm:p82_at_some_time_within")?.Id ?? 0 },
         });
         Assert.Equal(1, page.Total);
+        Assert.Equal("1250", page.Items[0].ObjectLiteral);
+        Assert.Equal(1250, page.Items[0].LiteralNumber);
         // timespan/ts P87_is_identified_by literal
         page = repository.GetTriples(new TripleFilter
         {
@@ -1732,6 +1738,7 @@ public abstract class SqlGraphRepositoryTest
                 { repository.GetNodeByUri("crm:p87_is_identified_by")?.Id ?? 0 },
         });
         Assert.Equal(1, page.Total);
+        Assert.Equal("1250 AD", page.Items[0].ObjectLiteral);
     }
     #endregion
 }
