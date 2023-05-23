@@ -1612,7 +1612,14 @@ public abstract class SqlGraphRepositoryTest
                 new RelatedEntity
                 {
                     // dbr = http://dbpedia.org/resource/
-                    Id = "dbr:Petrarch",
+                    Id = new AssertedCompositeId
+                    {
+                        Target = new PinTarget
+                        {
+                            Gid = "dbr:Petrarch",
+                            Label = "Petrarch"
+                        }
+                    },
                     Relation = "text:reception:recipient"
                 }
             },

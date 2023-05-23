@@ -84,6 +84,10 @@ docker compose -f docker-compose-api.yml up
 
 ## History
 
+### 2.2.4
+
+- 2023-05-23: updated packages (added asserted composite ID in bricks).
+
 ### 2.2.3
 
 - 2023-05-16: updated packages for index.
