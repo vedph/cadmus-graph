@@ -223,13 +223,26 @@ public sealed class GraphUpdaterTest
 
         // event
         IItem item = GetMockWorkItem();
-
-        HistoricalEventsPart part = new()
+        MetadataPart metadataPart = new()
         {
             ItemId = item.Id,
             CreatorId = "zeus",
             UserId = "zeus",
         };
+        metadataPart.Metadata.Add(new()
+        {
+            Name = "eid",
+            Value = "alpha"
+        });
+        item.Parts.Add(metadataPart);
+
+        HistoricalEventsPart eventsPart = new()
+        {
+            ItemId = item.Id,
+            CreatorId = "zeus",
+            UserId = "zeus",
+        };
+        item.Parts.Add(eventsPart);
         HistoricalEvent sent = new()
         {
             Eid = "alpha-sent",
@@ -260,17 +273,18 @@ public sealed class GraphUpdaterTest
         });
         sent.Description = "Alpha work was sent to the bishop of Arezzo in 1234.";
         sent.Note = "Editorial note.";
-        part.Events.Add(sent);
+        eventsPart.Events.Add(sent);
 
         GraphUpdater updater = new(repository)
         {
-            MetadataSupplier = new MetadataSupplier().AddMockItemEid("alpha")
+            MetadataSupplier = new MetadataSupplier().AddMockItemEid(
+                metadataPart.Id, "alpha")
         };
-        updater.Update(item, part);
+        updater.Update(item, eventsPart);
 
         // nodes
         UriNode? alphaSent = repository.GetNodeByUri(
-            $"itn:events/{part.Id}/alpha-sent");
+            $"itn:events/{eventsPart.Id}/alpha-sent");
         Assert.NotNull(alphaSent);
 
         UriNode? arezzo = repository.GetNodeByUri("itn:places/arezzo");

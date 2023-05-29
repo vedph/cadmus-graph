@@ -84,6 +84,10 @@ docker compose -f docker-compose-api.yml up
 
 ## History
 
+### 2.2.8
+
+- 2023-05-29: added `metadata-pid` to the metadata provided by `ItemEidMetadataSource` (`Cadmus.Graph.Extras`).
+
 ### 2.2.7
 
 - 2023-05-29: fixed missing URI in `SqlGraphRepository.GetNodeByUri` and added tests.

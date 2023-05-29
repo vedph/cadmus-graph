@@ -12,11 +12,21 @@ namespace Cadmus.Graph.Extras;
 /// Graph updater metadata source for item EID. This looks for a
 /// <see cref="MetadataPart"/> with no role in the source item, and if found
 /// picks its EID metadata value and adds it to the metadata of the target
-/// with key = <c>item-eid</c>.
+/// with key = , plus the ID of the metada part with key
+/// <c>metadata-pid</c>.
 /// </summary>
 /// <seealso cref="IMetadataSource" />
 public sealed class ItemEidMetadataSource : IMetadataSource
 {
+    /// <summary>
+    /// The metadata part identifier key injected by this source.
+    /// </summary>
+    public const string METADATA_PART_ID_KEY = "metadata-pid";
+    /// <summary>
+    /// The item EID key injected by this source.
+    /// </summary>
+    public const string ITEM_EID_KEY = "item-eid";
+
     /// <summary>
     /// Supplies metadata for the specified source.
     /// </summary>
@@ -44,10 +54,12 @@ public sealed class ItemEidMetadataSource : IMetadataSource
         // if found, add its eid to metadata
         if (part != null)
         {
+            metadata[METADATA_PART_ID_KEY] = part.Id;
+
             string? eid = part.Metadata.Find(m => m.Name == "eid")?.Value;
             if (!string.IsNullOrEmpty(eid))
             {
-                metadata["item-eid"] = eid;
+                metadata[ITEM_EID_KEY] = eid;
             }
         }
     }

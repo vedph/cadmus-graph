@@ -28,6 +28,7 @@ public sealed class GraphUpdaterTest
         // save mappings into DB
         foreach (NodeMapping mapping in doc.GetMappings())
             repository.AddMapping(mapping);
+        // create source data
         IItem item = new Item
         {
             Title = "Alpha work",
@@ -59,6 +60,7 @@ public sealed class GraphUpdaterTest
                     },
                     Place = new AssertedPlace
                     {
+                        // for the URI, mapping will prefix this with itn:places/
                         Value = "Arezzo"
                     }
                 }
