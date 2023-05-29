@@ -84,6 +84,10 @@ docker compose -f docker-compose-api.yml up
 
 ## History
 
+### 2.2.6
+
+- 2023-05-29: fixed missing URI in `SqlGraphRepository.GetNodeByUri` and added tests.
+
 ### 2.2.5
 
 - 2023-05-26: updated packages.

@@ -449,6 +449,21 @@ public abstract class SqlGraphRepository : IConfigurable<SqlOptions>
             total, nodes);
     }
 
+    /// <summary>
+    /// Gets all the nodes with the specified IDs.
+    /// </summary>
+    /// <param name="ids">The nodes IDs.</param>
+    /// <returns>List of nodes (or null), one per ID.</returns>
+    public IList<UriNode?> GetNodes(IList<int> ids)
+    {
+        if (ids is null) throw new ArgumentNullException(nameof(ids));
+
+        using QueryFactory qf = GetQueryFactory();
+        List<UriNode?> nodes = new(ids.Count);
+        foreach (int id in ids) nodes.Add(GetNode(id, qf));
+        return nodes;
+    }
+
     private UriNode? GetNode(int id, QueryFactory qf)
     {
         var d = qf.Query("node")
@@ -478,7 +493,7 @@ public abstract class SqlGraphRepository : IConfigurable<SqlOptions>
           .Join("uri_lookup AS ul", "node.id", "ul.id")
           .Where("uri", uri)
           .Select("node.id", "node.is_class", "node.tag", "node.label",
-                  "node.source_type", "node.sid");
+                  "node.source_type", "node.sid", "ul.uri");
 
         var d = trans != null
             ? query.Get(trans).FirstOrDefault()
@@ -498,21 +513,6 @@ public abstract class SqlGraphRepository : IConfigurable<SqlOptions>
 
         using QueryFactory qf = GetQueryFactory();
         return GetNodeByUri(uri, qf);
-    }
-
-    /// <summary>
-    /// Gets all the nodes with the specified IDs.
-    /// </summary>
-    /// <param name="ids">The nodes IDs.</param>
-    /// <returns>List of nodes (or null), one per ID.</returns>
-    public IList<UriNode?> GetNodes(IList<int> ids)
-    {
-        if (ids is null) throw new ArgumentNullException(nameof(ids));
-
-        using QueryFactory qf = GetQueryFactory();
-        List<UriNode?> nodes = new(ids.Count);
-        foreach (int id in ids) nodes.Add(GetNode(id, qf));
-        return nodes;
     }
 
     /// <summary>

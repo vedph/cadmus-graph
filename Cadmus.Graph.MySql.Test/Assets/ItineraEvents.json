@@ -1,0 +1,181 @@
+{
+  "events": [
+    {
+      "eid": "alpha-send",
+      "type": "text.send",
+      "chronotopes": [
+        {
+          "place": {
+            "value": "Arezzo"
+          },
+          "date": {
+            "a": {
+              "value": 1234,
+              "month": 5
+            }
+          }
+        }
+      ],
+      "relatedEntities": [
+        {
+          "relation": "text:send:recipient",
+          "id": {
+            "target": {
+              "gid": "itn:persons/arezzo_bishop",
+              "label": "arezzo_bishop"
+            }
+          }
+        },
+        {
+          "relation": "text:send:carrier",
+          "id": {
+            "target": {
+              "gid": "itn:persons/marco_barbadori",
+              "label": "marco_barbadori"
+            }
+          }
+        }
+      ],
+      "description": "The author sent his alpha work to the bishop of Arezzo in May, 1234 via Marco Barbadori.",
+      "note": "Editorial note about the alpha send event."
+    },
+    {
+      "eid": "alpha-transcription",
+      "type": "text.transcription",
+      "chronotopes": [
+        {
+          "place": {
+            "value": "Domodossola"
+          },
+          "date": {
+            "a": {
+              "value": 1410
+            }
+          }
+        }
+      ],
+      "relatedEntities": [
+        {
+          "relation": "text:transcription:transcriber",
+          "id": {
+            "target": {
+              "gid": "itn:persons/niccolino_braschi",
+              "label": "niccolino_braschi"
+            }
+          }
+        },
+        {
+          "relation": "text:transcription:copy",
+          "id": {
+            "target": {
+              "gid": "itn:manuscripts/bml_plut_41_15",
+              "label": "bml_plut_41_15"
+            }
+          }
+        }
+      ],
+      "description": "Braschi copies Secretum in BML Plut 41.15."
+    },
+    {
+      "eid": "beta-reception",
+      "type": "text.reception",
+      "chronotopes": [
+        {
+          "place": {
+            "value": "Parma"
+          },
+          "date": {
+            "a": {
+              "value": 1355,
+              "month": 10
+            }
+          }
+        }
+      ],
+      "relatedEntities": [
+        {
+          "relation": "text:reception:recipient",
+          "id": {
+            "target": {
+              "gid": "itn:persons/niccolino_braschi",
+              "label": "niccolino_braschi"
+            }
+          }
+        },
+        {
+          "relation": "text:reception:sender",
+          "id": {
+            "target": {
+              "gid": "itn:persons/francesco_petrarca",
+              "label": "francesco_petrarca"
+            }
+          }
+        },
+        {
+          "relation": "text:reception:carrier",
+          "id": {
+            "target": {
+              "gid": "itn:persons/marco_barbadori",
+              "label": "marco_barbadori"
+            }
+          }
+        }
+      ],
+      "description": "Braschi receives Beta from Petrarca via Barbadori."
+    },
+    {
+      "eid": "gamma-collection",
+      "type": "text.collection",
+      "chronotopes": [
+        {
+          "place": {
+            "value": "Arqu�"
+          },
+          "date": {
+            "a": {
+              "value": 1374
+            }
+          }
+        }
+      ],
+      "relatedEntities": [
+        {
+          "relation": "text:collection:collector",
+          "id": {
+            "target": {
+              "gid": "itn:works/rvf",
+              "label": "rvf"
+            }
+          }
+        }
+      ],
+      "description": "The text is collected in Rvf."
+    },
+    {
+      "eid": "gamma-version",
+      "type": "text.version",
+      "chronotope": {
+        "place": {
+          "value": ""
+        },
+        "date": {
+          "a": {
+            "value": 1350
+          }
+        }
+      },
+      "relatedEntities": [
+        {
+          "relation": "text:version:previous",
+          "id": {
+            "target": {
+              "gid": "itn:works/fam_i_1",
+              "label": "fam_i_1"
+            }
+          }
+        }
+      ],
+      "description": "Fam I 1 gamma is the previous version of Fam I 1 ."
+    }
+  ]
+}

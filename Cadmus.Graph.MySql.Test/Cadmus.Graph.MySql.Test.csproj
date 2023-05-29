@@ -5,22 +5,29 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
-    <Version>2.2.5</Version>
-    <FileVersion>2.2.5</FileVersion>
-    <AssemblyVersion>2.2.5</AssemblyVersion>
+    <Version>2.2.6</Version>
+    <FileVersion>2.2.6</FileVersion>
+    <AssemblyVersion>2.2.6</AssemblyVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Assets\Events.json" />
-    <None Remove="Assets\Mappings.json" />
+    <None Remove="Assets\ItineraEvents.json" />
+    <None Remove="Assets\ItineraMappings.json" />
+    <None Remove="Assets\ItineraNodes.json" />
+    <None Remove="Assets\PetrarchEvents.json" />
+    <None Remove="Assets\PetrarchMappings.json" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Assets\Events.json" />
-    <EmbeddedResource Include="Assets\Mappings.json" />
+    <EmbeddedResource Include="Assets\ItineraEvents.json" />
+    <EmbeddedResource Include="Assets\ItineraMappings.json" />
+    <EmbeddedResource Include="Assets\ItineraNodes.json" />
+    <EmbeddedResource Include="Assets\PetrarchEvents.json" />
+    <EmbeddedResource Include="Assets\PetrarchMappings.json" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Cadmus.Mongo" Version="6.1.0" />
     <PackageReference Include="Fusi.DbManager.MySql" Version="3.0.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.6.0" />
     <PackageReference Include="xunit" Version="2.4.2" />
@@ -35,6 +42,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Cadmus.Graph.Extras\Cadmus.Graph.Extras.csproj" />
     <ProjectReference Include="..\Cadmus.Graph.MySql\Cadmus.Graph.MySql.csproj" />
     <ProjectReference Include="..\Cadmus.Graph.Sql.Test\Cadmus.Graph.Sql.Test.csproj" />
   </ItemGroup>

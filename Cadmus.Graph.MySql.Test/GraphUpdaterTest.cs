@@ -8,6 +8,10 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Xunit;
+using Cadmus.General.Parts;
+using Cadmus.Refs.Bricks;
+using Fusi.Antiquity.Chronology;
+using Cadmus.Core;
 
 namespace Cadmus.Graph.MySql.Test;
 
@@ -21,7 +25,7 @@ public sealed class GraphUpdaterTest
     private const string PART_ID = "bdd152f1-2ae2-4189-8a4a-e3d68c6a9d7e";
     private const string PETRARCH_URI = "x:guys/francesco_petrarca";
 
-    private static void Reset()
+    private static void ResetIndex()
     {
         IDbManager manager = new MySqlDbManager(CST);
         if (manager.Exists(DB_NAME))
@@ -82,12 +86,12 @@ public sealed class GraphUpdaterTest
     private GraphSet BuildSampleGraph(IGraphRepository repository)
     {
         // load events data
-        string data = LoadResourceText("Events.json");
+        string data = LoadResourceText("PetrarchEvents.json");
 
         // load mappings
         IGraphPresetReader reader = new JsonGraphPresetReader();
         IList<NodeMapping> mappings =
-            reader.LoadMappings(GetResourceStream("Mappings.json"));
+            reader.LoadMappings(GetResourceStream("PetrarchMappings.json"));
 
         // setup mapper
         INodeMapper mapper = new JsonNodeMapper
@@ -117,7 +121,7 @@ public sealed class GraphUpdaterTest
     [Fact]
     public void Update_Ok()
     {
-        Reset();
+        ResetIndex();
         IGraphRepository repository = GetRepository();
         GraphSet set = BuildSampleGraph(repository);
         Assert.Equal(5 + 3, set.Nodes.Count);
@@ -171,7 +175,7 @@ public sealed class GraphUpdaterTest
     [Fact]
     public void Delete_NotExisting_Ok()
     {
-        Reset();
+        ResetIndex();
         IGraphRepository repository = GetRepository();
 
         repository.DeleteGraphSet("not-existing");
@@ -181,7 +185,7 @@ public sealed class GraphUpdaterTest
     [Fact]
     public void Delete_Existing_Ok()
     {
-        Reset();
+        ResetIndex();
         IGraphRepository repository = GetRepository();
         GraphSet set = BuildSampleGraph(repository);
         repository.UpdateGraph(set);
@@ -193,5 +197,159 @@ public sealed class GraphUpdaterTest
 
         var triplePage = repository.GetTriples(new TripleFilter());
         Assert.Equal(9, triplePage.Total);
+    }
+
+    // itinera events
+
+    private static IItem GetMockWorkItem()
+    {
+        return new Item
+        {
+            FacetId = "work",
+            Title = "Alpha work",
+            Description = "The alpha work.",
+            CreatorId = "zeus",
+            UserId = "zeus",
+        };
+    }
+
+    [Fact]
+    public void Update_TextSend_Ok()
+    {
+        ResetIndex();
+        IGraphRepository repository = GetRepository();
+        TestHelper.ImportNodes("ItineraNodes.json", repository);
+        TestHelper.ImportMappings("ItineraMappings.json", repository);
+
+        // event
+        IItem item = GetMockWorkItem();
+
+        HistoricalEventsPart part = new()
+        {
+            ItemId = item.Id,
+            CreatorId = "zeus",
+            UserId = "zeus",
+        };
+        HistoricalEvent sent = new()
+        {
+            Eid = "alpha-sent",
+            Type = "text.send",
+        };
+        sent.Chronotopes.Add(new AssertedChronotope
+        {
+            Place = new AssertedPlace
+            {
+                Value = "Arezzo"
+            },
+            Date = new AssertedDate
+            {
+                A = Datation.Parse("1234")!
+            }
+        });
+        sent.RelatedEntities.Add(new RelatedEntity
+        {
+            Relation = "text:send:recipient",
+            Id = new AssertedCompositeId
+            {
+                Target = new PinTarget
+                {
+                    Gid = "itn:persons/arezzo_bishop",
+                    Label = "arezzo_bishop"
+                }
+            }
+        });
+        sent.Description = "Alpha work was sent to the bishop of Arezzo in 1234.";
+        sent.Note = "Editorial note.";
+        part.Events.Add(sent);
+
+        GraphUpdater updater = new(repository)
+        {
+            MetadataSupplier = new MetadataSupplier().AddMockItemEid("alpha")
+        };
+        updater.Update(item, part);
+
+        // nodes
+        UriNode? alphaSent = repository.GetNodeByUri(
+            $"itn:events/{part.Id}/alpha-sent");
+        Assert.NotNull(alphaSent);
+
+        UriNode? arezzo = repository.GetNodeByUri("itn:places/arezzo");
+        Assert.NotNull(arezzo);
+
+        UriNode? timespan = repository.GetNodeByUri("itn:timespans/ts");
+        Assert.NotNull(timespan);
+
+        UriNode? bishop = repository.GetNodeByUri("itn:persons/arezzo_bishop");
+        Assert.NotNull(bishop);
+
+        // triples
+        IList<UriTriple> triples = repository.GetTriples(new TripleFilter
+        {
+            PageSize = 100
+        }).Items;
+
+        // event
+        Assert.Contains(triples,
+            t => t.SubjectUri == alphaSent.Uri
+                 && t.PredicateUri == "rdf:type"
+                 && t.ObjectUri == "crm:e7_activity");
+
+        Assert.Contains(triples,
+            t => t.SubjectUri == alphaSent.Uri
+                 && t.PredicateUri == "crm:p2_has_type"
+                 && t.ObjectUri == "itn:event-types/text.send");
+
+        Assert.Contains(triples,
+            t => t.SubjectUri == alphaSent.Uri
+                 && t.PredicateUri == "crm:p16_used_specific_object"
+                 && t.ObjectUri == $"itn:works/{item.Id}/alpha");
+
+        Assert.Contains(triples,
+            t => t.SubjectUri == alphaSent.Uri
+                 && t.PredicateUri == "crm:p3_has_note"
+                 && t.ObjectLiteral!.StartsWith("Alpha"));
+
+        Assert.Contains(triples,
+            t => t.SubjectUri == alphaSent.Uri
+                 && t.PredicateUri == "crm:p3_has_note"
+                 && t.ObjectLiteral!.StartsWith("Editorial"));
+
+        Assert.Contains(triples,
+            t => t.SubjectUri == alphaSent.Uri
+                 && t.PredicateUri == "crm:p7_took_place_at"
+                 && t.ObjectUri == arezzo.Uri);
+
+        Assert.Contains(triples,
+            t => t.SubjectUri == alphaSent.Uri
+                 && t.PredicateUri == "crm:p4_has_time-span"
+                 && t.ObjectUri == timespan.Uri);
+
+        // place
+        Assert.Contains(triples,
+            t => t.SubjectUri == arezzo.Uri
+                 && t.PredicateUri == "rdf:type"
+                 && t.ObjectUri == "crm:e53_place");
+
+        // time
+        UriTriple? triple = triples.FirstOrDefault(
+            t => t.SubjectUri == timespan.Uri
+                 && t.PredicateUri == "crm:p82_at_some_time_within"
+                 && t.ObjectLiteral == "1234");
+        Assert.NotNull(triple);
+        Assert.Equal(1234, triple.LiteralNumber);
+        Assert.Equal("xs:float", triple.LiteralType);
+
+        triple = triples.FirstOrDefault(
+            t => t.SubjectUri == timespan.Uri
+                 && t.PredicateUri == "crm:p87_is_identified_by"
+                 && t.ObjectLiteral == "1234 AD");
+        Assert.NotNull(triple);
+        Assert.Equal("en", triple.LiteralLanguage);
+
+        // related
+        Assert.Contains(triples,
+            t => t.SubjectUri == alphaSent.Uri
+                 && t.PredicateUri == "crm:p11_has_participant"
+                 && t.ObjectUri == bishop.Uri);
     }
 }

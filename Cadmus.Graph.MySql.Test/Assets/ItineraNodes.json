@@ -1,0 +1,341 @@
+[
+  {
+    "uri": "crm:e5_event",
+    "isclass": true,
+    "tag": null,
+    "label": "e5_event"
+  },
+  {
+    "uri": "crm:e7_activity",
+    "isclass": true,
+    "tag": null,
+    "label": "e7_activity"
+  },
+  {
+    "uri": "crm:e8_acquisition",
+    "isclass": true,
+    "tag": null,
+    "label": "e8_acquisition"
+  },
+  {
+    "uri": "crm:e10_transfer_of_custody",
+    "isclass": true,
+    "tag": null,
+    "label": "e10_transfer_of_custody"
+  },
+  {
+    "uri": "crm:e11_modification",
+    "isclass": true,
+    "tag": null,
+    "label": "e11_modification"
+  },
+  {
+    "uri": "crm:e12_production",
+    "isclass": true,
+    "tag": null,
+    "label": "e12_production"
+  },
+  {
+    "uri": "crm:e18_physical_thing",
+    "isclass": true,
+    "tag": null,
+    "label": "e18_physical_thing"
+  },
+  {
+    "uri": "crm:e21_person",
+    "isclass": true,
+    "tag": null,
+    "label": "e21_person"
+  },
+  {
+    "uri": "crm:e24_physical_human-made_thing",
+    "isclass": true,
+    "tag": null,
+    "label": "e24_physical_human-made_thing"
+  },
+  {
+    "uri": "crm:e28_conceptual_object",
+    "isclass": true,
+    "tag": null,
+    "label": "e28_conceptual_object"
+  },
+  {
+    "uri": "crm:e31_document",
+    "isclass": true,
+    "tag": null,
+    "label": "e31_document"
+  },
+  {
+    "uri": "crm:e39_actor",
+    "isclass": true,
+    "tag": null,
+    "label": "e39_actor"
+  },
+  {
+    "uri": "crm:e53_place",
+    "isclass": true,
+    "tag": null,
+    "label": "e53_place"
+  },
+  {
+    "uri": "crm:e55_type",
+    "isclass": true,
+    "tag": null,
+    "label": "e55_type"
+  },
+  {
+    "uri": "crm:e63_beginning_of_existence",
+    "isclass": true,
+    "tag": null,
+    "label": "e63_beginning_of_existence"
+  },
+  {
+    "uri": "crm:e64_end_of_existence",
+    "isclass": true,
+    "tag": null,
+    "label": "e64_end_of_existence"
+  },
+  {
+    "uri": "crm:e65_creation",
+    "isclass": true,
+    "tag": null,
+    "label": "e65_creation"
+  },
+  {
+    "uri": "crm:e67_birth",
+    "isclass": true,
+    "tag": null,
+    "label": "e67_birth"
+  },
+  {
+    "uri": "crm:e69_death",
+    "isclass": true,
+    "tag": null,
+    "label": "e69_death"
+  },
+  {
+    "uri": "crm:e70_thing",
+    "isclass": true,
+    "tag": null,
+    "label": "e70_thing"
+  },
+  {
+    "uri": "crm:e71_human-made_thing",
+    "isclass": true,
+    "tag": null,
+    "label": "e71_human-made_thing"
+  },
+  {
+    "uri": "crm:e72_legal_object",
+    "isclass": true,
+    "tag": null,
+    "label": "e72_legal_object"
+  },
+  {
+    "uri": "crm:e73_information_object",
+    "isclass": true,
+    "tag": null,
+    "label": "e73_information_object"
+  },
+  {
+    "uri": "crm:e74_group",
+    "isclass": true,
+    "tag": null,
+    "label": "e74_group"
+  },
+  {
+    "uri": "crm:e77_persistent_item",
+    "isclass": true,
+    "tag": null,
+    "label": "e77_persistent_item"
+  },
+  {
+    "uri": "crm:e85_joining",
+    "isclass": true,
+    "tag": null,
+    "label": "e85_joining"
+  },
+  {
+    "uri": "crm:e89_propositional_object",
+    "isclass": true,
+    "tag": null,
+    "label": "e89_propositional_object"
+  },
+  {
+    "uri": "crm:e90_symbolic_object",
+    "isclass": true,
+    "tag": null,
+    "label": "e90_symbolic_object"
+  },
+  {
+    "uri": "crm:p2_has_type",
+    "tag": "property",
+    "label": "p2_has_type"
+  },
+  {
+    "uri": "crm:p3_has_note",
+    "tag": "property",
+    "label": "p3_has_note"
+  },
+  {
+    "uri": "crm:p4_has_time-span",
+    "tag": "property",
+    "label": "p4_has_time-span"
+  },
+  {
+    "uri": "crm:p7_took_place_at",
+    "tag": "property",
+    "label": "p7_took_place_at"
+  },
+  {
+    "uri": "crm:p11_has_participant",
+    "tag": "property",
+    "label": "p11_has_participant"
+  },
+  {
+    "uri": "crm:p14_carried_out_by",
+    "tag": "property",
+    "label": "p14_carried_out_by"
+  },
+  {
+    "uri": "crm:p16_used_specific_object",
+    "tag": "property",
+    "label": "p16_used_specific_object"
+  },
+  {
+    "uri": "crm:p17_is_motivated_by",
+    "tag": "property",
+    "label": "p17_is_motivated_by"
+  },
+  {
+    "uri": "crm:p22_transferred_title_to",
+    "tag": "property",
+    "label": "p22_transferred_title_to"
+  },
+  {
+    "uri": "crm:p23_transferred_title_from",
+    "tag": "property",
+    "label": "p23_transferred_title_from"
+  },
+  {
+    "uri": "crm:p24_transferred_title_of",
+    "tag": "property",
+    "label": "p24_transferred_title_of"
+  },
+  {
+    "uri": "crm:p28_custody_surrendered_by",
+    "tag": "property",
+    "label": "p28_custody_surrendered_by"
+  },
+  {
+    "uri": "crm:p29_custody_received_by",
+    "tag": "property",
+    "label": "p29_custody_received_by"
+  },
+  {
+    "uri": "crm:p30_transferred_custody_of",
+    "tag": "property",
+    "label": "p30_transferred_custody_of"
+  },
+  {
+    "uri": "crm:p67_refers_to",
+    "tag": "property",
+    "label": "p67_refers_to"
+  },
+  {
+    "uri": "crm:p70_documents",
+    "tag": "property",
+    "label": "p70_documents"
+  },
+  {
+    "uri": "crm:p70i_is_documented_in",
+    "tag": "property",
+    "label": "p70i_is_documented_in"
+  },
+  {
+    "uri": "crm:p75_possesses",
+    "tag": "property",
+    "label": "p75_possesses"
+  },
+  {
+    "uri": "crm:p75i_possessed",
+    "tag": "property",
+    "label": "p75i_possessed"
+  },
+  {
+    "uri": "crm:p82_at_some_time_within",
+    "tag": "property",
+    "label": "p82_at_some_time_within"
+  },
+  {
+    "uri": "crm:p87_is_identified_by",
+    "tag": "property",
+    "label": "p87_is_identified_by"
+  },
+  {
+    "uri": "crm:p94_has_created",
+    "tag": "property",
+    "label": "p94_has_created"
+  },
+  {
+    "uri": "crm:p98_brought_into_life",
+    "tag": "property",
+    "label": "p98_brought_into_life"
+  },
+  {
+    "uri": "crm:p100_was_death_of",
+    "tag": "property",
+    "label": "p100_was_death_of"
+  },
+  {
+    "uri": "crm:p107_has_current_or_former_member",
+    "tag": "property",
+    "label": "p107_has_current_or_former_member"
+  },
+  {
+    "uri": "crm:p107i_is_current_or_former_member_of",
+    "tag": "property",
+    "label": "p107i_is_current_or_former_member_of"
+  },
+  {
+    "uri": "crm:p108_has_produced",
+    "tag": "property",
+    "label": "p108_has_produced"
+  },
+  {
+    "uri": "crm:p128_carries",
+    "tag": "property",
+    "label": "p128_carries"
+  },
+  {
+    "uri": "crm:p143_joined",
+    "tag": "property",
+    "label": "p143_joined"
+  },
+  {
+    "uri": "crm:p148_has_component",
+    "tag": "property",
+    "label": "p148_has_component"
+  },
+  {
+    "uri": "crm:p148i_is_component_of",
+    "tag": "property",
+    "label": "p148i_is_component_of"
+  },
+  {
+    "uri": "crm:p152_has_parent",
+    "tag": "property",
+    "label": "p152_has_parent"
+  },
+  {
+    "uri": "crm:p152i_is_parent_of",
+    "tag": "property",
+    "label": "p152i_is_parent_of"
+  },
+  {
+    "uri": "itn:event-types/text.send",
+    "isclass": true,
+    "tag": null,
+    "label": "itn:event-types/text.send"
+  }
+]
