@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -7,11 +8,31 @@ namespace Cadmus.Graph;
 /// <summary>
 /// Helper for triple's literal value handling.
 /// </summary>
-public static class LiteralHelper
+public static partial class LiteralHelper
 {
-    private static readonly Regex _litRegex =
-        new(@"(?:(?:\^\^(?<t>.+))|(?:\@(?<l>[a-z]+)))?$",
-        RegexOptions.Compiled);
+    [GeneratedRegex("(?:(?:\\^\\^(?<t>.+))|(?:\\@(?<l>[a-z]+)))?$",
+        RegexOptions.Compiled)]
+    private static partial Regex GetLitRegex();
+
+    private static readonly Regex _litRegex = GetLitRegex();
+
+    /// <summary>
+    /// Converts the specified string value to boolean.
+    /// </summary>
+    /// <param name="value">The value.</param>
+    /// <returns>True or false. False is returned also for invalid values.
+    /// </returns>
+    public static bool ConvertToBoolean(string? value)
+    {
+        return value?.ToLowerInvariant() switch
+        {
+            "1" => true,
+            "0" => false,
+            "true" => true,
+            "false" => false,
+            _ => false
+        };
+    }
 
     /// <summary>
     /// Parses the literal value of the specified triple, adjusting it
@@ -43,27 +64,42 @@ public static class LiteralHelper
                 switch (triple.LiteralType)
                 {
                     case "xs:boolean":
+                    case "xsd:boolean":
                         triple.LiteralNumber =
-                            Convert.ToBoolean(triple.ObjectLiteral) ? 1 : 0;
+                            ConvertToBoolean(triple.ObjectLiteral) ? 1 : 0;
                         break;
                     case "xs:byte":
+                    case "xsd:byte":
                     case "xs:short":
+                    case "xsd:short":
                     case "xs:int":
+                    case "xsd:int":
                     case "xs:integer":
+                    case "xsd:integer":
                     case "xs:long":
+                    case "xsd:long":
                     case "xs:float":
+                    case "xsd:float":
                     case "xs:double":
+                    case "xsd:double":
                     case "xs:unsignedByte":
+                    case "xsd:unsignedByte":
                     case "xs:unsignedShort":
+                    case "xsd:unsignedShort":
                     case "xs:unsignedInt":
+                    case "xsd:unsignedInt":
                     case "xs:unsignedLong":
+                    case "xsd:unsignedLong":
                         triple.LiteralNumber =
-                            Convert.ToDouble(triple.ObjectLiteral);
+                            Convert.ToDouble(triple.ObjectLiteral,
+                                             CultureInfo.InvariantCulture);
                         break;
                 }
             }
             else if (m.Groups["l"].Length > 0)
+            {
                 triple.LiteralLanguage = m.Groups["l"].Value;
+            }
         }
         else triple.ObjectLiteral = triple.ObjectLiteral.Trim('"');
 

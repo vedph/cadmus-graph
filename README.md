@@ -84,6 +84,10 @@ docker compose -f docker-compose-api.yml up
 
 ## History
 
+### 2.2.9
+
+- 2023-05-31: fixed culture info in `LiteralHelper` and added tests.
+
 ### 2.2.8
 
 - 2023-05-29: added `metadata-pid` to the metadata provided by `ItemEidMetadataSource` (`Cadmus.Graph.Extras`).
