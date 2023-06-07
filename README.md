@@ -84,6 +84,8 @@ docker compose -f docker-compose-api.yml up
 
 ## History
 
+- 2023-06-07: adding PostgreSql support.
+
 ### 2.2.9
 
 - 2023-05-31: fixed culture info in `LiteralHelper` and added tests.

@@ -32,7 +32,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cadmus.Graph.Sql.Test", "Ca
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cadmus.Graph.Api", "Cadmus.Graph.Api\Cadmus.Graph.Api.csproj", "{7B2EA935-26B9-4B95-93E8-2BF544BE2662}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cadmus.Graph.Extras", "Cadmus.Graph.Extras\Cadmus.Graph.Extras.csproj", "{27F90F91-DE87-4DF0-A548-66AF5DBF0991}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cadmus.Graph.Extras", "Cadmus.Graph.Extras\Cadmus.Graph.Extras.csproj", "{27F90F91-DE87-4DF0-A548-66AF5DBF0991}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cadmus.Graph.PgSql", "Cadmus.Graph.PgSql\Cadmus.Graph.PgSql.csproj", "{ADBE684C-0FB1-43B4-B0D3-2A5C2F5FEEC1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -76,6 +78,10 @@ Global
 		{27F90F91-DE87-4DF0-A548-66AF5DBF0991}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{27F90F91-DE87-4DF0-A548-66AF5DBF0991}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{27F90F91-DE87-4DF0-A548-66AF5DBF0991}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ADBE684C-0FB1-43B4-B0D3-2A5C2F5FEEC1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ADBE684C-0FB1-43B4-B0D3-2A5C2F5FEEC1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ADBE684C-0FB1-43B4-B0D3-2A5C2F5FEEC1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ADBE684C-0FB1-43B4-B0D3-2A5C2F5FEEC1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
