@@ -84,6 +84,7 @@ docker compose -f docker-compose-api.yml up
 
 ## History
 
+- 2023-06-10: adding EF support, minor fixes in `Cadmus.Graph.MySql` (version numbers not yet changed).
 - 2023-06-07: adding PostgreSql support.
 
 ### 2.2.9

@@ -2,9 +2,12 @@
 
 public class EfNode : Node
 {
-    public EfUriLookup? UriLookup { get; set; }
+    public EfUriEntry? UriEntry { get; set; }
     public EfProperty? Property { get; set; }
     public List<EfNodeClass>? Classes { get; set; }
+    public List<EfTriple>? SubjectTriples { get; set; }
+    public List<EfTriple>? PredicateTriples { get; set; }
+    public List<EfTriple>? ObjectTriples { get; set; }
 
     public EfNode()
     {
@@ -18,5 +21,19 @@ public class EfNode : Node
         Label = node.Label;
         SourceType = node.SourceType;
         Sid = node.Sid;
+    }
+
+    public UriNode ToUriNode(string uri)
+    {
+        return new UriNode
+        {
+            Id = Id,
+            IsClass = IsClass,
+            Tag = Tag,
+            Label = Label,
+            SourceType = SourceType,
+            Sid = Sid,
+            Uri = uri
+        };
     }
 }

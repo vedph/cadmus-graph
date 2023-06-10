@@ -10,16 +10,17 @@ public class CadmusGraphDbContext : DbContext
 {
     //public DbSet<EfIndexItem> Items { get; set; }
     //public DbSet<EfIndexPin> Pins { get; set; }
-    public DbSet<EfUriLookup> UriLookups { get; set; }
+    public DbSet<EfUriEntry> UriEntries { get; set; }
     public DbSet<EfNode> Nodes { get; set; }
     public DbSet<EfProperty> Properties { get; set; }
     public DbSet<EfNodeClass> NodeClasses { get; set; }
-    public DbSet<EfNamespaceLookup> NamespaceLookups { get; set; }
-    public DbSet<EfUidLookup> UidLookups { get; set; }
+    public DbSet<EfNamespaceEntry> NamespaceEntries { get; set; }
+    public DbSet<EfUidEntry> UidEntries { get; set; }
     public DbSet<EfMapping> Mappings { get; set; }
     public DbSet<EfMappingMetaOutput> MappingMetaOutputs { get; set; }
     public DbSet<EfMappingNodeOutput> MappingNodeOutputs { get; set; }
     public DbSet<EfMappingTripleOutput> MappingTripleOutputs { get; set; }
+    public DbSet<EfTriple> Triples { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CadmusGraphDbContext"/> class.
@@ -98,8 +99,8 @@ public class CadmusGraphDbContext : DbContext
         //});
 
         // uri_lookup
-        modelBuilder.Entity<EfUriLookup>().ToTable("uri_lookup");
-        modelBuilder.Entity<EfUriLookup>(x =>
+        modelBuilder.Entity<EfUriEntry>().ToTable("uri_lookup");
+        modelBuilder.Entity<EfUriEntry>(x =>
         {
             x.HasKey(x => x.Id);
             x.Property(x => x.Id).HasColumnName("id").ValueGeneratedOnAdd();
@@ -108,9 +109,9 @@ public class CadmusGraphDbContext : DbContext
         // one-to-one relationship where the dependent entity's primary key
         // is also its foreign key to the principal entity (shared primary key
         // association)
-        modelBuilder.Entity<EfUriLookup>()
+        modelBuilder.Entity<EfUriEntry>()
              .HasOne(p => p.Node)
-             .WithOne(d => d.UriLookup)
+             .WithOne(d => d.UriEntry)
              .HasForeignKey<EfNode>(d => d.Id);
 
         // node
@@ -157,8 +158,8 @@ public class CadmusGraphDbContext : DbContext
             .HasForeignKey(n => n.NodeId);
 
         // namespace_lookup
-        modelBuilder.Entity<EfNamespaceLookup>().ToTable("namespace_lookup");
-        modelBuilder.Entity<EfNamespaceLookup>(x =>
+        modelBuilder.Entity<EfNamespaceEntry>().ToTable("namespace_lookup");
+        modelBuilder.Entity<EfNamespaceEntry>(x =>
         {
             x.HasKey(x => x.Id);
             x.Property(x => x.Id).HasColumnName("id").IsRequired().HasMaxLength(50);
@@ -166,8 +167,8 @@ public class CadmusGraphDbContext : DbContext
         });
 
         // uid_lookup
-        modelBuilder.Entity<EfUidLookup>().ToTable("uid_lookup");
-        modelBuilder.Entity<EfUidLookup>(x =>
+        modelBuilder.Entity<EfUidEntry>().ToTable("uid_lookup");
+        modelBuilder.Entity<EfUidEntry>(x =>
         {
             x.HasKey(x => x.Id);
             x.Property(x => x.Id).HasColumnName("id").ValueGeneratedOnAdd();
@@ -266,6 +267,37 @@ public class CadmusGraphDbContext : DbContext
             .WithOne(m => m.Mapping)
             .HasForeignKey(m => m.MappingId);
 
-        // TODO
+        // triple
+        modelBuilder.Entity<EfTriple>().ToTable("triple");
+        modelBuilder.Entity<EfTriple>(x =>
+        {
+            x.HasKey(x => x.Id);
+            x.Property(x => x.Id).HasColumnName("id").ValueGeneratedOnAdd();
+            x.Property(x => x.SubjectId).HasColumnName("s_id").IsRequired();
+            x.Property(x => x.PredicateId).HasColumnName("p_id").IsRequired();
+            x.Property(x => x.ObjectId).HasColumnName("o_id");
+            x.Property(x => x.ObjectLiteral).HasColumnName("o_lit");
+            x.Property(x => x.LiteralType).HasColumnName("o_lit_type")
+                .HasMaxLength(100);
+            x.Property(x => x.LiteralLanguage).HasColumnName("o_lit_lang")
+                .HasMaxLength(10);
+            x.Property(x => x.ObjectLiteralIx).HasColumnName("o_lit_ix")
+                .HasMaxLength(15000);
+            x.Property(x => x.LiteralNumber).HasColumnName("o_lit_n");
+            x.Property(x => x.Sid).HasColumnName("sid").HasMaxLength(500);
+            x.Property(x => x.Tag).HasColumnName("tag").HasMaxLength(50);
+        });
+        modelBuilder.Entity<EfTriple>()
+            .HasOne(m => m.Subject)
+            .WithMany(n => n.SubjectTriples)
+            .HasForeignKey(m => m.SubjectId);
+        modelBuilder.Entity<EfTriple>()
+            .HasOne(m => m.Predicate)
+            .WithMany(n => n.PredicateTriples)
+            .HasForeignKey(m => m.PredicateId);
+        modelBuilder.Entity<EfTriple>()
+            .HasOne(m => m.Object)
+            .WithMany(n => n.ObjectTriples)
+            .HasForeignKey(m => m.ObjectId);
     }
 }

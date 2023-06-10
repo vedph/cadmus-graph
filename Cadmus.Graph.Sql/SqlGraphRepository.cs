@@ -128,7 +128,7 @@ public abstract class SqlGraphRepository : IConfigurable<SqlOptions>
 
         // complete query and get page
         query.Select("id", "uri")
-             .OrderBy("id", "uri")
+             .OrderBy("id")
              .Skip(filter.GetSkipCount()).Limit(filter.PageSize);
         List<NamespaceEntry> nss = new();
         foreach (var d in query.Get())
@@ -160,7 +160,8 @@ public abstract class SqlGraphRepository : IConfigurable<SqlOptions>
     }
 
     /// <summary>
-    /// Adds or updates the specified namespace prefix.
+    /// Adds the specified namespace prefix. If it already exists, nothing
+    /// is done.
     /// </summary>
     /// <param name="prefix">The namespace prefix.</param>
     /// <param name="uri">The namespace URI corresponding to
@@ -172,23 +173,15 @@ public abstract class SqlGraphRepository : IConfigurable<SqlOptions>
         if (uri == null) throw new ArgumentNullException(nameof(uri));
 
         using QueryFactory qf = GetQueryFactory();
-        bool update = qf.Query("namespace_lookup")
+        if (qf.Query("namespace_lookup")
             .Where("id", prefix)
-            .Where("uri", uri).Exists();
+            .Where("uri", uri).Exists()) return;
 
-        if (update)
+        qf.Query("namespace_lookup").Insert(new
         {
-            qf.Query("namespace_lookup").Where("id", prefix)
-                .Update(new { uri });
-        }
-        else
-        {
-            qf.Query("namespace_lookup").Insert(new
-            {
-                id = prefix,
-                uri
-            });
-        }
+            id = prefix,
+            uri
+        });
     }
 
     /// <summary>
@@ -221,33 +214,33 @@ public abstract class SqlGraphRepository : IConfigurable<SqlOptions>
     /// <summary>
     /// Adds the specified UID, eventually completing it with a suffix.
     /// </summary>
-    /// <param name="uid">The UID as calculated from its source, without any
+    /// <param name="unsuffixed">The UID as calculated from its source, without any
     /// suffix.</param>
     /// <param name="sid">The SID identifying the source for this UID.</param>
     /// <returns>The UID, eventually suffixed.</returns>
-    public string BuildUid(string uid, string sid)
+    public string BuildUid(string unsuffixed, string sid)
     {
-        if (uid == null) throw new ArgumentNullException(nameof(uid));
+        if (unsuffixed == null) throw new ArgumentNullException(nameof(unsuffixed));
         if (sid == null) throw new ArgumentNullException(nameof(sid));
 
         using QueryFactory qf = GetQueryFactory();
         // check if any unsuffixed UID is already in use
-        if (!qf.Query("uid_lookup").Where("unsuffixed", uid).Exists())
+        if (!qf.Query("uid_lookup").Where("unsuffixed", unsuffixed).Exists())
         {
             // no: just insert the unsuffixed UID
             qf.Query("uid_lookup").Insert(new
             {
                 sid,
-                unsuffixed = uid,
+                unsuffixed = unsuffixed,
                 has_suffix = false
             });
-            return uid;
+            return unsuffixed;
         }
 
         // yes: check if a record with the same unsuffixed & SID exists.
         // If so, reuse it; otherwise, add a new suffixed UID
         var d = qf.Query("uid_lookup")
-                  .Where("unsuffixed", uid)
+                  .Where("unsuffixed", unsuffixed)
                   .Where("sid", sid)
                   .Select("id", "has_suffix").Get().FirstOrDefault();
         if (d != null)
@@ -255,16 +248,16 @@ public abstract class SqlGraphRepository : IConfigurable<SqlOptions>
             // found: reuse it, nothing gets inserted
             int oldId = d.id;
             bool hasSuffix = Convert.ToBoolean(d.has_suffix);
-            return hasSuffix ? uid + "#" + oldId : uid;
+            return hasSuffix ? unsuffixed + "#" + oldId : unsuffixed;
         }
         // not found: add a new suffix
         int id = qf.Query("uid_lookup").InsertGetId<int>(new
         {
             sid,
-            unsuffixed = uid,
+            unsuffixed = unsuffixed,
             has_suffix = true
         });
-        return uid + "#" + id;
+        return unsuffixed + "#" + id;
     }
     #endregion
 
