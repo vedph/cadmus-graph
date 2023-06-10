@@ -34,7 +34,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cadmus.Graph.Api", "Cadmus.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cadmus.Graph.Extras", "Cadmus.Graph.Extras\Cadmus.Graph.Extras.csproj", "{27F90F91-DE87-4DF0-A548-66AF5DBF0991}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cadmus.Graph.PgSql", "Cadmus.Graph.PgSql\Cadmus.Graph.PgSql.csproj", "{ADBE684C-0FB1-43B4-B0D3-2A5C2F5FEEC1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cadmus.Graph.PgSql", "Cadmus.Graph.PgSql\Cadmus.Graph.PgSql.csproj", "{ADBE684C-0FB1-43B4-B0D3-2A5C2F5FEEC1}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cadmus.Graph.PgSql.Test", "Cadmus.Graph.PgSql.Test\Cadmus.Graph.PgSql.Test.csproj", "{D323F754-B4C4-4243-8D10-303F4D64FEBB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cadmus.Graph.Ef", "Cadmus.Graph.Ef\Cadmus.Graph.Ef.csproj", "{B728D54C-25D2-4718-BF31-625F08536996}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cadmus.Graph.Ef.PgSql", "Cadmus.Graph.Ef.PgSql\Cadmus.Graph.Ef.PgSql.csproj", "{82D13AC5-4EF7-4156-81DA-AC5FB895E3C1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -82,6 +88,18 @@ Global
 		{ADBE684C-0FB1-43B4-B0D3-2A5C2F5FEEC1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ADBE684C-0FB1-43B4-B0D3-2A5C2F5FEEC1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ADBE684C-0FB1-43B4-B0D3-2A5C2F5FEEC1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D323F754-B4C4-4243-8D10-303F4D64FEBB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D323F754-B4C4-4243-8D10-303F4D64FEBB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D323F754-B4C4-4243-8D10-303F4D64FEBB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D323F754-B4C4-4243-8D10-303F4D64FEBB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B728D54C-25D2-4718-BF31-625F08536996}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B728D54C-25D2-4718-BF31-625F08536996}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B728D54C-25D2-4718-BF31-625F08536996}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B728D54C-25D2-4718-BF31-625F08536996}.Release|Any CPU.Build.0 = Release|Any CPU
+		{82D13AC5-4EF7-4156-81DA-AC5FB895E3C1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{82D13AC5-4EF7-4156-81DA-AC5FB895E3C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{82D13AC5-4EF7-4156-81DA-AC5FB895E3C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{82D13AC5-4EF7-4156-81DA-AC5FB895E3C1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

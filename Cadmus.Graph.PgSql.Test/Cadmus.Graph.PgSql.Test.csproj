@@ -5,27 +5,11 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
-    <Version>2.2.9</Version>
-    <FileVersion>2.2.9</FileVersion>
-    <AssemblyVersion>2.2.9</AssemblyVersion>
+    <IsTestProject>true</IsTestProject>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Assets\MappingsDoc.json" />
-    <None Remove="Assets\Petrarch-n.json" />
-    <None Remove="Assets\Petrarch-t.json" />
-    <None Remove="Assets\Thesauri.json" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="Assets\Petrarch-n.json" />
-    <EmbeddedResource Include="Assets\Petrarch-t.json" />
-    <EmbeddedResource Include="Assets\Thesauri.json" />
-    <EmbeddedResource Include="Assets\MappingsDoc.json" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Cadmus.General.Parts" Version="5.0.3" />
+    <PackageReference Include="Fusi.DbManager.PgSql" Version="3.0.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.6.2" />
     <PackageReference Include="xunit" Version="2.4.2" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.5">
@@ -39,8 +23,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Cadmus.Graph.Sql\Cadmus.Graph.Sql.csproj" />
-    <ProjectReference Include="..\Cadmus.Graph\Cadmus.Graph.csproj" />
+    <ProjectReference Include="..\Cadmus.Graph.PgSql\Cadmus.Graph.PgSql.csproj" />
+    <ProjectReference Include="..\Cadmus.Graph.Sql.Test\Cadmus.Graph.Sql.Test.csproj" />
   </ItemGroup>
 
 </Project>

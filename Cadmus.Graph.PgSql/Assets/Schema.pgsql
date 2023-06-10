@@ -194,8 +194,7 @@ INSERT INTO node(id, is_class, label, tag, source_type, sid) VALUES(15, false, '
 -- graph stored procedures
 -- --------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION populate_node_class(instance_id integer, a_id integer, sub_id integer)
- RETURNS void
+CREATE OR REPLACE PROCEDURE populate_node_class(instance_id integer, a_id integer, sub_id integer)
  LANGUAGE sql
 AS $function$
     INSERT INTO node_class(node_id, class_id, "level")

@@ -12,6 +12,7 @@ using Cadmus.General.Parts;
 using Cadmus.Refs.Bricks;
 using Fusi.Antiquity.Chronology;
 using Cadmus.Core;
+using Cadmus.Graph.Sql.Test;
 
 namespace Cadmus.Graph.MySql.Test;
 

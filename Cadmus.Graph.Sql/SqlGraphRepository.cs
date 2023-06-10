@@ -269,33 +269,18 @@ public abstract class SqlGraphRepository : IConfigurable<SqlOptions>
     #endregion
 
     #region URI Lookup
-    private static Tuple<int, bool> AddUri(string uri, QueryFactory qf,
-        IDbTransaction trans)
+    private static Tuple<int, bool> AddUri(string uri, QueryFactory qf)
     {
         // if the URI already exists, just return its ID
         int id = qf.Query("uri_lookup")
-                    .Where("uri", uri).Get<int>(trans).FirstOrDefault();
+                   .Where("uri", uri).Get<int>().FirstOrDefault();
         if (id > 0) return Tuple.Create(id, false);
 
         // else insert it
         return Tuple.Create(qf.Query("uri_lookup").InsertGetId<int>(new
         {
             uri
-        }, trans), true);
-    }
-
-    private static int AddUri(string uri, QueryFactory qf)
-    {
-        // if the URI already exists, just return its ID
-        int id = qf.Query("uri_lookup")
-                    .Where("uri", uri).Get<int>().FirstOrDefault();
-        if (id > 0) return id;
-
-        // else insert it
-        return qf.Query("uri_lookup").InsertGetId<int>(new
-        {
-            uri
-        });
+        }), true);
     }
 
     /// <summary>
@@ -309,7 +294,7 @@ public abstract class SqlGraphRepository : IConfigurable<SqlOptions>
         if (uri == null) throw new ArgumentNullException(nameof(uri));
 
         using QueryFactory qf = GetQueryFactory();
-        return AddUri(uri, qf);
+        return AddUri(uri, qf).Item1;
     }
 
     /// <summary>
@@ -557,16 +542,19 @@ public abstract class SqlGraphRepository : IConfigurable<SqlOptions>
                 if (noUpdate) return;
                 qf.Query("node").Where("id", node.Id).Update(d);
             }
-            else qf.Query("node").Insert(d);
+            else
+            {
+                qf.Query("node").Insert(d);
+            }
+        }
+        else if (qf.Query("node").Where("id", node.Id).Exists(trans))
+        {
+            if (noUpdate) return;
+            qf.Query("node").Where("id", node.Id).Update(d, trans);
         }
         else
         {
-            if (qf.Query("node").Where("id", node.Id).Exists(trans))
-            {
-                if (noUpdate) return;
-                qf.Query("node").Where("id", node.Id).Update(d, trans);
-            }
-            else qf.Query("node").Insert(d, trans);
+            qf.Query("node").Insert(d, trans);
         }
 
         if (!noClasses)
@@ -595,22 +583,22 @@ public abstract class SqlGraphRepository : IConfigurable<SqlOptions>
     }
 
     private static void ImportNode(UriNode node, QueryFactory qf,
-        IDbTransaction trans, int aId, int subId)
+        int aId, int subId)
     {
-        var t = AddUri(node.Uri!, qf, trans);
+        var t = AddUri(node.Uri!, qf);
         if (t.Item2)
         {
             var d = new
             {
-                Id = t.Item1,
+                id = t.Item1,
                 is_class = node.IsClass,
                 label = node.Label,
                 tag = node.Tag,
                 source_type = node.SourceType,
                 sid = node.Sid
             };
-            qf.Query("node").Insert(d, trans);
-            UpdateNodeClasses(node.Id, aId, subId, qf, trans);
+            qf.Query("node").Insert(d);
+            UpdateNodeClasses(node.Id, aId, subId, qf);
         }
     }
 
@@ -626,23 +614,12 @@ public abstract class SqlGraphRepository : IConfigurable<SqlOptions>
         if (nodes is null) throw new ArgumentNullException(nameof(nodes));
 
         using QueryFactory qf = GetQueryFactory();
-        IDbTransaction trans = qf.Connection.BeginTransaction();
-        try
-        {
-            var asIds = GetASubIds(qf, trans);
+        var asIds = GetASubIds(qf);
 
-            foreach (UriNode node in nodes)
-            {
-                if (node.Uri != null)
-                    ImportNode(node, qf, trans, asIds.Item1, asIds.Item2);
-            }
-
-            trans.Commit();
-        }
-        catch (Exception)
+        foreach (UriNode node in nodes)
         {
-            trans.Rollback();
-            throw;
+            if (node.Uri != null)
+                ImportNode(node, qf, asIds.Item1, asIds.Item2);
         }
     }
 
@@ -1118,16 +1095,14 @@ public abstract class SqlGraphRepository : IConfigurable<SqlOptions>
         return GetPopulatedMapping(mapping, qf, true);
     }
 
-    private static void DeleteMappingOutput(int id, QueryFactory qf,
-        IDbTransaction trans)
+    private static void DeleteMappingOutput(int id, QueryFactory qf)
     {
-        qf.Query("mapping_out_node").Where("mapping_id", id).Delete(trans);
-        qf.Query("mapping_out_triple").Where("mapping_id", id).Delete(trans);
-        qf.Query("mapping_out_meta").Where("mapping_id", id).Delete(trans);
+        qf.Query("mapping_out_node").Where("mapping_id", id).Delete();
+        qf.Query("mapping_out_triple").Where("mapping_id", id).Delete();
+        qf.Query("mapping_out_meta").Where("mapping_id", id).Delete();
     }
 
-    private static void AddMappingOutput(NodeMapping mapping, QueryFactory qf,
-        IDbTransaction trans)
+    private static void AddMappingOutput(NodeMapping mapping, QueryFactory qf)
     {
         List<object?[]> data = new();
 
@@ -1144,7 +1119,7 @@ public abstract class SqlGraphRepository : IConfigurable<SqlOptions>
             }
             qf.Query("mapping_out_node")
               .Insert(new[] { "mapping_id", "ordinal", "name", "uid", "label", "tag" },
-                      data, trans);
+                      data);
         }
 
         if (mapping.Output?.HasTriples == true)
@@ -1160,7 +1135,7 @@ public abstract class SqlGraphRepository : IConfigurable<SqlOptions>
             }
             qf.Query("mapping_out_triple")
               .Insert(new[] { "mapping_id", "ordinal", "s", "p", "o", "ol" },
-                      data, trans);
+                      data);
         }
 
         if (mapping.Output?.HasMetadata == true)
@@ -1176,12 +1151,11 @@ public abstract class SqlGraphRepository : IConfigurable<SqlOptions>
             }
             qf.Query("mapping_out_meta")
               .Insert(new[] { "mapping_id", "ordinal", "name", "value" },
-                      data, trans);
+                      data);
         }
     }
 
-    private void AddMapping(NodeMapping mapping, QueryFactory qf,
-        IDbTransaction trans)
+    private void AddMapping(NodeMapping mapping, QueryFactory qf)
     {
         // insert or update the mapping
         var newMapping = new
@@ -1207,13 +1181,13 @@ public abstract class SqlGraphRepository : IConfigurable<SqlOptions>
             && qf.Query("mapping").Where("id", mapping.Id).Exists())
         {
             qf.Query("mapping").Where("id", mapping.Id)
-                .Update(newMapping, trans);
-            DeleteMappingOutput(mapping.Id, qf, trans);
+              .Update(newMapping);
+            DeleteMappingOutput(mapping.Id, qf);
         }
         else
         {
             mapping.Id = qf.Query("mapping")
-                .InsertGetId<int>(newMapping, trans);
+                           .InsertGetId<int>(newMapping);
             if (mapping.HasChildren)
             {
                 foreach (NodeMapping child in mapping.Children)
@@ -1222,13 +1196,13 @@ public abstract class SqlGraphRepository : IConfigurable<SqlOptions>
         }
 
         // add its output
-        if (mapping.Output != null) AddMappingOutput(mapping, qf, trans);
+        if (mapping.Output != null) AddMappingOutput(mapping, qf);
 
         // add its children
         if (mapping.HasChildren)
         {
             foreach (NodeMapping child in mapping.Children)
-                AddMapping(child, qf, trans);
+                AddMapping(child, qf);
         }
     }
 
@@ -1245,19 +1219,8 @@ public abstract class SqlGraphRepository : IConfigurable<SqlOptions>
         if (mapping == null) throw new ArgumentNullException(nameof(mapping));
 
         using QueryFactory qf = GetQueryFactory();
-        IDbTransaction trans = qf.Connection.BeginTransaction();
-
-        try
-        {
-            AddMapping(mapping, qf, trans);
-            trans.Commit();
-            return mapping.Id;
-        }
-        catch (Exception)
-        {
-            trans.Rollback();
-            throw;
-        }
+        AddMapping(mapping, qf);
+        return mapping.Id;
     }
 
     /// <summary>
@@ -1581,7 +1544,10 @@ public abstract class SqlGraphRepository : IConfigurable<SqlOptions>
         if (triple.ObjectId == 0) query.WhereNull("o_id");
         else query.Where("o_id", triple.ObjectId);
 
-        if (triple.ObjectLiteral == null) query.WhereNull("o_lit");
+        if (triple.ObjectLiteral == null)
+        {
+            query.WhereNull("o_lit");
+        }
         else
         {
             query.Where("o_lit", triple.ObjectLiteral)
@@ -1677,80 +1643,70 @@ public abstract class SqlGraphRepository : IConfigurable<SqlOptions>
         if (triples is null) throw new ArgumentNullException(nameof(triples));
 
         using QueryFactory qf = GetQueryFactory();
-        var trans = qf.Connection.BeginTransaction();
-        try
+        foreach (UriTriple triple in triples)
         {
-            foreach (UriTriple triple in triples)
+            if (triple.SubjectUri == null || triple.PredicateUri == null ||
+                (triple.ObjectLiteral == null && triple.ObjectUri == null))
             {
-                if (triple.SubjectUri == null || triple.PredicateUri == null ||
-                    (triple.ObjectLiteral == null && triple.ObjectUri == null))
-                {
-                    continue;
-                }
-
-                // add subject - the node is added if not present
-                var t = AddUri(triple.SubjectUri, qf, trans);
-                triple.SubjectId = t.Item1;
-                if (t.Item2)
-                {
-                    AddNode(new Node
-                    {
-                        Id = t.Item1,
-                        Label = triple.SubjectUri,
-                        Sid = triple.Sid,
-                    }, false, qf, trans);
-                }
-
-                // add predicate - the node is added if not present
-                t = AddUri(triple.PredicateUri, qf, trans);
-                triple.PredicateId = t.Item1;
-                if (t.Item2)
-                {
-                    AddNode(new Node
-                    {
-                        Id = t.Item1,
-                        Label = triple.PredicateUri,
-                        Sid = triple.Sid,
-                        Tag = Node.TAG_PROPERTY
-                    }, false, qf, trans);
-                }
-
-                // add object if it's a node
-                if (triple.ObjectUri != null)
-                {
-                    t = AddUri(triple.ObjectUri, qf, trans);
-                    triple.ObjectId = t.Item1;
-                    if (t.Item2)
-                    {
-                        AddNode(new Node
-                        {
-                            Id = t.Item1,
-                            Label = triple.ObjectUri,
-                            Sid = triple.Sid
-                        }, false, qf, trans);
-                    }
-                }
-
-                triple.Id = qf.Query("triple").InsertGetId<int>(new
-                {
-                    s_id = triple.SubjectId,
-                    p_id = triple.PredicateId,
-                    o_id = triple.ObjectId == 0 ? null : (int?)triple.ObjectId,
-                    o_lit = triple.ObjectLiteral,
-                    o_lit_ix = triple.ObjectLiteralIx,
-                    o_lit_type = triple.LiteralType,
-                    o_lit_lang = triple.LiteralLanguage,
-                    o_lit_n = triple.LiteralNumber,
-                    sid = triple.Sid,
-                    tag = triple.Tag,
-                }, trans);
+                continue;
             }
-            trans.Commit();
-        }
-        catch (Exception)
-        {
-            trans.Rollback();
-            throw;
+
+            // add subject - the node is added if not present
+            var t = AddUri(triple.SubjectUri, qf);
+            triple.SubjectId = t.Item1;
+            if (t.Item2)
+            {
+                AddNode(new Node
+                {
+                    Id = t.Item1,
+                    Label = triple.SubjectUri,
+                    Sid = triple.Sid,
+                }, false, qf);
+            }
+
+            // add predicate - the node is added if not present
+            t = AddUri(triple.PredicateUri, qf);
+            triple.PredicateId = t.Item1;
+            if (t.Item2)
+            {
+                AddNode(new Node
+                {
+                    Id = t.Item1,
+                    Label = triple.PredicateUri,
+                    Sid = triple.Sid,
+                    Tag = Node.TAG_PROPERTY
+                }, false, qf);
+            }
+
+            // add object if it's a node
+            if (triple.ObjectUri != null)
+            {
+                t = AddUri(triple.ObjectUri, qf);
+                triple.ObjectId = t.Item1;
+                if (t.Item2)
+                {
+                    AddNode(new Node
+                    {
+                        Id = t.Item1,
+                        Label = triple.ObjectUri,
+                        Sid = triple.Sid
+                    }, false, qf);
+                }
+            }
+
+            triple.Id = qf.Query("triple").InsertGetId<int>(new
+            {
+                s_id = triple.SubjectId,
+                p_id = triple.PredicateId,
+                o_id = triple.ObjectId == 0 ? null : (int?)triple.ObjectId,
+                o_lit = triple.ObjectLiteral,
+                o_lit_ix = triple.ObjectLiteralIx,
+                o_lit_type = triple.LiteralType,
+                o_lit_lang = triple.LiteralLanguage,
+                o_lit_n = triple.LiteralNumber,
+                sid = triple.Sid,
+                tag = triple.Tag,
+            });
         }
     }
 
@@ -1803,18 +1759,18 @@ public abstract class SqlGraphRepository : IConfigurable<SqlOptions>
         if (filter is null) throw new ArgumentNullException(nameof(filter));
         if (sort is null) throw new ArgumentNullException(nameof(sort));
 
-        // something like:
-        // select t.p_id, ul.uri, count(t.p_id) as cnt
-        // from triple t
-        // inner join uri_lookup ul on t.p_id = ul.id
-        // group by t.p_id order by cnt desc, uri
+        // inner query:
+        // select p_id, count(p_id) as cnt FROM triple
+        // where ...
+        // group by p_id
         using QueryFactory qf = GetQueryFactory();
-        var query = qf.Query("triple").Select("p_id");
-        ApplyTripleFilter(filter, query);
-        query.GroupBy("triple.p_id");
+        Query subQuery = qf.Query("triple")
+            .SelectRaw("p_id, COUNT(p_id) AS cnt");
+        ApplyTripleFilter(filter, subQuery);
+        subQuery.GroupBy("triple.p_id");
 
         // get count and ret if no result
-        int total = query.Clone().Count<int>(new[] { "p_id" });
+        int total = subQuery.Clone().Count<int>(new[] { "p_id" });
         if (total == 0)
         {
             return new DataPage<TripleGroup>(
@@ -1822,10 +1778,13 @@ public abstract class SqlGraphRepository : IConfigurable<SqlOptions>
                 Array.Empty<TripleGroup>());
         }
 
-        // complete query and get page
-        query.Select("ul.uri")
-             .SelectRaw("COUNT(p_id) AS cnt")
-             .Join("uri_lookup AS ul", "p_id", "ul.id");
+        // wrap query and get page:
+        // select g.p_id, ul.uri, g.cnt FROM (...) g
+        // inner join uri_lookup ul on g.p_id = ul.id
+        Query query = qf.Query("uri_lookup AS ul")
+            .Join(subQuery.As("g"), j => j.On("p_id", "ul.id"))
+            .Select("g.p_id", "ul.uri", "g.cnt");
+
         foreach (char c in sort)
         {
             switch (c)
@@ -1891,7 +1850,7 @@ public abstract class SqlGraphRepository : IConfigurable<SqlOptions>
             {
                 sub = new Node
                 {
-                    Id = AddUri("rdfs:subClassOf", qf),
+                    Id = AddUri("rdfs:subClassOf", qf).Item1,
                     Label = "subclass-of",
                     IsClass = true
                 };
@@ -1911,7 +1870,7 @@ public abstract class SqlGraphRepository : IConfigurable<SqlOptions>
 
                 root = new Node
                 {
-                    Id = AddUri(uri, qf),
+                    Id = AddUri(uri, qf).Item1,
                     IsClass = true,
                     Label = id,
                     SourceType = Node.SOURCE_THESAURUS,
@@ -1928,7 +1887,7 @@ public abstract class SqlGraphRepository : IConfigurable<SqlOptions>
                     ? entry.Id : prefix + entry.Id;
                 Node node = new()
                 {
-                    Id = AddUri(uri, qf),
+                    Id = AddUri(uri, qf).Item1,
                     IsClass = true,
                     Label = entry.Id,
                     SourceType = Node.SOURCE_THESAURUS,
@@ -1981,7 +1940,7 @@ public abstract class SqlGraphRepository : IConfigurable<SqlOptions>
         {
             a = new Node
             {
-                Id = AddUri("rdf:type", qf),
+                Id = AddUri("rdf:type", qf).Item1,
                 Label = "is-a",
                 Tag = "property"
             };
@@ -1993,7 +1952,7 @@ public abstract class SqlGraphRepository : IConfigurable<SqlOptions>
         {
             sub = new Node
             {
-                Id = AddUri("rdfs:subClassOf", qf),
+                Id = AddUri("rdfs:subClassOf", qf).Item1,
                 Label = "rdfs:subClassOf",
                 Tag = "property"
             };
@@ -2006,10 +1965,14 @@ public abstract class SqlGraphRepository : IConfigurable<SqlOptions>
         QueryFactory qf, IDbTransaction? trans = null)
     {
         if (trans == null)
+        {
             qf.Statement($"CALL populate_node_class({nodeId},{aId},{subId});");
+        }
         else
+        {
             qf.Statement($"CALL populate_node_class({nodeId},{aId},{subId});",
                 trans);
+        }
     }
 
     /// <summary>
@@ -2212,7 +2175,7 @@ public abstract class SqlGraphRepository : IConfigurable<SqlOptions>
             DeleteNode(node.Id, qf);
         foreach (UriNode node in nodeGrouper.Added)
         {
-            node.Id = AddUri(node.Uri!, qf);
+            node.Id = AddUri(node.Uri!, qf).Item1;
             AddNode(node, true, qf);
         }
         foreach (UriNode node in nodeGrouper.Updated)

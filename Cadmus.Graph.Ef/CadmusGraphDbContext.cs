@@ -1,0 +1,271 @@
+﻿using Microsoft.EntityFrameworkCore;
+
+namespace Cadmus.Graph.Ef;
+
+/// <summary>
+/// Cadmus graph database context.
+/// </summary>
+/// <seealso cref="DbContext" />
+public class CadmusGraphDbContext : DbContext
+{
+    //public DbSet<EfIndexItem> Items { get; set; }
+    //public DbSet<EfIndexPin> Pins { get; set; }
+    public DbSet<EfUriLookup> UriLookups { get; set; }
+    public DbSet<EfNode> Nodes { get; set; }
+    public DbSet<EfProperty> Properties { get; set; }
+    public DbSet<EfNodeClass> NodeClasses { get; set; }
+    public DbSet<EfNamespaceLookup> NamespaceLookups { get; set; }
+    public DbSet<EfUidLookup> UidLookups { get; set; }
+    public DbSet<EfMapping> Mappings { get; set; }
+    public DbSet<EfMappingMetaOutput> MappingMetaOutputs { get; set; }
+    public DbSet<EfMappingNodeOutput> MappingNodeOutputs { get; set; }
+    public DbSet<EfMappingTripleOutput> MappingTripleOutputs { get; set; }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CadmusGraphDbContext"/> class.
+    /// </summary>
+    public CadmusGraphDbContext()
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CorpusDbContext"/> class.
+    /// </summary>
+    /// <param name="options">The options.</param>
+    public CadmusGraphDbContext(DbContextOptions<CadmusGraphDbContext> options)
+        : base(options)
+    {
+        // https://stackoverflow.com/questions/42616408/entity-framework-core-multiple-connection-strings-on-same-dbcontext
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CorpusDbContext"/> class.
+    /// This can be used to derive your own context which should use a typed
+    /// <see cref="DbContextOptions{TContext}"/> in its constructor.
+    /// </summary>
+    /// <param name="options">The options for this context.</param>
+    protected CadmusGraphDbContext(DbContextOptions options) : base(options)
+    {
+        // https://stackoverflow.com/questions/41829229/how-do-i-implement-dbcontext-inheritance-for-multiple-databases-in-ef7-net-co
+    }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+
+        // item
+        //modelBuilder.Entity<EfIndexItem>().ToTable("item");
+        //modelBuilder.Entity<EfIndexItem>(x =>
+        //{
+        //    x.HasKey(x => x.Id);
+        //    x.Property(x => x.Id).HasColumnName("id").ValueGeneratedOnAdd();
+        //    x.Property(x => x.Title).HasColumnName("title").HasMaxLength(500)
+        //        .IsRequired();
+        //    x.Property(x => x.Description).HasColumnName("description")
+        //        .HasMaxLength(1000).IsRequired();
+        //    x.Property(x => x.FacetId).HasColumnName("facet_id")
+        //        .HasMaxLength(100).IsRequired();
+        //    x.Property(x => x.GroupId).HasColumnName("group_id").HasMaxLength(100);
+        //    x.Property(x => x.SortKey).HasColumnName("sort_key")
+        //        .HasMaxLength(1000).IsRequired();
+        //    x.Property(x => x.Flags).HasColumnName("flags").IsRequired();
+        //    x.Property(x => x.TimeCreated).HasColumnName("time_created").IsRequired();
+        //    x.Property(x => x.TimeModified).HasColumnName("time_modified").IsRequired();
+        //    x.Property(x => x.CreatorId).HasColumnName("creator_id").HasMaxLength(100);
+        //    x.Property(x => x.UserId).HasColumnName("user_id").HasMaxLength(100);
+        //});
+
+        // pin
+        //modelBuilder.Entity<EfIndexPin>().ToTable("pin");
+        //modelBuilder.Entity<EfIndexPin>(x =>
+        //{
+        //    x.HasKey(x => x.Id);
+        //    x.Property(x => x.Id).HasColumnName("id").ValueGeneratedOnAdd();
+        //    x.Property(x => x.ItemId).HasColumnName("item_id").IsRequired()
+        //        .HasMaxLength(36).IsFixedLength();
+        //    x.Property(x => x.PartId).HasColumnName("part_id").IsRequired()
+        //        .HasMaxLength(36).IsFixedLength();
+        //    x.Property(x => x.PartTypeId).HasColumnName("part_type_id")
+        //        .HasMaxLength(100).IsRequired();
+        //    x.Property(x => x.PartRoleId).HasColumnName("part_role_id")
+        //        .HasMaxLength(100);
+        //    x.Property(x => x.Name).HasColumnName("name")
+        //        .HasMaxLength(100).IsRequired();
+        //    x.Property(x => x.Value).HasColumnName("value")
+        //        .HasMaxLength(500).IsRequired();
+        //    x.Property(x => x.TimeIndexed).HasColumnName("time_indexed")
+        //        .IsRequired();
+        //});
+
+        // uri_lookup
+        modelBuilder.Entity<EfUriLookup>().ToTable("uri_lookup");
+        modelBuilder.Entity<EfUriLookup>(x =>
+        {
+            x.HasKey(x => x.Id);
+            x.Property(x => x.Id).HasColumnName("id").ValueGeneratedOnAdd();
+            x.Property(x => x.Uri).HasColumnName("uri").IsRequired().HasMaxLength(500);
+        });
+        // one-to-one relationship where the dependent entity's primary key
+        // is also its foreign key to the principal entity (shared primary key
+        // association)
+        modelBuilder.Entity<EfUriLookup>()
+             .HasOne(p => p.Node)
+             .WithOne(d => d.UriLookup)
+             .HasForeignKey<EfNode>(d => d.Id);
+
+        // node
+        modelBuilder.Entity<EfNode>().ToTable("node");
+        modelBuilder.Entity<EfNode>(x =>
+        {
+            x.HasKey(x => x.Id);
+            x.Property(x => x.Id).HasColumnName("id").ValueGeneratedOnAdd();
+            x.Property(x => x.IsClass).IsRequired().HasColumnName("is_class");
+            x.Property(x => x.Tag).HasColumnName("tag").HasMaxLength(50);
+            x.Property(x => x.Label).HasColumnName("label").HasMaxLength(500);
+            x.Property(x => x.SourceType).IsRequired().HasColumnName("source_type");
+            x.Property(x => x.Sid).HasColumnName("sid").HasMaxLength(500);
+        });
+        modelBuilder.Entity<EfNode>()
+            .HasOne(n => n.Property)
+            .WithOne(p => p.Node)
+            .HasForeignKey<EfProperty>(p => p.Id);
+
+        // property
+        modelBuilder.Entity<EfProperty>().ToTable("property");
+        modelBuilder.Entity<EfProperty>(x =>
+        {
+            x.HasKey(x => x.Id);
+            x.Property(x => x.Id).HasColumnName("id").ValueGeneratedOnAdd();
+            x.Property(x => x.DataType).HasColumnName("data_type").HasMaxLength(100);
+            x.Property(x => x.LitEditor).HasColumnName("lit_editor").HasMaxLength(100);
+            x.Property(x => x.Description).HasColumnName("description").HasMaxLength(5000);
+        });
+
+        // node_class
+        modelBuilder.Entity<EfNodeClass>().ToTable("node_class");
+        modelBuilder.Entity<EfNodeClass>(x =>
+        {
+            x.HasKey(x => x.Id);
+            x.Property(x => x.Id).HasColumnName("id").ValueGeneratedOnAdd();
+            x.Property(x => x.NodeId).IsRequired().HasColumnName("node_id");
+            x.Property(x => x.ClassId).IsRequired().HasColumnName("class_id");
+            x.Property(x => x.Level).IsRequired().HasColumnName("level");
+        });
+        modelBuilder.Entity<EfNodeClass>()
+            .HasOne(n => n.Node)
+            .WithMany(n => n.Classes)
+            .HasForeignKey(n => n.NodeId);
+
+        // namespace_lookup
+        modelBuilder.Entity<EfNamespaceLookup>().ToTable("namespace_lookup");
+        modelBuilder.Entity<EfNamespaceLookup>(x =>
+        {
+            x.HasKey(x => x.Id);
+            x.Property(x => x.Id).HasColumnName("id").IsRequired().HasMaxLength(50);
+            x.Property(x => x.Uri).HasColumnName("uri").IsRequired().HasMaxLength(500);
+        });
+
+        // uid_lookup
+        modelBuilder.Entity<EfUidLookup>().ToTable("uid_lookup");
+        modelBuilder.Entity<EfUidLookup>(x =>
+        {
+            x.HasKey(x => x.Id);
+            x.Property(x => x.Id).HasColumnName("id").ValueGeneratedOnAdd();
+            x.Property(x => x.Sid).HasColumnName("sid")
+                .IsRequired().HasMaxLength(500);
+            x.Property(x => x.Unsuffixed).HasColumnName("unsuffixed")
+                .IsRequired().HasMaxLength(500);
+            x.Property(x => x.HasSuffix).IsRequired().HasColumnName("has_suffix");
+        });
+
+        // mapping_out_meta
+        modelBuilder.Entity<EfMappingMetaOutput>().ToTable("mapping_out_meta");
+        modelBuilder.Entity<EfMappingMetaOutput>(x =>
+        {
+            x.HasKey(x => x.Id);
+            x.Property(x => x.Id).HasColumnName("id").ValueGeneratedOnAdd();
+            x.Property(x => x.MappingId).IsRequired().HasColumnName("mapping_id");
+            x.Property(x => x.Ordinal).IsRequired().HasColumnName("ordinal");
+            x.Property(x => x.Name).IsRequired().HasColumnName("name").HasMaxLength(100);
+            x.Property(x => x.Name).IsRequired().HasColumnName("value").HasMaxLength(10000);
+        });
+
+        // mapping_out_node
+        modelBuilder.Entity<EfMappingNodeOutput>().ToTable("mapping_out_node");
+        modelBuilder.Entity<EfMappingNodeOutput>(x =>
+        {
+            x.HasKey(x => x.Id);
+            x.Property(x => x.Id).HasColumnName("id").ValueGeneratedOnAdd();
+            x.Property(x => x.MappingId).IsRequired().HasColumnName("mapping_id");
+            x.Property(x => x.Ordinal).IsRequired().HasColumnName("ordinal");
+            x.Property(x => x.Name).IsRequired().HasColumnName("name").HasMaxLength(100);
+            x.Property(x => x.Uid).IsRequired().HasColumnName("uid").HasMaxLength(1000);
+            x.Property(x => x.Label).HasColumnName("label").HasMaxLength(1000);
+            x.Property(x => x.Tag).HasColumnName("tag").HasMaxLength(100);
+        });
+
+        // mapping_out_triple
+        modelBuilder.Entity<EfMappingTripleOutput>().ToTable("mapping_out_triple");
+        modelBuilder.Entity<EfMappingTripleOutput>(x =>
+        {
+            x.HasKey(x => x.Id);
+            x.Property(x => x.Id).HasColumnName("id").ValueGeneratedOnAdd();
+            x.Property(x => x.MappingId).IsRequired().HasColumnName("mapping_id");
+            x.Property(x => x.Ordinal).IsRequired().HasColumnName("ordinal");
+            x.Property(x => x.S).HasColumnName("s").IsRequired().HasMaxLength(1000);
+            x.Property(x => x.P).HasColumnName("p").IsRequired().HasMaxLength(1000);
+            x.Property(x => x.O).HasColumnName("o").HasMaxLength(1000);
+            x.Property(x => x.O).HasColumnName("ol").HasMaxLength(10000);
+        });
+
+        // mapping
+        modelBuilder.Entity<EfMapping>().ToTable("mapping");
+        modelBuilder.Entity<EfMapping>(x =>
+        {
+            x.HasKey(x => x.Id);
+            x.Property(x => x.Id).HasColumnName("id").ValueGeneratedOnAdd();
+            x.Property(x => x.ParentId).HasColumnName("parent_id");
+            x.Property(x => x.Ordinal).IsRequired().HasColumnName("ordinal");
+            x.Property(x => x.Name).HasColumnName("name").IsRequired().HasMaxLength(100);
+            x.Property(x => x.SourceType).HasColumnName("source_type").IsRequired();
+            x.Property(x => x.FacetFilter).HasColumnName("facet_filter")
+                .HasMaxLength(100);
+            x.Property(x => x.GroupFilter).HasColumnName("group_filter")
+                .HasMaxLength(100);
+            x.Property(x => x.TitleFilter).HasColumnName("title_filter")
+                .HasMaxLength(100);
+            x.Property(x => x.FlagsFilter).HasColumnName("flags_filter");
+            x.Property(x => x.PartTypeFilter).HasColumnName("part_type_filter")
+                .HasMaxLength(100);
+            x.Property(x => x.PartRoleFilter).HasColumnName("part_role_filter")
+                .HasMaxLength(100);
+            x.Property(x => x.Description).HasColumnName("description")
+                .HasMaxLength(1000);
+            x.Property(x => x.Source).HasColumnName("source").IsRequired()
+                .HasMaxLength(500);
+            x.Property(x => x.Sid).HasColumnName("sid").HasMaxLength(500);
+        });
+        // children
+        modelBuilder.Entity<EfMapping>()
+            .HasOne(m => m.Parent)
+            .WithMany(m => m.Children)
+            .HasForeignKey(m => m.ParentId);
+        // output metadata
+        modelBuilder.Entity<EfMapping>()
+            .HasMany(m => m.MetaOutputs)
+            .WithOne(m => m.Mapping)
+            .HasForeignKey(m => m.MappingId);
+        // output nodes
+        modelBuilder.Entity<EfMapping>()
+            .HasMany(m => m.NodeOutputs)
+            .WithOne(m => m.Mapping)
+            .HasForeignKey(m => m.MappingId);
+        // output triples
+        modelBuilder.Entity<EfMapping>()
+            .HasMany(m => m.TripleOutputs)
+            .WithOne(m => m.Mapping)
+            .HasForeignKey(m => m.MappingId);
+
+        // TODO
+    }
+}
