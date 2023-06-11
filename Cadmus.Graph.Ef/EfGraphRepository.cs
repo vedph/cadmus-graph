@@ -9,7 +9,9 @@ using System.Diagnostics;
 using System.Reflection.Emit;
 using System.Security.AccessControl;
 using System.Security.Cryptography;
+using System.Text;
 using System.Xml.Linq;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Cadmus.Graph.Ef;
 
@@ -219,7 +221,7 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
     #endregion
 
     #region URI Lookup
-    private int AddUri(string uri, CadmusGraphDbContext context)
+    private static int AddUri(string uri, CadmusGraphDbContext context)
     {
         // if the URI already exists, just return its ID
         EfUriEntry? entry = context.UriEntries.AsNoTracking()
@@ -281,8 +283,8 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
     #endregion
 
     #region Node
-    private static IQueryable<EfNode> ApplyNodeFilter(IQueryable<EfNode> nodes,
-        NodeFilter filter)
+    private static IQueryable<EfNode> ApplyNodeFilterBase(
+        IQueryable<EfNode> nodes, NodeFilterBase filter)
     {
         // uid
         if (!string.IsNullOrEmpty(filter.Uid))
@@ -363,7 +365,7 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
                 .Include(n => n.UriEntry)
                 .AsNoTracking();
 
-        nodes = ApplyNodeFilter(nodes, filter);
+        nodes = ApplyNodeFilterBase(nodes, filter);
 
         // additional filter: linked node ID
         if (filter.LinkedNodeId > 0)
@@ -541,6 +543,201 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
 
         context.SaveChanges();
     }
+
+    /// <summary>
+    /// Bulk imports the specified nodes. Note that here the nodes being
+    /// imported are assumed to have a URI, while their ID will be
+    /// calculated during import according to the URI value. Nodes without
+    /// URI will not be imported.
+    /// </summary>
+    /// <param name="nodes">The nodes.</param>
+    public void ImportNodes(IEnumerable<UriNode> nodes)
+    {
+        if (nodes is null) throw new ArgumentNullException(nameof(nodes));
+
+        using CadmusGraphDbContext context = GetContext();
+        (int aId, int subId) = GetASubIds();
+        foreach (UriNode node in nodes.Where(n => n.Uri != null))
+        {
+            EfUriEntry? uri = context.UriEntries.AsNoTracking()
+                .FirstOrDefault(e => e.Uri == node.Uri);
+            if (uri == null)
+            {
+                uri = new EfUriEntry
+                {
+                    Uri = node.Uri!
+                };
+                context.UriEntries.Add(uri);
+            }
+            context.Nodes.Add(new EfNode
+            {
+                Id = uri.Id,
+                UriEntry = uri,
+                IsClass = node.IsClass,
+                Tag = node.Tag,
+                Label = node.Label,
+                SourceType = node.SourceType,
+                Sid = node.Sid
+            });
+        }
+        context.SaveChanges();
+
+        foreach (int id in nodes.Select(n => n.Id))
+            UpdateNodeClasses(id, aId, subId, context);
+    }
+
+    /// <summary>
+    /// Deletes the node with the specified ID.
+    /// </summary>
+    /// <param name="id">The node identifier.</param>
+    public void DeleteNode(int id)
+    {
+        using CadmusGraphDbContext context = GetContext();
+        EfNode? node = context.Nodes.FirstOrDefault(n => n.Id == id);
+        if (node == null) return;
+        context.Nodes.Remove(node);
+        context.SaveChanges();
+    }
+
+    /// <summary>
+    /// Gets the nodes included in a triple with the specified predicate ID
+    /// and other node ID, either as its subject or as its object.
+    /// </summary>
+    /// <param name="filter">The filter.</param>
+    /// <returns>Page.</returns>
+    /// <exception cref="ArgumentNullException">filter</exception>
+    public DataPage<UriNode> GetLinkedNodes(LinkedNodeFilter filter)
+    {
+        if (filter is null) throw new ArgumentNullException(nameof(filter));
+
+        using CadmusGraphDbContext context = GetContext();
+        IQueryable<EfNode> nodes;
+
+        if (filter.IsObject)
+        {
+            nodes = context.Nodes
+                .Include(n => n.UriEntry)
+                .Include(n => n.SubjectTriples)
+                .AsNoTracking()
+                .Where(n => n.Id == filter.OtherNodeId &&
+                    n.SubjectTriples!.Any(t => t.PredicateId == filter.PredicateId));
+        }
+        else
+        {
+            nodes = context.Nodes
+                .Include(n => n.UriEntry)
+                .Include(n => n.ObjectTriples)
+                .AsNoTracking()
+                .Where(n => n.Id == filter.OtherNodeId &&
+                    n.ObjectTriples!.Any(t => t.PredicateId == filter.PredicateId));
+        }
+
+        nodes = ApplyNodeFilterBase(nodes, filter);
+
+        // get total and ret if zero
+        int total = nodes.Count();
+        if (total == 0)
+        {
+            return new DataPage<UriNode>(
+                filter.PageNumber, filter.PageSize, 0, Array.Empty<UriNode>());
+        }
+
+        nodes = nodes.OrderBy(n => n.Label)
+                     .ThenBy(n => n.UriEntry!.Uri).ThenBy(n => n.Id)
+                     .Skip(filter.GetSkipCount()).Take(filter.PageSize);
+
+        List<EfNode> results = nodes.ToList();
+        return new DataPage<UriNode>(filter.PageNumber, filter.PageSize, total,
+            results.Select(n => n.ToUriNode(n.UriEntry!.Uri)).ToList());
+    }
+
+    protected abstract string BuildRegexMatch(string field, string pattern);
+
+    protected string BuildRawRegexSql(string sqlHead,
+        IList<Tuple<string, string>> fieldAndPatterns)
+    {
+        StringBuilder sb = new(sqlHead);
+        foreach (var fp in fieldAndPatterns)
+        {
+            sb.AppendLine();
+            sb.Append(BuildRegexMatch(fp.Item1, fp.Item2));
+        }
+        return sb.ToString();
+    }
+
+    private IQueryable<EfTriple> GetFilteredTriples(LiteralFilter filter,
+        CadmusGraphDbContext context)
+    {
+        IQueryable<EfTriple> triples;
+
+        if (!string.IsNullOrEmpty(filter.LiteralPattern))
+        {
+            triples = context.Triples
+                .FromSqlRaw(BuildRawRegexSql("SELECT * FROM triple WHERE",
+                new[]
+                {
+                    Tuple.Create("o_lit", filter.LiteralPattern)
+                }));
+        }
+        else triples = context.Triples;
+
+        triples = triples.Include(t => t.Subject).ThenInclude(n => n.UriEntry);
+
+        if (!string.IsNullOrEmpty(filter.LiteralType))
+            triples = triples.Where(t => t.LiteralType == filter.LiteralType);
+
+        if (!string.IsNullOrEmpty(filter.LiteralLanguage))
+            triples = triples.Where(t => t.LiteralLanguage == filter.LiteralLanguage);
+
+        if (filter.MinLiteralNumber.HasValue)
+        {
+            triples = triples.Where(t => t.LiteralNumber != null &&
+                t.LiteralNumber >= filter.MinLiteralNumber.Value);
+        }
+
+        if (filter.MaxLiteralNumber.HasValue)
+        {
+            triples = triples.Where(t => t.LiteralNumber != null &&
+                t.LiteralNumber <= filter.MaxLiteralNumber.Value);
+        }
+
+        return triples.AsNoTracking();
+    }
+
+    /// <summary>
+    /// Gets the literals included in a triple with the specified subject ID
+    /// and predicate ID.
+    /// </summary>
+    /// <param name="filter">The filter.</param>
+    /// <returns>Page.</returns>
+    /// <exception cref="ArgumentNullException">filter</exception>
+    public DataPage<UriTriple> GetLinkedLiterals(LinkedLiteralFilter filter)
+    {
+        if (filter is null) throw new ArgumentNullException(nameof(filter));
+
+        using CadmusGraphDbContext context = GetContext();
+
+        IQueryable<EfTriple> triples = GetFilteredTriples(filter, context);
+        
+        triples = triples.Where(t => t.SubjectId == filter.SubjectId &&
+            t.PredicateId == filter.PredicateId &&
+            t.ObjectId == null);
+
+        // get total and return if zero
+        int total = triples.Count();
+        if (total == 0)
+        {
+            return new DataPage<UriTriple>(filter.PageNumber, filter.PageSize,
+                0, Array.Empty<UriTriple>());
+        }
+
+        triples = triples.OrderBy(t => t.ObjectLiteralIx).ThenBy(t => t.Id)
+            .Skip(filter.GetSkipCount()).Take(filter.PageSize);
+
+        List<EfTriple> results = triples.ToList();
+        return new DataPage<UriTriple>(filter.PageNumber, filter.PageSize, total,
+            results.Select(t => t.ToUriTriple()).ToList());
+    }
     #endregion
 
     public void AddProperty(Property property)
@@ -564,11 +761,6 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
     }
 
     public void DeleteMapping(int id)
-    {
-        throw new NotImplementedException();
-    }
-
-    public void DeleteNode(int id)
     {
         throw new NotImplementedException();
     }
@@ -622,16 +814,6 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
         throw new NotImplementedException();
     }
 
-    public DataPage<UriTriple> GetLinkedLiterals(LinkedLiteralFilter filter)
-    {
-        throw new NotImplementedException();
-    }
-
-    public DataPage<UriNode> GetLinkedNodes(LinkedNodeFilter filter)
-    {
-        throw new NotImplementedException();
-    }
-
     public NodeMapping? GetMapping(int id)
     {
         throw new NotImplementedException();
@@ -673,11 +855,6 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
     }
 
     public int Import(string json)
-    {
-        throw new NotImplementedException();
-    }
-
-    public void ImportNodes(IEnumerable<UriNode> nodes)
     {
         throw new NotImplementedException();
     }

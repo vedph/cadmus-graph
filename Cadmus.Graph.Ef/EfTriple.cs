@@ -26,4 +26,25 @@ public class EfTriple : Triple
         Sid = triple.Sid;
         Tag = triple.Tag;
     }
+
+    public UriTriple ToUriTriple()
+    {
+        return new UriTriple
+        {
+            Id = Id,
+            SubjectId = SubjectId,
+            PredicateId = PredicateId,
+            ObjectId = ObjectId,
+            ObjectLiteral = ObjectLiteral,
+            ObjectLiteralIx = ObjectLiteralIx,
+            LiteralType = LiteralType,
+            LiteralLanguage = LiteralLanguage,
+            LiteralNumber = LiteralNumber,
+            Sid = Sid,
+            Tag = Tag,
+            SubjectUri = Subject?.UriEntry?.Uri,
+            PredicateUri = Predicate?.UriEntry?.Uri,
+            ObjectUri = Object?.UriEntry?.Uri
+        };
+    }
 }

@@ -23,7 +23,7 @@ public class Triple
     /// <summary>
     /// Gets or sets the object identifier.
     /// </summary>
-    public int ObjectId { get; set; }
+    public int? ObjectId { get; set; }
 
     /// <summary>
     /// Gets or sets the object literal value. This is alternative to

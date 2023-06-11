@@ -2245,7 +2245,7 @@ public abstract class SqlGraphRepository : IConfigurable<SqlOptions>
                     // add node implicit in triple
                     set.Nodes.Add(new UriNode
                     {
-                        Id = triple.ObjectId,
+                        Id = triple.ObjectId.Value,
                         Uri = triple.ObjectUri,
                         Label = triple.ObjectUri,
                         Sid = triple.Sid,

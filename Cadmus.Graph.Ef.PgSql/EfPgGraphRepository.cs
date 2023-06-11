@@ -25,4 +25,9 @@ public sealed class EfPgGraphRepository : EfGraphRepository
         optionsBuilder.UseNpgsql(ConnectionString);
         return new CadmusGraphDbContext(optionsBuilder.Options);
     }
+
+    protected override string BuildRegexMatch(string field, string pattern)
+    {
+        return $"{field} ~ {pattern}";
+    }
 }
