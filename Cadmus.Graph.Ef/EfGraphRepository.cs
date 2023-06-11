@@ -973,41 +973,25 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
         return new DataPage<NodeMapping>(filter.PageNumber, filter.PageSize,
             total, results.Select(m => GetPopulatedMapping(m, context)).ToList());
     }
-    #endregion
 
-    public void AddThesaurus(Thesaurus thesaurus, bool includeRoot, string? prefix = null)
+    /// <summary>
+    /// Gets the node mapping with the specified ID, including all its
+    /// descendant mappings.
+    /// </summary>
+    /// <param name="id">The identifier.</param>
+    /// <returns>The mapping or null if not found.</returns>
+    public NodeMapping? GetMapping(int id)
     {
-        throw new NotImplementedException();
-    }
+        using CadmusGraphDbContext context = GetContext();
 
-    public void AddTriple(Triple triple)
-    {
-        throw new NotImplementedException();
-    }
+        EfMapping? mapping = context.Mappings
+            .Include(m => m.MetaOutputs)
+            .Include(m => m.NodeOutputs)
+            .Include(m => m.TripleOutputs)
+            .FirstOrDefault(m => m.Id == id);
+        if (mapping == null) return null;
 
-    public void DeleteGraphSet(string sourceId)
-    {
-        throw new NotImplementedException();
-    }
-
-    public void DeleteMapping(int id)
-    {
-        throw new NotImplementedException();
-    }
-
-    public void DeleteTriple(int id)
-    {
-        throw new NotImplementedException();
-    }
-
-    public string Export()
-    {
-        throw new NotImplementedException();
-    }
-
-    public IList<NodeMapping> FindMappings(RunNodeMappingFilter filter)
-    {
-        throw new NotImplementedException();
+        return GetPopulatedMapping(mapping, context);
     }
 
     /// <summary>
@@ -1034,12 +1018,60 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
         return mapping.Id;
     }
 
-    public GraphSet GetGraphSet(string sourceId)
+    /// <summary>
+    /// Deletes the specified node mapping.
+    /// </summary>
+    /// <param name="id">The mapping identifier.</param>
+    public void DeleteMapping(int id)
+    {
+        using CadmusGraphDbContext context = GetContext();
+        EfMapping? mapping = context.Mappings.FirstOrDefault(m => m.Id == id);
+        if (mapping == null) return;
+        context.Mappings.Remove(mapping);
+        context.SaveChanges();
+    }
+
+    /// <summary>
+    /// Finds all the applicable mappings.
+    /// </summary>
+    /// <param name="filter">The filter to match.</param>
+    /// <returns>List of mappings.</returns>
+    /// <exception cref="ArgumentNullException">filter</exception>
+    public IList<NodeMapping> FindMappings(RunNodeMappingFilter filter)
+    {
+        if (filter is null) throw new ArgumentNullException(nameof(filter));
+
+        using CadmusGraphDbContext context = GetContext();
+        throw new NotImplementedException();
+    }
+    #endregion
+
+    public void AddThesaurus(Thesaurus thesaurus, bool includeRoot, string? prefix = null)
     {
         throw new NotImplementedException();
     }
 
-    public NodeMapping? GetMapping(int id)
+    public void AddTriple(Triple triple)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void DeleteGraphSet(string sourceId)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void DeleteTriple(int id)
+    {
+        throw new NotImplementedException();
+    }
+
+    public string Export()
+    {
+        throw new NotImplementedException();
+    }
+
+    public GraphSet GetGraphSet(string sourceId)
     {
         throw new NotImplementedException();
     }

@@ -1290,8 +1290,7 @@ public abstract class SqlGraphRepository : IConfigurable<SqlOptions>
     /// <exception cref="ArgumentNullException">filter</exception>
     public IList<NodeMapping> FindMappings(RunNodeMappingFilter filter)
     {
-        if (filter is null)
-            throw new ArgumentNullException(nameof(filter));
+        if (filter is null) throw new ArgumentNullException(nameof(filter));
 
         using QueryFactory qf = GetQueryFactory();
         Query query = qf.Query("mapping")
