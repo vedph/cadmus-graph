@@ -1946,7 +1946,7 @@ public abstract class SqlGraphRepository : IConfigurable<SqlOptions>
             sub = new Node
             {
                 Id = AddUri("rdfs:subClassOf", qf).Item1,
-                Label = "rdfs:subClassOf",
+                Label = "is-subclass-of",
                 Tag = "property"
             };
             AddNode(sub, true, qf, trans, true);

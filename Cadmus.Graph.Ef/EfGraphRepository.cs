@@ -4,6 +4,12 @@ using Fusi.Tools.Configuration;
 using Fusi.Tools.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using System;
+using System.Diagnostics;
+using System.Reflection.Emit;
+using System.Security.AccessControl;
+using System.Security.Cryptography;
+using System.Xml.Linq;
 
 namespace Cadmus.Graph.Ef;
 
@@ -213,18 +219,8 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
     #endregion
 
     #region URI Lookup
-    /// <summary>
-    /// Adds the specified URI in the mapped URIs set.
-    /// </summary>
-    /// <param name="uri">The URI.</param>
-    /// <returns>ID assigned to the URI.</returns>
-    /// <exception cref="ArgumentNullException">uri</exception>
-    public int AddUri(string uri)
+    private int AddUri(string uri, CadmusGraphDbContext context)
     {
-        if (uri == null) throw new ArgumentNullException(nameof(uri));
-
-        using CadmusGraphDbContext context = GetContext();
-
         // if the URI already exists, just return its ID
         EfUriEntry? entry = context.UriEntries.AsNoTracking()
             .FirstOrDefault(l => l.Uri == uri);
@@ -238,6 +234,20 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
         context.UriEntries.Add(entry);
         context.SaveChanges();
         return entry.Id;
+    }
+
+    /// <summary>
+    /// Adds the specified URI in the mapped URIs set.
+    /// </summary>
+    /// <param name="uri">The URI.</param>
+    /// <returns>ID assigned to the URI.</returns>
+    /// <exception cref="ArgumentNullException">uri</exception>
+    public int AddUri(string uri)
+    {
+        if (uri == null) throw new ArgumentNullException(nameof(uri));
+
+        using CadmusGraphDbContext context = GetContext();
+        return AddUri(uri, context);
     }
 
     /// <summary>
@@ -423,14 +433,115 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
             return node?.ToUriNode(node.UriEntry!.Uri);
         }).ToList();
     }
-    #endregion
 
+    /// <summary>
+    /// Gets the node with the specified ID.
+    /// </summary>
+    /// <param name="id">The identifier.</param>
+    /// <returns>The node or null if not found.</returns>
+    public UriNode? GetNode(int id)
+    {
+        using CadmusGraphDbContext context = GetContext();
+        EfNode? node = context.Nodes
+            .Include(n => n.UriEntry)
+            .AsNoTracking()
+            .FirstOrDefault(n => n.Id == id);
+        return node?.ToUriNode(node.UriEntry!.Uri);
+    }
+
+    /// <summary>
+    /// Gets the node by its URI.
+    /// </summary>
+    /// <param name="uri">The URI.</param>
+    /// <returns>The node or null if not found.</returns>
+    /// <exception cref="ArgumentNullException">uri</exception>
+    public UriNode? GetNodeByUri(string uri)
+    {
+        if (uri == null) throw new ArgumentNullException(nameof(uri));
+
+        using CadmusGraphDbContext context = GetContext();
+        EfNode? node = context.Nodes
+            .Include(n => n.UriEntry)
+            .AsNoTracking()
+            .FirstOrDefault(n => n.UriEntry!.Uri == uri);
+        return node?.ToUriNode(node.UriEntry!.Uri);
+    }
+
+    private (int A, int Sub) GetASubIds()
+    {
+        using CadmusGraphDbContext context = GetContext();
+
+        // a
+        EfNode? a = context.Nodes.Include(n => n.UriEntry)
+            .AsNoTracking()
+            .FirstOrDefault(n => n.UriEntry!.Uri == "rdf:type");
+        if (a == null)
+        {
+            context.Nodes.Add(a = new EfNode
+            {
+                Id = AddUri("rdf:type", context),
+                Label = "is-a",
+                Tag = "property"
+            });
+        }
+
+        // sub
+        EfNode? sub = context.Nodes.Include(n => n.UriEntry)
+            .AsNoTracking()
+            .FirstOrDefault(n => n.UriEntry!.Uri == "rdfs:subClassOf");
+        if (sub == null)
+        {
+            context.Nodes.Add(sub = new EfNode
+            {
+                Id = AddUri("rdfs:subClassOf", context),
+                Label = "is-subclass-of",
+                Tag = "property"
+            });
+        }
+
+        context.SaveChanges();
+        return (a.Id, sub.Id);
+    }
+
+    private static void UpdateNodeClasses(int nodeId, int aId, int subId,
+        CadmusGraphDbContext context)
+    {
+        context.Database.ExecuteSqlRaw(
+            $"CALL populate_node_class({nodeId},{aId},{subId})");
+    }
+
+    /// <summary>
+    /// Adds or updates the specified node. Note that it is assumed that
+    /// the node's ID has been set, either because the node already exists,
+    /// or because its ID has been calculated with <see cref="AddUri(string)"/>.
+    /// </summary>
+    /// <param name="node">The node.</param>
+    /// <param name="noUpdate">True to avoid updating an existing node.
+    /// When this is true, the node is added when not existing; when
+    /// existing, nothing is done.</param>
+    /// <exception cref="ArgumentNullException">node</exception>
     public void AddNode(Node node, bool noUpdate = false)
     {
         if (node == null) throw new ArgumentNullException(nameof(node));
 
-        throw new NotImplementedException();
+        using CadmusGraphDbContext context = GetContext();
+        EfNode? old = context.Nodes.FirstOrDefault(n => n.Id == node.Id);
+        if (noUpdate && old != null) return;
+        if (old != null)
+        {
+            old.IsClass = node.IsClass;
+            old.Tag = node.Tag;
+            old.Label = node.Label;
+            old.SourceType = node.SourceType;
+            old.Sid = node.Sid;
+        } else context.Nodes.Add(new EfNode(node));
+
+        (int aId, int subId) = GetASubIds();
+        UpdateNodeClasses(node.Id, aId, subId, context);
+
+        context.SaveChanges();
     }
+    #endregion
 
     public void AddProperty(Property property)
     {
@@ -527,16 +638,6 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
     }
 
     public DataPage<NodeMapping> GetMappings(NodeMappingFilter filter)
-    {
-        throw new NotImplementedException();
-    }
-
-    public UriNode? GetNode(int id)
-    {
-        throw new NotImplementedException();
-    }
-
-    public UriNode? GetNodeByUri(string uri)
     {
         throw new NotImplementedException();
     }
