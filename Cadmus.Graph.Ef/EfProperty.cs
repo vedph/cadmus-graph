@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using Newtonsoft.Json.Linq;
+using System.Text;
 
 namespace Cadmus.Graph.Ef;
 
@@ -10,6 +11,32 @@ public class EfProperty
     public string? Description { get; set; }
 
     public EfNode? Node { get; set; }
+
+    public EfProperty()
+    {
+    }
+
+    public EfProperty(Property property)
+    {
+        if (property is null) throw new ArgumentNullException(nameof(property));
+
+        Id = property.Id;
+        DataType = property.DataType;
+        LitEditor = property.LiteralEditor;
+        Description = property.Description;
+    }
+
+    public UriProperty ToUriProperty()
+    {
+        return new UriProperty
+        {
+            Id = Id,
+            DataType = DataType,
+            LiteralEditor = LitEditor,
+            Description = Description,
+            Uri = Node?.UriEntry?.Uri
+        };
+    }
 
     public override string ToString()
     {

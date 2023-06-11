@@ -740,10 +740,113 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
     }
     #endregion
 
+    #region Property
+    /// <summary>
+    /// Gets the specified page of properties.
+    /// </summary>
+    /// <param name="filter">The filter.</param>
+    /// <returns>Page.</returns>
+    public DataPage<UriProperty> GetProperties(PropertyFilter filter)
+    {
+        if (filter == null) throw new ArgumentNullException(nameof(filter));
+
+        using CadmusGraphDbContext context = GetContext();
+        IQueryable<EfProperty> properties = context.Properties
+            .Include(p => p.Node)
+            .ThenInclude(n => n.UriEntry)
+            .AsNoTracking();
+
+        if (!string.IsNullOrEmpty(filter.Uid))
+        {
+            properties = properties.Where(
+                p => p.Node!.UriEntry!.Uri.Contains(filter.Uid));
+        }
+
+        if (!string.IsNullOrEmpty(filter.DataType))
+            properties = properties.Where(p => p.DataType == filter.DataType);
+
+        if (!string.IsNullOrEmpty(filter.LiteralEditor))
+            properties = properties.Where(p => p.LitEditor == filter.LiteralEditor);
+
+        // get total and return if zero
+        int total = properties.Count();
+        if (total == 0)
+        {
+            return new DataPage<UriProperty>(filter.PageNumber, filter.PageSize,
+                0, Array.Empty<UriProperty>());
+        }
+
+        properties = properties.OrderBy(p => p.Node!.UriEntry!.Uri)
+            .Skip(filter.GetSkipCount()).Take(filter.PageSize);
+
+        List<EfProperty> results = properties.ToList();
+
+        return new DataPage<UriProperty>(filter.PageNumber, filter.PageSize,
+            total, results.Select(p => p.ToUriProperty()).ToList());
+    }
+
+    /// <summary>
+    /// Gets the property with the specified ID.
+    /// </summary>
+    /// <param name="id">The identifier.</param>
+    /// <returns>The property or null if not found.</returns>
+    public UriProperty? GetProperty(int id)
+    {
+        using CadmusGraphDbContext context = GetContext();
+        EfProperty? property = context.Properties
+            .Include(p => p.Node)
+            .ThenInclude(n => n.UriEntry)
+            .AsNoTracking()
+            .FirstOrDefault(p => p.Id == id);
+        return property?.ToUriProperty();
+    }
+
+    /// <summary>
+    /// Gets the property by its URI.
+    /// </summary>
+    /// <param name="uri">The URI.</param>
+    /// <returns>The property or null if not found.</returns>
+    /// <exception cref="ArgumentNullException">uri</exception>
+    public UriProperty? GetPropertyByUri(string uri)
+    {
+        if (uri == null) throw new ArgumentNullException(nameof(uri));
+
+        using CadmusGraphDbContext context = GetContext();
+        EfProperty? property = context.Properties
+            .Include(p => p.Node)
+            .ThenInclude(n => n.UriEntry)
+            .AsNoTracking()
+            .FirstOrDefault(p => p.Node!.UriEntry!.Uri == uri);
+        return property?.ToUriProperty();
+    }
+
+    /// <summary>
+    /// Adds or updates the specified property.
+    /// </summary>
+    /// <param name="property">The property.</param>
+    /// <exception cref="ArgumentNullException">property</exception>
     public void AddProperty(Property property)
     {
-        throw new NotImplementedException();
+        if (property is null) throw new ArgumentNullException(nameof(property));
+
+        using CadmusGraphDbContext context = GetContext();
+        EfProperty? old = context.Properties
+            .Include(p => p.Node)
+            .ThenInclude(n => n.UriEntry)
+            .FirstOrDefault(p => p.Id == property.Id);
+        if (old != null)
+        {
+            old.DataType = property.DataType;
+            old.LitEditor = property.LiteralEditor;
+            old.Description = property.Description;
+        }
+        else
+        {
+            context.Properties.Add(new EfProperty(property));
+        }
+        context.SaveChanges();
     }
+    #endregion
 
     public void AddThesaurus(Thesaurus thesaurus, bool includeRoot, string? prefix = null)
     {
@@ -820,21 +923,6 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
     }
 
     public DataPage<NodeMapping> GetMappings(NodeMappingFilter filter)
-    {
-        throw new NotImplementedException();
-    }
-
-    public DataPage<UriProperty> GetProperties(PropertyFilter filter)
-    {
-        throw new NotImplementedException();
-    }
-
-    public UriProperty? GetProperty(int id)
-    {
-        throw new NotImplementedException();
-    }
-
-    public UriProperty? GetPropertyByUri(string uri)
     {
         throw new NotImplementedException();
     }
