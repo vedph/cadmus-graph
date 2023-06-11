@@ -180,8 +180,53 @@ public class EfMapping
         }
     }
 
+    public NodeMapping ToNodeMapping()
+    {
+        return new NodeMapping
+        {
+            Id = Id,
+            ParentId = ParentId,
+            Ordinal = Ordinal,
+            Name = Name,
+            SourceType = SourceType,
+            FacetFilter = FacetFilter,
+            GroupFilter = GroupFilter,
+            FlagsFilter = FlagsFilter,
+            TitleFilter = TitleFilter,
+            PartTypeFilter = PartTypeFilter,
+            PartRoleFilter = PartRoleFilter,
+            Description = Description,
+            Source = Source,
+            Sid = Sid,
+            Output = new NodeMappingOutput
+            {
+                Metadata = MetaOutputs?.ToDictionary(m => m.Name, m => m.Value)
+                    ?? new Dictionary<string, string>(),
+                Nodes = NodeOutputs?.ToDictionary(n => n.Name, n =>
+                    new MappedNode
+                    {
+                        Uid = n.Uid,
+                        Label = n.Label,
+                        Tag = n.Tag
+                    })
+                    ?? new Dictionary<string, MappedNode>(),
+                Triples = TripleOutputs?.Select(
+                    t => new MappedTriple
+                    {
+                        S = t.S,
+                        P = t.P,
+                        O = t.O,
+                        OL = t.OL
+                    }).ToList()
+                    ?? new List<MappedTriple>()
+            },
+            Children = Children?.Select(c => c.ToNodeMapping()).ToList()
+                ?? new List<NodeMapping>()
+        };
+    }
+
     private static bool AppendFilter(string id, bool filter, StringBuilder sb,
-    string value)
+        string value)
     {
         if (!filter)
         {

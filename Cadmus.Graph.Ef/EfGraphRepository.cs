@@ -4,14 +4,7 @@ using Fusi.Tools.Configuration;
 using Fusi.Tools.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
-using System;
-using System.Diagnostics;
-using System.Reflection.Emit;
-using System.Security.AccessControl;
-using System.Security.Cryptography;
 using System.Text;
-using System.Xml.Linq;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Cadmus.Graph.Ef;
 
@@ -26,7 +19,10 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
     protected string? ConnectionString { get; set; }
 
     /// <summary>
-    /// Gets or sets the cache.
+    /// Gets or sets the optional cache to use for mappings. This improves
+    /// performance when fetching mappings from the database. All the
+    /// mappings are stored with key <c>nm-</c> + the mapping's ID.
+    /// Avoid using this if editing mappings.
     /// </summary>
     public IMemoryCache? Cache { get; set; }
 
@@ -653,14 +649,14 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
 
     protected abstract string BuildRegexMatch(string field, string pattern);
 
-    protected string BuildRawRegexSql(string sqlHead,
-        IList<Tuple<string, string>> fieldAndPatterns)
+    protected string BuildRawRegexSql(
+        IList<Tuple<string, string?>> fieldAndPatterns)
     {
-        StringBuilder sb = new(sqlHead);
-        foreach (var fp in fieldAndPatterns)
+        StringBuilder sb = new();
+        foreach (Tuple<string, string?> fp in fieldAndPatterns
+            .Where(t => t.Item2 != null))
         {
-            sb.AppendLine();
-            sb.Append(BuildRegexMatch(fp.Item1, fp.Item2));
+            sb.AppendLine(BuildRegexMatch(fp.Item1, fp.Item2!));
         }
         return sb.ToString();
     }
@@ -673,10 +669,10 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
         if (!string.IsNullOrEmpty(filter.LiteralPattern))
         {
             triples = context.Triples
-                .FromSqlRaw(BuildRawRegexSql("SELECT * FROM triple WHERE",
-                new[]
+                .FromSqlRaw("SELECT * FROM triple WHERE " +
+                BuildRawRegexSql(new[]
                 {
-                    Tuple.Create("o_lit", filter.LiteralPattern)
+                    Tuple.Create("o_lit", (string?)filter.LiteralPattern)
                 }));
         }
         else triples = context.Triples;
@@ -846,6 +842,137 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
         }
         context.SaveChanges();
     }
+
+    /// <summary>
+    /// Deletes the property with the specified ID.
+    /// </summary>
+    /// <param name="id">The property identifier.</param>
+    public void DeleteProperty(int id)
+    {
+        using CadmusGraphDbContext context = GetContext();
+        EfProperty? property = context.Properties
+            .FirstOrDefault(p => p.Id == id);
+        if (property != null)
+        {
+            context.Properties.Remove(property);
+            context.SaveChanges();
+        }
+    }
+    #endregion
+
+    #region Node Mappings
+    private IQueryable<EfMapping> GetFilteredMappings(NodeMappingFilter filter,
+        CadmusGraphDbContext context)
+    {
+        IQueryable<EfMapping> mappings;
+
+        if (!string.IsNullOrEmpty(filter.Group) ||
+            !string.IsNullOrEmpty(filter.Title))
+        {
+            mappings = context.Mappings
+                .FromSqlRaw("SELECT * FROM node_mapping WHERE " +
+                BuildRawRegexSql(new[]
+                {
+                    Tuple.Create("group_filter", filter.Group),
+                    Tuple.Create("title_filter", filter.Title)
+                }))
+                .Include(m => m.MetaOutputs)
+                .Include(m => m.NodeOutputs)
+                .Include(m => m.TripleOutputs)
+                .AsNoTracking();
+        }
+        else
+        {
+            mappings = context.Mappings
+            .Include(m => m.MetaOutputs)
+            .Include(m => m.NodeOutputs)
+            .Include(m => m.TripleOutputs)
+            .AsNoTracking();
+        }
+
+        if (filter.ParentId != null)
+            mappings = mappings.Where(m => m.ParentId == filter.ParentId);
+
+        if (filter.SourceType != null)
+            mappings = mappings.Where(m => m.SourceType == filter.SourceType);
+
+        if (!string.IsNullOrEmpty(filter.Name))
+            mappings = mappings.Where(m => m.Name.Contains(filter.Name));
+
+        if (!string.IsNullOrEmpty(filter.Facet))
+            mappings = mappings.Where(m => m.FacetFilter == filter.Facet);
+
+        if (filter.Flags.HasValue)
+        {
+            mappings = mappings.Where(
+                m => (m.FlagsFilter & filter.Flags) == filter.Flags);
+        }
+
+        if (!string.IsNullOrEmpty(filter.PartType))
+            mappings = mappings.Where(m => m.PartTypeFilter == filter.PartType);
+
+        if (!string.IsNullOrEmpty(filter.PartRole))
+            mappings = mappings.Where(m => m.PartRoleFilter == filter.PartRole);
+
+        return mappings;
+    }
+
+    private NodeMapping GetPopulatedMapping(EfMapping mapping,
+        CadmusGraphDbContext context)
+    {
+        // use the cached mapping if any
+        if (Cache != null &&
+            Cache.TryGetValue($"nm-{mapping.Id}", out NodeMapping? m))
+        {
+            return m!;
+        }
+
+        mapping.Children = context.Mappings
+            .Where(m => m.ParentId == mapping.Id)
+            .OrderBy(m => m.Name).ThenBy(m => m.Id)
+            .ToList();
+
+        foreach (EfMapping child in mapping.Children)
+            GetPopulatedMapping(child, context);
+
+        NodeMapping result = mapping.ToNodeMapping();
+        Cache?.Set($"nm-{mapping.Id}", result);
+        return result;
+    }
+
+    /// <summary>
+    /// Gets the specified page of node mappings.
+    /// </summary>
+    /// <param name="filter">The filter. Set page size=0 to get all
+    /// the mappings at once.</param>
+    /// <returns>The page.</returns>
+    /// <exception cref="ArgumentNullException">filter</exception>
+    public DataPage<NodeMapping> GetMappings(NodeMappingFilter filter)
+    {
+        if (filter == null) throw new ArgumentNullException(nameof(filter));
+
+        using CadmusGraphDbContext context = GetContext();
+        IQueryable<EfMapping> mappings = GetFilteredMappings(filter, context);
+
+        // get total and return if it's zero
+        int total = mappings.Count();
+        if (total == 0)
+        {
+            return new DataPage<NodeMapping>(
+                filter.PageNumber, filter.PageSize, 0,
+                Array.Empty<NodeMapping>());
+        }
+
+        mappings = mappings.OrderBy(m => m.Name).ThenBy(m => m.Id);
+
+        List<EfMapping> results = filter.PageSize > 0
+            ? mappings.Skip(filter.GetSkipCount()).Take(filter.PageSize).ToList()
+            : mappings.Skip(filter.GetSkipCount()).ToList();
+
+        // populate descendants of each mapping, taking advantage of cache
+        return new DataPage<NodeMapping>(filter.PageNumber, filter.PageSize,
+            total, results.Select(m => GetPopulatedMapping(m, context)).ToList());
+    }
     #endregion
 
     public void AddThesaurus(Thesaurus thesaurus, bool includeRoot, string? prefix = null)
@@ -864,11 +991,6 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
     }
 
     public void DeleteMapping(int id)
-    {
-        throw new NotImplementedException();
-    }
-
-    public void DeleteProperty(int id)
     {
         throw new NotImplementedException();
     }
@@ -918,11 +1040,6 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
     }
 
     public NodeMapping? GetMapping(int id)
-    {
-        throw new NotImplementedException();
-    }
-
-    public DataPage<NodeMapping> GetMappings(NodeMappingFilter filter)
     {
         throw new NotImplementedException();
     }
