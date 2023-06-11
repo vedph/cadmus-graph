@@ -400,6 +400,29 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
         return new DataPage<UriNode>(filter.PageNumber, filter.PageSize, total,
             results.Select(n => n.ToUriNode(n.UriEntry!.Uri)).ToArray());
     }
+
+    /// <summary>
+    /// Gets all the nodes with the specified IDs.
+    /// </summary>
+    /// <param name="ids">The nodes IDs.</param>
+    /// <returns>List of nodes (or null), one per ID.</returns>
+    public IList<UriNode?> GetNodes(IList<int> ids)
+    {
+        if (ids is null) throw new ArgumentNullException(nameof(ids));
+
+        using CadmusGraphDbContext context = GetContext();
+        IList<EfNode> nodes = context.Nodes
+            .Include(n => n.UriEntry)
+            .Where(n => ids.Contains(n.Id))
+            .AsNoTracking()
+            .ToList();
+
+        return ids.Select(id =>
+        {
+            EfNode? node = nodes.FirstOrDefault(n => n.Id == id);
+            return node?.ToUriNode(node.UriEntry!.Uri);
+        }).ToList();
+    }
     #endregion
 
     public void AddNode(Node node, bool noUpdate = false)
@@ -514,11 +537,6 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
     }
 
     public UriNode? GetNodeByUri(string uri)
-    {
-        throw new NotImplementedException();
-    }
-
-    public IList<UriNode?> GetNodes(IList<int> ids)
     {
         throw new NotImplementedException();
     }
