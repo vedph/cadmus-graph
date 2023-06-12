@@ -23,7 +23,7 @@ public class EfNode : Node
         Sid = node.Sid;
     }
 
-    public UriNode ToUriNode(string uri)
+    public UriNode ToUriNode(string? uri = null)
     {
         return new UriNode
         {
@@ -33,7 +33,7 @@ public class EfNode : Node
             Label = Label,
             SourceType = SourceType,
             Sid = Sid,
-            Uri = uri
+            Uri = uri ?? UriEntry?.Uri
         };
     }
 }

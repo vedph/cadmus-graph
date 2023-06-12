@@ -4,11 +4,9 @@ using Fusi.Tools.Configuration;
 using Fusi.Tools.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
-using System.Security.Cryptography;
-using System;
 using System.Text;
 using System.Text.Json;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Cadmus.Graph.Ef;
 
@@ -474,7 +472,7 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
         return node?.ToUriNode(node.UriEntry!.Uri);
     }
 
-    private UriNode? GetNodeByUri(string uri, CadmusGraphDbContext context)
+    private static UriNode? GetNodeByUri(string uri, CadmusGraphDbContext context)
     {
         EfNode? node = context.Nodes
             .Include(n => n.UriEntry)
@@ -623,6 +621,14 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
             UpdateNodeClasses(id, aId, subId, context);
     }
 
+    private static void DeleteNode(int id, CadmusGraphDbContext context)
+    {
+        EfNode? node = context.Nodes.FirstOrDefault(n => n.Id == id);
+        if (node == null) return;
+        context.Nodes.Remove(node);
+        context.SaveChanges();
+    }
+
     /// <summary>
     /// Deletes the node with the specified ID.
     /// </summary>
@@ -630,10 +636,7 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
     public void DeleteNode(int id)
     {
         using CadmusGraphDbContext context = GetContext();
-        EfNode? node = context.Nodes.FirstOrDefault(n => n.Id == id);
-        if (node == null) return;
-        context.Nodes.Remove(node);
-        context.SaveChanges();
+        DeleteNode(id, context);
     }
 
     /// <summary>
@@ -1458,13 +1461,8 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
         context.SaveChanges();
     }
 
-    /// <summary>
-    /// Deletes the triple with the specified ID.
-    /// </summary>
-    /// <param name="id">The identifier.</param>
-    public void DeleteTriple(int id)
+    private void DeleteTriple(int id, CadmusGraphDbContext context)
     {
-        using CadmusGraphDbContext context = GetContext();
         EfTriple? triple = context.Triples.Find(id);
         if (triple != null)
         {
@@ -1477,6 +1475,16 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
                 UpdateNodeClasses(triple.ObjectId.Value, aId, subId, context);
             }
         }
+    }
+
+    /// <summary>
+    /// Deletes the triple with the specified ID.
+    /// </summary>
+    /// <param name="id">The identifier.</param>
+    public void DeleteTriple(int id)
+    {
+        using CadmusGraphDbContext context = GetContext();
+        DeleteTriple(id, context);
     }
 
     /// <summary>
@@ -1522,7 +1530,7 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
             (g, n) => new TripleGroup
             {
                 PredicateId = g.PredicateId,
-                PredicateUri = n.UriEntry.Uri,
+                PredicateUri = n.UriEntry!.Uri,
                 Count = g.Count
             });
 
@@ -1703,20 +1711,220 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
     }
     #endregion
 
-    public void DeleteGraphSet(string sourceId)
-    {
-        throw new NotImplementedException();
-    }
-
+    #region Graph
+    /// <summary>
+    /// Gets the set of graph's nodes and triples whose SID starts with
+    /// the specified GUID. This identifies all the nodes and triples
+    /// generated from a single source item or part.
+    /// </summary>
+    /// <param name="sourceId">The source identifier.</param>
+    /// <returns>The set.</returns>
+    /// <exception cref="ArgumentNullException">sourceId</exception>
     public GraphSet GetGraphSet(string sourceId)
     {
-        throw new NotImplementedException();
+        if (sourceId is null) throw new ArgumentNullException(nameof(sourceId));
+
+        using CadmusGraphDbContext context = GetContext();
+
+        // SID nodes
+        List<EfNode> nodes = context.Nodes.Include(n => n.UriEntry)
+            .AsNoTracking()
+            .Where(n => n.Sid != null && n.Sid.StartsWith(sourceId))
+            .ToList();
+
+        // SID triples
+        List<EfTriple> triples = context.Triples
+            .Include(t => t.Subject)
+            .Include(t => t.Predicate)
+            .Include(t => t.Object)
+            .AsNoTracking()
+            .Where(t => t.Sid != null && t.Sid.StartsWith(sourceId))
+            .ToList();
+
+        return new GraphSet(
+            nodes.Select(n => n.ToUriNode()).ToList(),
+            triples.Select(t => t.ToUriTriple()).ToList());
     }
 
+    /// <summary>
+    /// Deletes the set of graph's nodes and triples whose SID starts with
+    /// the specified GUID. This identifies all the nodes and triples
+    /// generated from a single source item or part.
+    /// </summary>
+    /// <param name="sourceId">The source identifier.</param>
+    /// <exception cref="ArgumentNullException">sourceId</exception>
+    public void DeleteGraphSet(string sourceId)
+    {
+        if (sourceId == null) throw new ArgumentNullException(nameof(sourceId));
+
+        using CadmusGraphDbContext context = GetContext();
+
+        // delete all nodes whose SID is not null and starts with sourceId
+        context.Nodes.RemoveRange(context.Nodes.Where(
+            n => n.Sid != null && n.Sid.StartsWith(sourceId)));
+
+        // delete all triples whose SID is not null and starts with sourceId
+        context.Triples.RemoveRange(context.Triples.Where(
+            t => t.Sid != null && t.Sid.StartsWith(sourceId)));
+
+        context.SaveChanges();
+    }
+
+    private void UpdateGraph(string? sourceId, IList<UriNode> nodes,
+        IList<UriTriple> triples, CadmusGraphDbContext context)
+    {
+        // corner case: sourceId = null/empty:
+        // this happens only for nodes generated as the objects of a
+        // generated triple, and in this case we must only ensure that
+        // such nodes exist, without updating them
+        if (string.IsNullOrEmpty(sourceId))
+        {
+            foreach (UriNode node in nodes) AddNode(node, true, context);
+            return;
+        }
+
+        // get old set
+        GraphSet oldSet = GetGraphSet(sourceId);
+
+        // compare new and old sets
+        CrudGrouper<UriNode> nodeGrouper = new();
+        nodeGrouper.Group(nodes, oldSet.Nodes,
+            (UriNode a, UriNode b) => a.Id == b.Id);
+
+        CrudGrouper<UriTriple> tripleGrouper = new();
+        tripleGrouper.Group(triples, oldSet.Triples,
+            (UriTriple a, UriTriple b) =>
+            {
+                return a.SubjectId == b.SubjectId &&
+                    a.PredicateId == b.PredicateId &&
+                    a.ObjectId == b.ObjectId &&
+                    a.ObjectLiteral == b.ObjectLiteral &&
+                    a.Sid == b.Sid;
+            });
+
+        // filter deleted nodes to ensure that no property/class gets deleted
+        nodeGrouper.FilterDeleted(n => !n.IsClass && n.Tag != Node.TAG_PROPERTY);
+
+        // nodes
+        foreach (UriNode node in nodeGrouper.Deleted)
+            DeleteNode(node.Id, context);
+        foreach (UriNode node in nodeGrouper.Added)
+        {
+            node.Id = AddUri(node.Uri!, context);
+            AddNode(node, true, context);
+        }
+        foreach (UriNode node in nodeGrouper.Updated)
+            AddNode(node, node.Sid == null, context);
+
+        // triples
+        foreach (UriTriple triple in tripleGrouper.Deleted)
+            DeleteTriple(triple.Id, context);
+        foreach (UriTriple triple in tripleGrouper.Added)
+            AddTriple(triple, context);
+        foreach (UriTriple triple in tripleGrouper.Updated)
+            AddTriple(triple, context);
+    }
+
+    /// <summary>
+    /// Updates the graph with the specified nodes and triples.
+    /// </summary>
+    /// <param name="set">The new set of nodes and triples.</param>
+    /// <exception cref="ArgumentNullException">set</exception>
     public void UpdateGraph(GraphSet set)
     {
-        throw new NotImplementedException();
+        if (set is null) throw new ArgumentNullException(nameof(set));
+
+        using CadmusGraphDbContext context = GetContext();
+        using IDbContextTransaction trans = context.Database.BeginTransaction();
+        try
+        {
+            // ensure to save each new node's URI, thus getting its ID
+            HashSet<string> nodeUris = new();
+            foreach (UriNode node in set.Nodes)
+            {
+                nodeUris.Add(node.Uri!);
+                if (node.Id == 0) node.Id = AddUri(node.Uri!, context);
+            }
+
+            foreach (UriTriple triple in set.Triples)
+            {
+                if (triple.SubjectId == 0)
+                {
+                    triple.SubjectId = AddUri(triple.SubjectUri!);
+                    if (!nodeUris.Contains(triple.SubjectUri!))
+                    {
+                        // add node implicit in triple
+                        set.Nodes.Add(new UriNode
+                        {
+                            Id = triple.SubjectId,
+                            Uri = triple.SubjectUri,
+                            Label = triple.SubjectUri,
+                            Sid = triple.Sid,
+                            SourceType = Node.SOURCE_IMPLICIT
+                        });
+                    }
+                }
+
+                if (triple.PredicateId == 0)
+                {
+                    triple.PredicateId = AddUri(triple.PredicateUri!, context);
+                    if (!nodeUris.Contains(triple.PredicateUri!))
+                    {
+                        // add node implicit in triple,
+                        // but this shold not happen for predicates
+                        set.Nodes.Add(new UriNode
+                        {
+                            Id = triple.PredicateId,
+                            Uri = triple.PredicateUri,
+                            Label = triple.PredicateUri,
+                            Sid = triple.Sid,
+                            SourceType = Node.SOURCE_IMPLICIT
+                        });
+                    }
+                }
+
+                if (triple.ObjectId == 0 &&
+                    !string.IsNullOrEmpty(triple.ObjectUri))
+                {
+                    triple.ObjectId = AddUri(triple.ObjectUri);
+                    if (!nodeUris.Contains(triple.ObjectUri!))
+                    {
+                        // add node implicit in triple
+                        set.Nodes.Add(new UriNode
+                        {
+                            Id = triple.ObjectId.Value,
+                            Uri = triple.ObjectUri,
+                            Label = triple.ObjectUri,
+                            Sid = triple.Sid,
+                            SourceType = Node.SOURCE_IMPLICIT
+                        });
+                    }
+                }
+            } // triples
+
+            // get nodes and triples grouped by their SID's GUID
+            var nodeGroups = set.GetNodesByGuid();
+            var tripleGroups = set.GetTriplesByGuid();
+
+            // order by key so that empty (=null SID) keys come before
+            foreach (string key in nodeGroups.Keys.OrderBy(s => s))
+            {
+                UpdateGraph(key,
+                    nodeGroups[key],
+                    tripleGroups.ContainsKey(key)
+                        ? tripleGroups[key]
+                        : Array.Empty<UriTriple>(), context);
+            }
+
+            trans.Commit();
+        }
+        catch (Exception)
+        {
+            trans.Rollback();
+            throw;
+        }
     }
+    #endregion
 }
 
 /// <summary>

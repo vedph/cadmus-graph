@@ -2062,8 +2062,7 @@ public abstract class SqlGraphRepository : IConfigurable<SqlOptions>
     /// <exception cref="ArgumentNullException">sourceId</exception>
     public GraphSet GetGraphSet(string sourceId)
     {
-        if (sourceId is null)
-            throw new ArgumentNullException(nameof(sourceId));
+        if (sourceId is null) throw new ArgumentNullException(nameof(sourceId));
 
         using QueryFactory qf = GetQueryFactory();
         // nodes
