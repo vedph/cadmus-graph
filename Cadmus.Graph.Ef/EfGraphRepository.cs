@@ -979,7 +979,7 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
             !string.IsNullOrEmpty(filter.Title))
         {
             mappings = context.Mappings
-                .FromSqlRaw("SELECT * FROM node_mapping WHERE " +
+                .FromSqlRaw("SELECT * FROM mapping WHERE " +
                 BuildRawRegexSql(new[]
                 {
                     Tuple.Create("group_filter", filter.Group),
@@ -1036,7 +1036,7 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
             !string.IsNullOrEmpty(filter.Title))
         {
             StringBuilder sb = new();
-            sb.AppendLine("SELECT * FROM node_mapping WHERE ");
+            sb.AppendLine("SELECT * FROM mapping WHERE ");
 
             if (!string.IsNullOrEmpty(filter.Group))
             {
