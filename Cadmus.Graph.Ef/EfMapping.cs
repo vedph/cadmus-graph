@@ -185,7 +185,7 @@ public class EfMapping
         return new NodeMapping
         {
             Id = Id,
-            ParentId = ParentId == null? 0 : ParentId.Value,
+            ParentId = ParentId ?? 0,
             Ordinal = Ordinal,
             Name = Name,
             SourceType = SourceType,

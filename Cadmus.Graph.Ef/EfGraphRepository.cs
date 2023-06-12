@@ -7,7 +7,6 @@ using Microsoft.Extensions.Caching.Memory;
 using System.Text;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore.Storage;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Cadmus.Graph.Ef;
 
@@ -1122,6 +1121,9 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
         }
 
         mapping.Children = context.Mappings
+            .Include(m => m.MetaOutputs)
+            .Include(m => m.NodeOutputs)
+            .Include(m => m.TripleOutputs)
             .Where(m => m.ParentId == mapping.Id)
             .OrderBy(m => m.Name).ThenBy(m => m.Id)
             .ToList();
@@ -1165,7 +1167,7 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
 
         // populate descendants of each mapping, taking advantage of cache
         return new DataPage<NodeMapping>(filter.PageNumber, filter.PageSize,
-            total, results.Select(m => GetPopulatedMapping(m, context)).ToList());
+            total, results.ConvertAll(m => GetPopulatedMapping(m, context)));
     }
 
     /// <summary>
@@ -1874,7 +1876,7 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
         if (set is null) throw new ArgumentNullException(nameof(set));
 
         using CadmusGraphDbContext context = GetContext();
-        using IDbContextTransaction trans = context.Database.BeginTransaction();
+        // using IDbContextTransaction trans = context.Database.BeginTransaction();
         try
         {
             // ensure to save each new node's URI, thus getting its ID
@@ -1922,7 +1924,7 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
                     }
                 }
 
-                if (triple.ObjectId == 0 &&
+                if (triple.ObjectId == null &&
                     !string.IsNullOrEmpty(triple.ObjectUri))
                 {
                     triple.ObjectId = AddUri(triple.ObjectUri);
@@ -1954,12 +1956,11 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
                         ? tripleGroups[key]
                         : Array.Empty<UriTriple>(), context);
             }
-
-            trans.Commit();
+            //trans.Commit();
         }
         catch (Exception)
         {
-            trans.Rollback();
+            //trans.Rollback();
             throw;
         }
     }
