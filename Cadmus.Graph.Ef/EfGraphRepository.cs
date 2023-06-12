@@ -1191,7 +1191,8 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
     /// <summary>
     /// Adds the mapping.
     /// </summary>
-    /// <param name="mapping">The mapping.</param>
+    /// <param name="mapping">The mapping. Its ID will be updated if newly
+    /// added.</param>
     /// <returns>The mapping ID.</returns>
     /// <exception cref="ArgumentNullException">mapping</exception>
     public int AddMapping(NodeMapping mapping)
@@ -1206,10 +1207,12 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
         if (old != null) context.Remove(old);
 
         // add new mapping with its children
-        context.Mappings.Add(new EfMapping(mapping));
+        EfMapping newMapping = new(mapping);
+        context.Mappings.Add(newMapping);
 
         context.SaveChanges();
-        return mapping.Id;
+        mapping.Id = newMapping.Id;
+        return newMapping.Id;
     }
 
     /// <summary>

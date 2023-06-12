@@ -100,7 +100,7 @@ public class EfMapping
 
         // copy source into this object
         Id = source.Id;
-        ParentId = source.ParentId;
+        ParentId = source.ParentId == 0? null : source.ParentId;
         Ordinal = source.Ordinal;
         Name = source.Name ?? "";
         SourceType = source.SourceType;

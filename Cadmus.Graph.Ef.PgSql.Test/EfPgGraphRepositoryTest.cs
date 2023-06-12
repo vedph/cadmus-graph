@@ -11,7 +11,8 @@ public sealed class EfPgGraphRepositoryTest : SqlGraphRepositoryTest
     private IDbManager? _manager;
 
     public override string ConnectionStringTemplate =>
-        "Server=localhost;Database={0};User Id=postgres;Password=postgres;";
+        "Server=localhost;Database={0};User Id=postgres;Password=postgres;" +
+        "Include Error Detail=True";
 
     public override IDbManager DbManager =>
         _manager ??= new PgSqlDbManager(ConnectionStringTemplate);

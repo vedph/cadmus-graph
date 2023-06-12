@@ -188,7 +188,7 @@ public class CadmusGraphDbContext : DbContext
             x.Property(x => x.MappingId).IsRequired().HasColumnName("mapping_id");
             x.Property(x => x.Ordinal).IsRequired().HasColumnName("ordinal");
             x.Property(x => x.Name).IsRequired().HasColumnName("name").HasMaxLength(100);
-            x.Property(x => x.Name).IsRequired().HasColumnName("value").HasMaxLength(10000);
+            x.Property(x => x.Value).IsRequired().HasColumnName("value").HasMaxLength(10000);
         });
 
         // mapping_out_node
@@ -216,7 +216,7 @@ public class CadmusGraphDbContext : DbContext
             x.Property(x => x.S).HasColumnName("s").IsRequired().HasMaxLength(1000);
             x.Property(x => x.P).HasColumnName("p").IsRequired().HasMaxLength(1000);
             x.Property(x => x.O).HasColumnName("o").HasMaxLength(1000);
-            x.Property(x => x.O).HasColumnName("ol").HasMaxLength(10000);
+            x.Property(x => x.OL).HasColumnName("ol").HasMaxLength(10000);
         });
 
         // mapping
