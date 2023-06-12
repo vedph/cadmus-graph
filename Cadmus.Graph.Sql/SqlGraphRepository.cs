@@ -1500,7 +1500,7 @@ public abstract class SqlGraphRepository : IConfigurable<SqlOptions>
 
         List<UriTriple> triples = new();
         foreach (var d in query.Get()) triples.Add(GetUriTriple(d));
-        return new DataPage<UriTriple>(filter.PageNumber,
+        return new DataPage<UriTriple>(filter.PageNumber,   
             filter.PageSize, total, triples);
     }
 
@@ -1630,6 +1630,7 @@ public abstract class SqlGraphRepository : IConfigurable<SqlOptions>
     /// corresponding numeric IDs used internally.
     /// </summary>
     /// <param name="triples">The triples.</param>
+    /// <exception cref="ArgumentNullException">triples</exception>
     public void ImportTriples(IEnumerable<UriTriple> triples)
     {
         if (triples is null) throw new ArgumentNullException(nameof(triples));

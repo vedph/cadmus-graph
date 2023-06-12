@@ -14,7 +14,7 @@ public class EfMapping
     /// Gets or sets the parent mapping's identifier. This is assigned
     /// when the mapping is archived in a database.
     /// </summary>
-    public int ParentId { get; set; }
+    public int? ParentId { get; set; }
 
     /// <summary>
     /// Gets or sets an optional ordinal value used to define the order
@@ -185,7 +185,7 @@ public class EfMapping
         return new NodeMapping
         {
             Id = Id,
-            ParentId = ParentId,
+            ParentId = ParentId == null? 0 : ParentId.Value,
             Ordinal = Ordinal,
             Name = Name,
             SourceType = SourceType,
