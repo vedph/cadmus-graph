@@ -1656,6 +1656,53 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
     }
     #endregion
 
+    #region Node Classes
+    /// <summary>
+    /// Updates the classes for all the nodes belonging to any class.
+    /// </summary>
+    /// <param name="cancel">The cancel.</param>
+    /// <param name="progress">The progress.</param>
+    public Task UpdateNodeClassesAsync(CancellationToken cancel,
+        IProgress<ProgressReport>? progress = null)
+    {
+        (int aId, int subId) = GetASubIds();
+
+        using CadmusGraphDbContext context = GetContext();
+
+        // get total nodes to go
+        int total = context.Nodes.Count(n => !n.IsClass);
+        ProgressReport? report = progress != null ? new ProgressReport() : null;
+        int oldPercent = 0;
+
+        foreach (int id in context.Nodes.Where(n => !n.IsClass).Select(n => n.Id))
+        {
+            if (cancel.IsCancellationRequested) break;
+
+            UpdateNodeClasses(id, aId, subId, context);
+
+            if (report != null && ++report.Count % 10 == 0)
+            {
+                report.Percent = report.Count * 100 / total;
+                if (report.Percent != oldPercent)
+                {
+                    progress!.Report(report);
+                    oldPercent = report.Percent;
+                }
+            }
+        }
+        context.SaveChanges();
+
+        if (report != null)
+        {
+            report.Percent = 100;
+            report.Count = total;
+            progress!.Report(report);
+        }
+
+        return Task.CompletedTask;
+    }
+    #endregion
+
     public void DeleteGraphSet(string sourceId)
     {
         throw new NotImplementedException();
@@ -1667,12 +1714,6 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
     }
 
     public void UpdateGraph(GraphSet set)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task UpdateNodeClassesAsync(CancellationToken cancel,
-        IProgress<ProgressReport>? progress = null)
     {
         throw new NotImplementedException();
     }
