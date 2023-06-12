@@ -170,8 +170,8 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
     /// <summary>
     /// Adds the specified UID, eventually completing it with a suffix.
     /// </summary>
-    /// <param name="uid">The UID as calculated from its source, without any
-    /// suffix.</param>
+    /// <param name="unsuffixed">The UID as calculated from its source,
+    /// without any suffix.</param>
     /// <param name="sid">The SID identifying the source for this UID.</param>
     /// <returns>The UID, eventually suffixed.</returns>
     public string BuildUid(string unsuffixed, string sid)
@@ -191,6 +191,7 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
                 Unsuffixed = unsuffixed,
                 HasSuffix = false
             });
+            context.SaveChanges();
             return unsuffixed;
         }
 
@@ -1312,8 +1313,11 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
         using CadmusGraphDbContext context = GetContext();
         EfTriple? triple = context.Triples
             .Include(t => t.Subject)
+            .ThenInclude(n => n.UriEntry)
             .Include(t => t.Predicate)
+            .ThenInclude(n => n.UriEntry)
             .Include(t => t.Object)
+            .ThenInclude(n => n.UriEntry)
             .FirstOrDefault(t => t.Id == id);
         return triple?.ToUriTriple();
     }
@@ -1327,10 +1331,9 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
                         t.Sid == triple.Sid &&
                         t.Tag == triple.Tag);
 
-        if (triple.ObjectId > 0)
-            triples = triples.Where(t => t.ObjectId == triple.ObjectId);
-        else
-            triples = triples.Where(t => t.ObjectId == null &&
+        triples = triple.ObjectId > 0
+            ? triples.Where(t => t.ObjectId == triple.ObjectId)
+            : triples.Where(t => t.ObjectId == null &&
                 t.ObjectLiteral == triple.ObjectLiteral &&
                 t.LiteralType == triple.LiteralType &&
                 t.LiteralLanguage == triple.LiteralLanguage);

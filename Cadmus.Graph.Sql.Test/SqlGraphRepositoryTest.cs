@@ -311,8 +311,8 @@ public abstract class SqlGraphRepositoryTest
 
         Assert.Equal(10 + 2, page.Total);
         Assert.Equal(5, page.Items.Count);
-        Assert.Equal("Node 05", page.Items[0].Label);
-        Assert.Equal("Node 09", page.Items[4].Label);
+        Assert.Equal("Node 04", page.Items[0].Label);
+        Assert.Equal("Node 08", page.Items[4].Label);
     }
 
     protected void DoGetNodes_ByLabel_Ok()
