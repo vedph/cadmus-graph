@@ -7,6 +7,7 @@ using Microsoft.Extensions.Caching.Memory;
 using System.Text;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore.Storage;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Cadmus.Graph.Ef;
 
@@ -713,6 +714,7 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
     {
         IQueryable<EfTriple> triples;
 
+        // literal pattern
         if (!string.IsNullOrEmpty(filter.LiteralPattern))
         {
             triples = context.Triples
@@ -728,18 +730,22 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
                          .Include(t => t.Predicate).ThenInclude(n => n.UriEntry)
                          .Include(t => t.Object).ThenInclude(n => n.UriEntry);
 
+        // literal type
         if (!string.IsNullOrEmpty(filter.LiteralType))
             triples = triples.Where(t => t.LiteralType == filter.LiteralType);
 
+        // literal language
         if (!string.IsNullOrEmpty(filter.LiteralLanguage))
             triples = triples.Where(t => t.LiteralLanguage == filter.LiteralLanguage);
 
+        // min literal number
         if (filter.MinLiteralNumber.HasValue)
         {
             triples = triples.Where(t => t.LiteralNumber != null &&
                 t.LiteralNumber >= filter.MinLiteralNumber.Value);
         }
 
+        // max literal number
         if (filter.MaxLiteralNumber.HasValue)
         {
             triples = triples.Where(t => t.LiteralNumber != null &&
@@ -755,6 +761,27 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
         IQueryable<EfTriple> triples = GetFilteredTriples((LiteralFilter)filter,
             context);
 
+        // subject ID
+        if (filter.SubjectId > 0)
+            triples = triples.Where(t => t.SubjectId == filter.SubjectId);
+
+        // predicate ID
+        if (filter.PredicateIds?.Count > 0)
+            triples = triples.Where(t => filter.PredicateIds.Contains(t.PredicateId));
+        if (filter.NotPredicateIds?.Count > 0)
+            triples = triples.Where(t => !filter.NotPredicateIds.Contains(t.PredicateId));
+
+        // has literal and object ID
+        if (filter.HasLiteralObject != null)
+        {
+            if (filter.HasLiteralObject.Value)
+                triples = triples.Where(t => t.ObjectId == null);
+            else
+                triples = triples.Where(t => t.ObjectId != null);
+        }
+        if (filter.ObjectId > 0)
+            triples = triples.Where(t => t.ObjectId == filter.ObjectId);
+
         // sid
         if (!string.IsNullOrEmpty(filter.Sid))
         {
@@ -765,7 +792,7 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
         }
 
         // tag (null if empty)
-        if (!string.IsNullOrEmpty(filter.Tag))
+        if (filter.Tag != null)
         {
             if (filter.Tag.Length == 0)
                 triples = triples.Where(t => t.Tag == null);

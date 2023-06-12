@@ -53,6 +53,6 @@ public sealed class EfPgGraphRepository : EfGraphRepository, IGraphRepository
     /// <returns>SQL code.</returns>
     protected override string BuildRegexMatch(string field, string pattern)
     {
-        return $"{field} ~ {pattern}";
+        return $"{field} ~ '{pattern.Replace("'", "''")}'";
     }
 }
