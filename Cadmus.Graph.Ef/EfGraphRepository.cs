@@ -8,6 +8,7 @@ using System.Security.Cryptography;
 using System;
 using System.Text;
 using System.Text.Json;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Cadmus.Graph.Ef;
 
@@ -1469,10 +1470,79 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
         }
     }
 
+    /// <summary>
+    /// Gets the specified page of triples variously filtered, and grouped
+    /// by their predicate.
+    /// </summary>
+    /// <param name="filter">The filter.</param>
+    /// <param name="sort">The sort order: any combination of <c>c</c>=by
+    /// count, ascending; <c>C</c>=by count, descending; <c>u</c>=by URI,
+    /// ascending; <c>U</c>=by URI, descending.</param>
+    /// <returns>Page.</returns>
+    /// <exception cref="ArgumentNullException">filter or sort</exception>
     public DataPage<TripleGroup> GetTripleGroups(TripleFilter filter,
         string sort = "Cu")
     {
-        throw new NotImplementedException();
+        if (filter is null) throw new ArgumentNullException(nameof(filter));
+        if (sort is null) throw new ArgumentNullException(nameof(sort));
+
+        using CadmusGraphDbContext context = GetContext();
+        // inner query:
+        // select p_id, count(p_id) as cnt FROM triple
+        // where ...
+        // group by p_id
+        IQueryable<EfTriple> triples = GetFilteredTriples(filter, context);
+        IQueryable<TripleGroup> groups = triples.GroupBy(t => t.PredicateId)
+            .Select(g => new TripleGroup
+            {
+                PredicateId = g.Key,
+                Count = g.Count()
+            });
+        int total = groups.Count();
+        if (total == 0)
+        {
+            return new DataPage<TripleGroup>(
+                filter.PageNumber, filter.PageSize, 0,
+                Array.Empty<TripleGroup>());
+        }
+
+        // get groups PredicateUri by joining with node
+        groups = groups.Join(context.Nodes.Include(n => n.UriEntry),
+            g => g.PredicateId,
+            n => n.Id,
+            (g, n) => new TripleGroup
+            {
+                PredicateId = g.PredicateId,
+                PredicateUri = n.UriEntry.Uri,
+                Count = g.Count
+            });
+
+        // sorting
+        IOrderedQueryable<TripleGroup> sortedGroups = sort[0] switch
+        {
+            'c' => groups.OrderBy(g => g.Count),
+            'C' => groups.OrderByDescending(g => g.Count),
+            'u' => groups.OrderBy(g => g.PredicateUri),
+            'U' => groups.OrderByDescending(g => g.PredicateUri),
+            _ => groups.OrderByDescending(g => g.Count),
+        };
+        for (int i = 1; i < sort.Length; i++)
+        {
+            sortedGroups = sort[i] switch
+            {
+                'c' => sortedGroups.ThenBy(g => g.Count),
+                'C' => sortedGroups.ThenByDescending(g => g.Count),
+                'u' => sortedGroups.ThenBy(g => g.PredicateUri),
+                'U' => sortedGroups.ThenByDescending(g => g.PredicateUri),
+                _ => sortedGroups.ThenByDescending(g => g.Count),
+            };
+        }
+
+        List<TripleGroup> results = sortedGroups.Skip(filter.GetSkipCount())
+            .Take(filter.PageSize).ToList();
+
+        return new DataPage<TripleGroup>(filter.PageNumber, filter.PageSize,
+            total, results);
     }
     #endregion
 
