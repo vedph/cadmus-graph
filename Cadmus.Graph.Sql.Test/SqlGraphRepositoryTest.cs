@@ -595,7 +595,7 @@ public abstract class SqlGraphRepositoryTest
         Assert.NotNull(petrarch);
 
         // outbound (non-literal) nodes from property group rdf:type:
-        // - x:guys/francesco_petrarca rdf:type foaf:Person
+        // - x:guys/francesco_petrarca (S) rdf:type foaf:Person
         // rdf:type
         UriNode? a = repository.GetNodeByUri("rdf:type");
         Assert.NotNull(a);

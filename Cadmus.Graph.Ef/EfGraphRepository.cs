@@ -657,21 +657,27 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
 
         if (filter.IsObject)
         {
-            nodes = context.Nodes
-                .Include(n => n.UriEntry)
-                .Include(n => n.SubjectTriples)
-                .AsNoTracking()
-                .Where(n => n.Id == filter.OtherNodeId &&
-                    n.SubjectTriples!.Any(t => t.PredicateId == filter.PredicateId));
-        }
-        else
-        {
+            // get nodes being objects of triples with the specified predicate
+            // having the specified other node as subject
             nodes = context.Nodes
                 .Include(n => n.UriEntry)
                 .Include(n => n.ObjectTriples)
-                .AsNoTracking()
-                .Where(n => n.Id == filter.OtherNodeId &&
-                    n.ObjectTriples!.Any(t => t.PredicateId == filter.PredicateId));
+                .Where(n => n.ObjectTriples!.Any(
+                    t => t.PredicateId == filter.PredicateId &&
+                         t.SubjectId == filter.OtherNodeId))
+                .AsNoTracking();
+        }
+        else
+        {
+            // get nodes being subjects of triples with the specified predicate
+            // having the specified other node as object
+            nodes = context.Nodes
+                .Include(n => n.UriEntry)
+                .Include(n => n.SubjectTriples)
+                .Where(n => n.SubjectTriples!.Any(
+                    t => t.PredicateId == filter.PredicateId &&
+                         t.ObjectId == filter.OtherNodeId))
+                .AsNoTracking();
         }
 
         nodes = ApplyNodeFilterBase(nodes, filter);
