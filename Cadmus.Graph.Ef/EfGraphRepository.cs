@@ -474,6 +474,15 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
         return node?.ToUriNode(node.UriEntry!.Uri);
     }
 
+    private UriNode? GetNodeByUri(string uri, CadmusGraphDbContext context)
+    {
+        EfNode? node = context.Nodes
+            .Include(n => n.UriEntry)
+            .AsNoTracking()
+            .FirstOrDefault(n => n.UriEntry!.Uri == uri);
+        return node?.ToUriNode(node.UriEntry!.Uri);
+    }
+
     /// <summary>
     /// Gets the node by its URI.
     /// </summary>
@@ -485,11 +494,7 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
         if (uri == null) throw new ArgumentNullException(nameof(uri));
 
         using CadmusGraphDbContext context = GetContext();
-        EfNode? node = context.Nodes
-            .Include(n => n.UriEntry)
-            .AsNoTracking()
-            .FirstOrDefault(n => n.UriEntry!.Uri == uri);
-        return node?.ToUriNode(node.UriEntry!.Uri);
+        return GetNodeByUri(uri, context);
     }
 
     private (int A, int Sub) GetASubIds()
@@ -1330,22 +1335,8 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
         return triples.Select(t => t.Id).FirstOrDefault();
     }
 
-    /// <summary>
-    /// Adds or updates the specified triple. If the triple is new (ID=0)
-    /// and a triple with all the same values already exists, nothing is
-    /// done.
-    /// When <paramref name="triple"/> has ID=0 (=new triple), its
-    /// <see cref="Triple.Id"/> property gets updated by this method
-    /// after insertion.
-    /// </summary>
-    /// <param name="triple">The triple.</param>
-    /// <exception cref="ArgumentNullException">triple</exception>
-    public void AddTriple(Triple triple)
+    private static void AddTriple(Triple triple, CadmusGraphDbContext context)
     {
-        if (triple == null) throw new ArgumentNullException(nameof(triple));
-
-        using CadmusGraphDbContext context = GetContext();
-
         // nope if exactly the same triple already exists.
         // In this case, update the triple's ID to ensure it's valid
         int existingId = FindTripleByValue(triple, context);
@@ -1355,7 +1346,7 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
             return;
         }
 
-        EfTriple? old = triple.Id == 0? null : context.Triples.Find(triple.Id);
+        EfTriple? old = triple.Id == 0 ? null : context.Triples.Find(triple.Id);
         if (old == null)
         {
             EfTriple newTriple = new(triple);
@@ -1377,6 +1368,24 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
             old.Tag = triple.Tag;
             context.SaveChanges();
         }
+    }
+
+    /// <summary>
+    /// Adds or updates the specified triple. If the triple is new (ID=0)
+    /// and a triple with all the same values already exists, nothing is
+    /// done.
+    /// When <paramref name="triple"/> has ID=0 (=new triple), its
+    /// <see cref="Triple.Id"/> property gets updated by this method
+    /// after insertion.
+    /// </summary>
+    /// <param name="triple">The triple.</param>
+    /// <exception cref="ArgumentNullException">triple</exception>
+    public void AddTriple(Triple triple)
+    {
+        if (triple == null) throw new ArgumentNullException(nameof(triple));
+
+        using CadmusGraphDbContext context = GetContext();
+        AddTriple(triple, context);
     }
 
     /// <summary>
@@ -1546,10 +1555,106 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
     }
     #endregion
 
-    public void AddThesaurus(Thesaurus thesaurus, bool includeRoot, string? prefix = null)
+    #region Thesaurus
+    /// <summary>
+    /// Adds the specified thesaurus as a set of class nodes.
+    /// </summary>
+    /// <param name="thesaurus">The thesaurus.</param>
+    /// <param name="includeRoot">If set to <c>true</c>, include a root node
+    /// corresponding to the thesaurus ID. This typically happens for
+    /// non-hierarchic thesauri, where a flat list of entries is grouped
+    /// under a single root.</param>
+    /// <param name="prefix">The optional prefix to prepend to each ID.</param>
+    /// <exception cref="ArgumentNullException">thesaurus</exception>
+    public void AddThesaurus(Thesaurus thesaurus, bool includeRoot,
+        string? prefix = null)
     {
-        throw new NotImplementedException();
+        if (thesaurus is null) throw new ArgumentNullException(nameof(thesaurus));
+
+        // nothing to do for aliases
+        if (thesaurus.TargetId != null) return;
+
+        using CadmusGraphDbContext context = GetContext();
+
+        // ensure that we have rdfs:subClassOf
+        Node? sub = GetNodeByUri("rdfs:subClassOf", context);
+        if (sub == null)
+        {
+            EfNode ef = new()
+            {
+                Id = AddUri("rdfs:subClassOf", context),
+                Label = "rdfs:subClassOf",
+                IsClass = true
+            };
+            context.Nodes.Add(ef);
+            sub = ef.ToUriNode("rdfs:subClassOf");
+        }
+
+        // include root if requested
+        EfNode? root = null;
+        if (includeRoot)
+        {
+            int atIndex = thesaurus.Id.LastIndexOf('@');
+            string id = atIndex > -1
+                ? thesaurus.Id[..atIndex]
+                : thesaurus.Id;
+            string uri = string.IsNullOrEmpty(prefix)
+                ? id : prefix + id;
+
+            root = new EfNode
+            {
+                Id = AddUri(uri, context),
+                Label = id,
+                IsClass = true,
+                SourceType = Node.SOURCE_THESAURUS,
+                Tag = "thesaurus",
+                Sid = thesaurus.Id
+            };
+            AddNode(root, true, context);
+        }
+
+        Dictionary<string, int> ids = new();
+        thesaurus.VisitByLevel(entry =>
+        {
+            // node
+            string uri = string.IsNullOrEmpty(prefix)
+                ? entry.Id : prefix + entry.Id;
+            EfNode node = new()
+            {
+                Id = AddUri(uri, context),
+                IsClass = true,
+                Label = entry.Id,
+                SourceType = Node.SOURCE_THESAURUS,
+                Tag = "thesaurus",
+                Sid = thesaurus.Id
+            };
+            AddNode(node, true, context);
+            ids[entry.Id] = node.Id;
+
+            // triple
+            if (entry.Parent != null)
+            {
+                AddTriple(new Triple
+                {
+                    SubjectId = node.Id,
+                    PredicateId = sub.Id,
+                    ObjectId = ids[entry.Parent.Id]
+                }, context);
+            }
+            else if (root != null)
+            {
+                AddTriple(new Triple
+                {
+                    SubjectId = node.Id,
+                    PredicateId = sub.Id,
+                    ObjectId = root.Id
+                }, context);
+            }
+            return true;
+        });
+        context.SaveChanges();
     }
+    #endregion
 
     public void DeleteGraphSet(string sourceId)
     {

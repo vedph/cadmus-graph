@@ -1826,8 +1826,7 @@ public abstract class SqlGraphRepository : IConfigurable<SqlOptions>
     public void AddThesaurus(Thesaurus thesaurus, bool includeRoot,
         string? prefix = null)
     {
-        if (thesaurus is null)
-            throw new ArgumentNullException(nameof(thesaurus));
+        if (thesaurus is null) throw new ArgumentNullException(nameof(thesaurus));
 
         // nothing to do for aliases
         if (thesaurus.TargetId != null) return;
