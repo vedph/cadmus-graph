@@ -7,7 +7,16 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <None Remove="Assets\Schema.pgsql" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <EmbeddedResource Include="Assets\Schema.pgsql" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<ProjectReference Include="..\Cadmus.Graph.Ef\Cadmus.Graph.Ef.csproj" />
+		<ProjectReference Include="..\Cadmus.Graph.Sql.Test\Cadmus.Graph.Sql.Test.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
