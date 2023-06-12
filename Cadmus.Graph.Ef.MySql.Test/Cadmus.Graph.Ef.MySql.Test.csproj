@@ -2,13 +2,14 @@
 
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
+    <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Fusi.DbManager.MySql" Version="3.0.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.6.2" />
     <PackageReference Include="xunit" Version="2.4.2" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.5">
@@ -22,8 +23,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Cadmus.Graph.Ef.PgSql\Cadmus.Graph.Ef.PgSql.csproj" />
-    <ProjectReference Include="..\Cadmus.Graph.PgSql.Test\Cadmus.Graph.PgSql.Test.csproj" />
+    <ProjectReference Include="..\Cadmus.Graph.Ef.MySql\Cadmus.Graph.Ef.MySql.csproj" />
+    <ProjectReference Include="..\Cadmus.Graph.Sql.Test\Cadmus.Graph.Sql.Test.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,25 +1,24 @@
 using Cadmus.Graph.Sql.Test;
 using Fusi.DbManager;
-using Fusi.DbManager.PgSql;
+using Fusi.DbManager.MySql;
 using Xunit;
 
-namespace Cadmus.Graph.Ef.PgSql.Test;
+namespace Cadmus.Graph.Ef.MySql.Test;
 
 [Collection(nameof(NonParallelResourceCollection))]
-public sealed class EfPgGraphRepositoryTest : SqlGraphRepositoryTest
+public sealed class EfMySqlGraphRepositoryTest : SqlGraphRepositoryTest
 {
     private IDbManager? _manager;
 
     public override string ConnectionStringTemplate =>
-        "Server=localhost;Database={0};User Id=postgres;Password=postgres;" +
-        "Include Error Detail=True";
+    "Server=localhost;Database={0};Uid=root;Pwd=mysql;";
 
     public override IDbManager DbManager =>
-        _manager ??= new PgSqlDbManager(ConnectionStringTemplate);
+        _manager ??= new MySqlDbManager(ConnectionStringTemplate);
 
     protected override IGraphRepository GetRepository()
     {
-        EfPgGraphRepository repository = new();
+        EfMySqlGraphRepository repository = new();
         repository.Configure(new EfGraphRepositoryOptions
         {
             ConnectionString = ConnectionString
@@ -27,7 +26,7 @@ public sealed class EfPgGraphRepositoryTest : SqlGraphRepositoryTest
         return repository;
     }
 
-    protected override string GetSchema() => EfPgGraphRepository.GetSchema();
+    protected override string GetSchema() => EfMySqlGraphRepository.GetSchema();
 
 #pragma warning disable S2699 // Tests should include assertions
 

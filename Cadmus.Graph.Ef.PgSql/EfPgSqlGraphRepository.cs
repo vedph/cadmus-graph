@@ -12,7 +12,7 @@ namespace Cadmus.Graph.Ef.PgSql;
 /// </summary>
 /// <seealso cref="EfGraphRepository" />
 [Tag("graph-repository.ef-pg")]
-public sealed class EfPgGraphRepository : EfGraphRepository, IGraphRepository
+public sealed class EfPgSqlGraphRepository : EfGraphRepository, IGraphRepository
 {
     /// <summary>
     /// Gets the SQL schema.
@@ -20,8 +20,8 @@ public sealed class EfPgGraphRepository : EfGraphRepository, IGraphRepository
     /// <returns>SQL DDL code.</returns>
     public static string GetSchema()
     {
-        using StreamReader reader = new(typeof(EfPgGraphRepository).Assembly
-            .GetManifestResourceStream("Cadmus.Graph.Ef.PgSq.Assets.Schema.pgsql")!,
+        using StreamReader reader = new(typeof(EfPgSqlGraphRepository).Assembly
+            .GetManifestResourceStream("Cadmus.Graph.Ef.PgSql.Assets.Schema.pgsql")!,
             Encoding.UTF8);
         return reader.ReadToEnd();
     }

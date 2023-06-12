@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFramework>net7.0</TargetFramework>
@@ -12,7 +12,7 @@
 		<Authors>Daniele Fusi</Authors>
 		<Company>Fusi</Company>
 		<Product>Cadmus</Product>
-		<Description>Cadmus graph Entity Framework Core components for PostgreSQL.</Description>
+		<Description>Cadmus graph Entity Framework Core components for MySql.</Description>
 		<Copyright>by Daniele Fusi 2023</Copyright>
 		<NeutralLanguage>en-US</NeutralLanguage>
 		<PackageLicenseExpression>GPL-3.0-or-later</PackageLicenseExpression>
@@ -20,21 +20,19 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <None Remove="Assets\Schema.pgsql" />
+		<None Remove="Assets\Schema.mysql" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <EmbeddedResource Include="Assets\Schema.pgsql" />
+		<EmbeddedResource Include="Assets\Schema.mysql" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="MySql.EntityFrameworkCore" Version="7.0.2" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\Cadmus.Graph.Ef\Cadmus.Graph.Ef.csproj" />
-		<ProjectReference Include="..\Cadmus.Graph.Sql.Test\Cadmus.Graph.Sql.Test.csproj" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<PackageReference Include="Npgsql" Version="7.0.4" />
-		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.4" />
 	</ItemGroup>
 
 </Project>
