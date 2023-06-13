@@ -43,6 +43,8 @@ public sealed class EfMySqlGraphRepository : EfGraphRepository, IGraphRepository
 
         DbContextOptionsBuilder<CadmusGraphDbContext> optionsBuilder = new();
         optionsBuilder.UseMySQL(ConnectionString);
+        optionsBuilder.EnableDetailedErrors();
+        optionsBuilder.EnableSensitiveDataLogging();
         return new CadmusGraphDbContext(optionsBuilder.Options);
     }
 

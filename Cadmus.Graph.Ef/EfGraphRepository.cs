@@ -7,6 +7,8 @@ using Microsoft.Extensions.Caching.Memory;
 using System.Text;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore.Storage;
+using System.Xml.Linq;
+using System.Diagnostics;
 
 namespace Cadmus.Graph.Ef;
 
@@ -539,12 +541,13 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
             $"CALL populate_node_class({nodeId},{aId},{subId})");
     }
 
-    private void AddNode(Node node, bool noUpdate, CadmusGraphDbContext? context)
+    private void AddNode(Node node, bool noUpdate, bool updateClasses,
+        CadmusGraphDbContext? context)
     {
         bool localContext = context == null;
         context ??= GetContext();
 
-        EfNode? old = context.Nodes.FirstOrDefault(n => n.Id == node.Id);
+        EfNode? old = context.Nodes.Find(node.Id);
         if (noUpdate && old != null) return;
         if (old != null)
         {
@@ -554,13 +557,24 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
             old.SourceType = node.SourceType;
             old.Sid = node.Sid;
         }
-        else context.Nodes.Add(new EfNode(node));
+        else
+        {
+            Debug.WriteLine("adding node " + node);
+            context.Nodes.Add(new EfNode(node));
+        }
 
-        (int aId, int subId) = GetASubIds();
-        UpdateNodeClasses(node.Id, aId, subId, context);
+        if (updateClasses)
+        {
+            context.SaveChanges();
+            (int aId, int subId) = GetASubIds();
+            UpdateNodeClasses(node.Id, aId, subId, context);
+        }
 
-        context.SaveChanges();
-        if (localContext) context.Dispose();
+        if (localContext)
+        {
+            context.SaveChanges();
+            context.Dispose();
+        }
     }
 
     /// <summary>
@@ -577,7 +591,7 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
     {
         if (node == null) throw new ArgumentNullException(nameof(node));
 
-        AddNode(node, noUpdate, null);
+        AddNode(node, noUpdate, true, null);
     }
 
     /// <summary>
@@ -1360,7 +1374,7 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
         return triple?.ToUriTriple();
     }
 
-    private static int FindTripleByValue(Triple triple,
+    private static EfTriple? FindTripleByValue(Triple triple,
         CadmusGraphDbContext context)
     {
         IQueryable<EfTriple> triples = context.Triples
@@ -1376,14 +1390,14 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
                 t.LiteralType == triple.LiteralType &&
                 t.LiteralLanguage == triple.LiteralLanguage);
 
-        return triples.Select(t => t.Id).FirstOrDefault();
+        return triples.FirstOrDefault();
     }
 
     private static void AddTriple(Triple triple, CadmusGraphDbContext context)
     {
         // nope if exactly the same triple already exists.
         // In this case, update the triple's ID to ensure it's valid
-        int existingId = FindTripleByValue(triple, context);
+        int existingId = FindTripleByValue(triple, context)?.Id ?? 0;
         if (existingId > 0)
         {
             triple.Id = existingId;
@@ -1445,6 +1459,8 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
         if (triples is null) throw new ArgumentNullException(nameof(triples));
 
         using CadmusGraphDbContext context = GetContext();
+        List<int> nodeIds = new();
+
         foreach (UriTriple triple in triples)
         {
             if (triple.SubjectUri == null || triple.PredicateUri == null ||
@@ -1455,6 +1471,7 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
 
             // add subject - the node is added if not present
             int id = AddUri(triple.SubjectUri, context, out bool newUri);
+            nodeIds.Add(id);
             triple.SubjectId = id;
             if (newUri)
             {
@@ -1463,11 +1480,12 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
                     Id = id,
                     Label = triple.SubjectUri,
                     Sid = triple.Sid,
-                }, false, context);
+                }, true, false, context);
             }
 
             // add predicate - the node is added if not present
             id = AddUri(triple.PredicateUri, context, out newUri);
+            nodeIds.Add(id);
             triple.PredicateId = id;
             if (newUri)
             {
@@ -1477,13 +1495,14 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
                     Label = triple.PredicateUri,
                     Sid = triple.Sid,
                     Tag = Node.TAG_PROPERTY
-                }, false, context);
+                }, true, false, context);
             }
 
             // add object if it's a node
             if (triple.ObjectUri != null)
             {
                 id = AddUri(triple.ObjectUri, context, out newUri);
+                nodeIds.Add(id);
                 triple.ObjectId = id;
                 if (newUri)
                 {
@@ -1492,7 +1511,7 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
                         Id = id,
                         Label = triple.ObjectUri,
                         Sid = triple.Sid
-                    }, false, context);
+                    }, true, false, context);
                 }
             }
 
@@ -1500,21 +1519,27 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
             context.Triples.Add(new EfTriple(triple));
         }
         context.SaveChanges();
+
+        // update classes for nodes
+        if (nodeIds.Count > 0)
+        {
+            (int aId, int subId) = GetASubIds();
+            foreach (int id in nodeIds) UpdateNodeClasses(id, aId, subId, context);
+        }
     }
 
     private void DeleteTriple(int id, CadmusGraphDbContext context)
     {
         EfTriple? triple = context.Triples.Find(id);
-        if (triple != null)
-        {
-            context.Triples.Remove(triple);
-            context.SaveChanges();
+        if (triple == null) return;
 
-            if (triple.ObjectId != null)
-            {
-                (int aId, int subId) = GetASubIds();
-                UpdateNodeClasses(triple.ObjectId.Value, aId, subId, context);
-            }
+        context.Triples.Remove(triple);
+        context.SaveChanges();
+
+        if (triple.ObjectId != null)
+        {
+            (int aId, int subId) = GetASubIds();
+            UpdateNodeClasses(triple.ObjectId.Value, aId, subId, context);
         }
     }
 
@@ -1624,6 +1649,7 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
         if (thesaurus.TargetId != null) return;
 
         using CadmusGraphDbContext context = GetContext();
+        List<int> nodeIds = new();
 
         // ensure that we have rdfs:subClassOf
         Node? sub = GetNodeByUri("rdfs:subClassOf", context);
@@ -1659,10 +1685,11 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
                 Tag = "thesaurus",
                 Sid = thesaurus.Id
             };
-            AddNode(root, true, context);
+            nodeIds.Add(root.Id);
+            AddNode(root, true, false, context);
         }
 
-        Dictionary<string, int> ids = new();
+        Dictionary<string, int> idMap = new();
         thesaurus.VisitByLevel(entry =>
         {
             // node
@@ -1677,8 +1704,9 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
                 Tag = "thesaurus",
                 Sid = thesaurus.Id
             };
-            AddNode(node, true, context);
-            ids[entry.Id] = node.Id;
+            nodeIds.Add(node.Id);
+            AddNode(node, true, false, context);
+            idMap[entry.Id] = node.Id;
 
             // triple
             if (entry.Parent != null)
@@ -1687,7 +1715,7 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
                 {
                     SubjectId = node.Id,
                     PredicateId = sub.Id,
-                    ObjectId = ids[entry.Parent.Id]
+                    ObjectId = idMap[entry.Parent.Id]
                 }, context);
             }
             else if (root != null)
@@ -1702,6 +1730,13 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
             return true;
         });
         context.SaveChanges();
+
+        // update classes for nodes
+        if (nodeIds.Count > 0)
+        {
+            (int aId, int subId) = GetASubIds();
+            foreach (int id in nodeIds) UpdateNodeClasses(id, aId, subId, context);
+        }
     }
     #endregion
 
@@ -1783,8 +1818,8 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
             .ToList();
 
         return new GraphSet(
-            nodes.Select(n => n.ToUriNode()).ToList(),
-            triples.Select(t => t.ToUriTriple()).ToList());
+            nodes.ConvertAll(n => n.ToUriNode()),
+            triples.ConvertAll(t => t.ToUriTriple()));
     }
 
     /// <summary>
@@ -1820,7 +1855,7 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
         // such nodes exist, without updating them
         if (string.IsNullOrEmpty(sourceId))
         {
-            foreach (UriNode node in nodes) AddNode(node, true, context);
+            foreach (UriNode node in nodes) AddNode(node, true, false, context);
             return;
         }
 
@@ -1847,23 +1882,91 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
         nodeGrouper.FilterDeleted(n => !n.IsClass && n.Tag != Node.TAG_PROPERTY);
 
         // nodes
+        List<int> nodeIds = new();
         foreach (UriNode node in nodeGrouper.Deleted)
-            DeleteNode(node.Id, context);
+        {
+            EfNode? n = context.Nodes.FirstOrDefault(n => n.Id == node.Id);
+            if (n != null) context.Nodes.Remove(n);
+        }
         foreach (UriNode node in nodeGrouper.Added)
         {
+            nodeIds.Add(node.Id);
             node.Id = AddUri(node.Uri!, context);
-            AddNode(node, true, context);
+            AddNode(node, true, false, context);
         }
         foreach (UriNode node in nodeGrouper.Updated)
-            AddNode(node, node.Sid == null, context);
+        {
+            nodeIds.Add(node.Id);
+            AddNode(node, node.Sid == null, false, context);
+        }
 
         // triples
         foreach (UriTriple triple in tripleGrouper.Deleted)
-            DeleteTriple(triple.Id, context);
+        {
+            EfTriple? t = context.Triples.Find(triple.Id);
+            if (t != null)
+            {
+                context.Triples.Remove(t);
+                if (t.ObjectId != null) nodeIds.Add(t.ObjectId.Value);
+            }
+        }
+        List<EfTriple> newTriples = new(tripleGrouper.Added.Count);
         foreach (UriTriple triple in tripleGrouper.Added)
-            AddTriple(triple, context);
+        {
+            EfTriple? old = FindTripleByValue(triple, context);
+            if (old != null)
+            {
+                newTriples.Add(old);
+            }
+            else
+            {
+                EfTriple newTriple = new(triple);
+                newTriples.Add(newTriple);
+                context.Triples.Add(newTriple);
+            }
+        }
         foreach (UriTriple triple in tripleGrouper.Updated)
-            AddTriple(triple, context);
+        {
+            int existingId = FindTripleByValue(triple, context)?.Id ?? 0;
+            if (existingId > 0) triple.Id = existingId;
+            else
+            {
+                EfTriple? old = context.Triples.Find(triple.Id);
+                if (old != null)
+                {
+                    old.SubjectId = triple.SubjectId;
+                    old.PredicateId = triple.PredicateId;
+                    old.ObjectId = triple.ObjectId;
+                    old.ObjectLiteral = triple.ObjectLiteral;
+                    old.ObjectLiteralIx = triple.ObjectLiteralIx;
+                    old.LiteralType = triple.LiteralType;
+                    old.LiteralLanguage = triple.LiteralLanguage;
+                    old.LiteralNumber = triple.LiteralNumber;
+                    old.Sid = triple.Sid;
+                    old.Tag = triple.Tag;
+                }
+                else
+                {
+                    Debug.WriteLine("Triple to update not found: " + triple);
+                }
+            }
+        }
+
+        context.SaveChanges();
+
+        // update the IDs of added triples
+        for (int i = 0; i < newTriples.Count; i++)
+        {
+            EfTriple newTriple = newTriples[i];
+            tripleGrouper.Added[i].Id = newTriple.Id;
+        }
+
+        // update classes for changed nodes
+        foreach (int nodeId in nodeIds)
+        {
+            (int aId, int subId) = GetASubIds();
+            UpdateNodeClasses(nodeId, aId, subId, context);
+        }
     }
 
     /// <summary>
@@ -1876,7 +1979,7 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
         if (set is null) throw new ArgumentNullException(nameof(set));
 
         using CadmusGraphDbContext context = GetContext();
-        // using IDbContextTransaction trans = context.Database.BeginTransaction();
+        using IDbContextTransaction trans = context.Database.BeginTransaction();
         try
         {
             // ensure to save each new node's URI, thus getting its ID
@@ -1891,7 +1994,7 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
             {
                 if (triple.SubjectId == 0)
                 {
-                    triple.SubjectId = AddUri(triple.SubjectUri!);
+                    triple.SubjectId = AddUri(triple.SubjectUri!, context);
                     if (!nodeUris.Contains(triple.SubjectUri!))
                     {
                         // add node implicit in triple
@@ -1927,7 +2030,7 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
                 if ((triple.ObjectId == null || triple.ObjectId == 0) &&
                     !string.IsNullOrEmpty(triple.ObjectUri))
                 {
-                    triple.ObjectId = AddUri(triple.ObjectUri);
+                    triple.ObjectId = AddUri(triple.ObjectUri, context);
                     if (!nodeUris.Contains(triple.ObjectUri!))
                     {
                         // add node implicit in triple
@@ -1956,11 +2059,11 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
                         ? tripleGroups[key]
                         : Array.Empty<UriTriple>(), context);
             }
-            //trans.Commit();
+            trans.Commit();
         }
         catch (Exception)
         {
-            //trans.Rollback();
+            trans.Rollback();
             throw;
         }
     }

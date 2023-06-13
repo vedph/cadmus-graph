@@ -42,6 +42,8 @@ public sealed class EfPgSqlGraphRepository : EfGraphRepository, IGraphRepository
 
         DbContextOptionsBuilder<CadmusGraphDbContext> optionsBuilder = new();
         optionsBuilder.UseNpgsql(ConnectionString);
+        optionsBuilder.EnableDetailedErrors();
+        optionsBuilder.EnableSensitiveDataLogging();
         return new CadmusGraphDbContext(optionsBuilder.Options);
     }
 
