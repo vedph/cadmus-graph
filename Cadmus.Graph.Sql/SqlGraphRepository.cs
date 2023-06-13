@@ -2235,7 +2235,8 @@ public abstract class SqlGraphRepository : IConfigurable<SqlOptions>
                 }
             }
 
-            if (triple.ObjectId == 0 && !string.IsNullOrEmpty(triple.ObjectUri))
+            if ((triple.ObjectId == null || triple.ObjectId == 0) &&
+                !string.IsNullOrEmpty(triple.ObjectUri))
             {
                 triple.ObjectId = AddUri(triple.ObjectUri);
                 if (!nodeUris.Contains(triple.ObjectUri!))

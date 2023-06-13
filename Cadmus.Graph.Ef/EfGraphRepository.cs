@@ -1924,7 +1924,7 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
                     }
                 }
 
-                if (triple.ObjectId == null &&
+                if ((triple.ObjectId == null || triple.ObjectId == 0) &&
                     !string.IsNullOrEmpty(triple.ObjectUri))
                 {
                     triple.ObjectId = AddUri(triple.ObjectUri);
