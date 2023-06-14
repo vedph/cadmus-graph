@@ -26,7 +26,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Cadmus.Graph.Ef.PgSql\Cadmus.Graph.Ef.PgSql.csproj" />
-    <ProjectReference Include="..\Cadmus.Graph.PgSql.Test\Cadmus.Graph.PgSql.Test.csproj" />
   </ItemGroup>
 
 </Project>
