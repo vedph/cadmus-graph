@@ -8,6 +8,15 @@ del .\Cadmus.Graph.Extras\bin\Debug\*.*nupkg
 cd .\Cadmus.Graph
 dotnet pack -c Debug -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg
 cd..
+cd .\Cadmus.Graph.Ef
+dotnet pack -c Debug -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg
+cd..
+cd .\Cadmus.Graph.Ef.MySql
+dotnet pack -c Debug -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg
+cd..
+cd .\Cadmus.Graph.Ef.PgSql
+dotnet pack -c Debug -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg
+cd..
 cd .\Cadmus.Graph.MySql
 dotnet pack -c Debug -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg
 cd..

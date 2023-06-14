@@ -4,9 +4,9 @@
     <TargetFramework>net7.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
-    <Version>2.2.9</Version>
-    <FileVersion>2.2.9</FileVersion>
-    <AssemblyVersion>2.2.9</AssemblyVersion>
+    <Version>2.2.10</Version>
+    <FileVersion>2.2.10</FileVersion>
+    <AssemblyVersion>2.2.10</AssemblyVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,8 +20,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Fusi.DbManager.MySql" Version="3.0.0" />
-    <PackageReference Include="Polly" Version="7.2.3" />
+    <PackageReference Include="Fusi.DbManager.MySql" Version="3.0.2" />
+    <PackageReference Include="Polly" Version="7.2.4" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
   </ItemGroup>
 

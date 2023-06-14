@@ -7,7 +7,6 @@ using Microsoft.Extensions.Caching.Memory;
 using System.Text;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore.Storage;
-using System.Xml.Linq;
 using System.Diagnostics;
 
 namespace Cadmus.Graph.Ef;
@@ -709,7 +708,7 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
 
         List<EfNode> results = nodes.ToList();
         return new DataPage<UriNode>(filter.PageNumber, filter.PageSize, total,
-            results.Select(n => n.ToUriNode(n.UriEntry!.Uri)).ToList());
+            results.ConvertAll(n => n.ToUriNode(n.UriEntry!.Uri)));
     }
 
     protected abstract string BuildRegexMatch(string field, string pattern);
@@ -731,23 +730,19 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
     private IQueryable<EfTriple> GetFilteredTriples(LiteralFilter filter,
         CadmusGraphDbContext context)
     {
-        IQueryable<EfTriple> triples;
-
-        // literal pattern
-        if (!string.IsNullOrEmpty(filter.LiteralPattern))
-        {
-            triples = context.Triples
+        IQueryable<EfTriple> triples = !string.IsNullOrEmpty(filter.LiteralPattern)
+            ? context.Triples
                 .FromSqlRaw("SELECT * FROM triple WHERE " +
                 BuildRawRegexSql(new[]
                 {
                     Tuple.Create("o_lit", (string?)filter.LiteralPattern)
-                }));
-        }
-        else triples = context.Triples;
+                }))
+            : context.Triples;
 
-        triples = triples.Include(t => t.Subject).ThenInclude(n => n.UriEntry)
-                         .Include(t => t.Predicate).ThenInclude(n => n.UriEntry)
-                         .Include(t => t.Object).ThenInclude(n => n.UriEntry);
+        // literal pattern
+        triples = triples.Include(t => t.Subject).ThenInclude(n => n!.UriEntry)
+                         .Include(t => t.Predicate).ThenInclude(n => n!.UriEntry)
+                         .Include(t => t.Object).ThenInclude(n => n!.UriEntry);
 
         // literal type
         if (!string.IsNullOrEmpty(filter.LiteralType))
@@ -836,7 +831,7 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
         using CadmusGraphDbContext context = GetContext();
 
         IQueryable<EfTriple> triples = GetFilteredTriples(filter, context);
-        
+
         triples = triples.Where(t => t.SubjectId == filter.SubjectId &&
             t.PredicateId == filter.PredicateId &&
             t.ObjectId == null);
@@ -854,7 +849,7 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
 
         List<EfTriple> results = triples.ToList();
         return new DataPage<UriTriple>(filter.PageNumber, filter.PageSize, total,
-            results.Select(t => t.ToUriTriple()).ToList());
+            results.ConvertAll(t => t.ToUriTriple()));
     }
     #endregion
 
@@ -871,7 +866,7 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
         using CadmusGraphDbContext context = GetContext();
         IQueryable<EfProperty> properties = context.Properties
             .Include(p => p.Node)
-            .ThenInclude(n => n.UriEntry)
+            .ThenInclude(n => n!.UriEntry)
             .AsNoTracking();
 
         if (!string.IsNullOrEmpty(filter.Uid))
@@ -900,7 +895,7 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
         List<EfProperty> results = properties.ToList();
 
         return new DataPage<UriProperty>(filter.PageNumber, filter.PageSize,
-            total, results.Select(p => p.ToUriProperty()).ToList());
+            total, results.ConvertAll(p => p.ToUriProperty()));
     }
 
     /// <summary>
@@ -913,7 +908,7 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
         using CadmusGraphDbContext context = GetContext();
         EfProperty? property = context.Properties
             .Include(p => p.Node)
-            .ThenInclude(n => n.UriEntry)
+            .ThenInclude(n => n!.UriEntry)
             .AsNoTracking()
             .FirstOrDefault(p => p.Id == id);
         return property?.ToUriProperty();
@@ -932,7 +927,7 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
         using CadmusGraphDbContext context = GetContext();
         EfProperty? property = context.Properties
             .Include(p => p.Node)
-            .ThenInclude(n => n.UriEntry)
+            .ThenInclude(n => n!.UriEntry)
             .AsNoTracking()
             .FirstOrDefault(p => p.Node!.UriEntry!.Uri == uri);
         return property?.ToUriProperty();
@@ -950,7 +945,7 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
         using CadmusGraphDbContext context = GetContext();
         EfProperty? old = context.Properties
             .Include(p => p.Node)
-            .ThenInclude(n => n.UriEntry)
+            .ThenInclude(n => n!.UriEntry)
             .FirstOrDefault(p => p.Id == property.Id);
         if (old != null)
         {
@@ -1365,11 +1360,11 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
         using CadmusGraphDbContext context = GetContext();
         EfTriple? triple = context.Triples
             .Include(t => t.Subject)
-            .ThenInclude(n => n.UriEntry)
+            .ThenInclude(n => n!.UriEntry)
             .Include(t => t.Predicate)
-            .ThenInclude(n => n.UriEntry)
+            .ThenInclude(n => n!.UriEntry)
             .Include(t => t.Object)
-            .ThenInclude(n => n.UriEntry)
+            .ThenInclude(n => n!.UriEntry)
             .FirstOrDefault(t => t.Id == id);
         return triple?.ToUriTriple();
     }
@@ -1928,7 +1923,10 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
         foreach (UriTriple triple in tripleGrouper.Updated)
         {
             int existingId = FindTripleByValue(triple, context)?.Id ?? 0;
-            if (existingId > 0) triple.Id = existingId;
+            if (existingId > 0)
+            {
+                triple.Id = existingId;
+            }
             else
             {
                 EfTriple? old = context.Triples.Find(triple.Id);
