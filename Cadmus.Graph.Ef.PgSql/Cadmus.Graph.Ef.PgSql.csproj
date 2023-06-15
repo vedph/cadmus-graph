@@ -4,9 +4,9 @@
 		<TargetFramework>net7.0</TargetFramework>
 		<ImplicitUsings>disable</ImplicitUsings>
 		<Nullable>enable</Nullable>
-		<Version>2.2.11</Version>
-		<FileVersion>2.2.11</FileVersion>
-		<AssemblyVersion>2.2.11</AssemblyVersion>
+		<Version>2.2.12</Version>
+		<FileVersion>2.2.12</FileVersion>
+		<AssemblyVersion>2.2.12</AssemblyVersion>
 		<IncludeSymbols>true</IncludeSymbols>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 		<Authors>Daniele Fusi</Authors>
@@ -32,6 +32,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<PackageReference Include="Fusi.DbManager.PgSql" Version="3.0.3" />
 		<PackageReference Include="Npgsql" Version="7.0.4" />
 		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.4" />
 	</ItemGroup>

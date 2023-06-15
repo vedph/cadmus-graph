@@ -15,6 +15,11 @@ internal class MockGraphRepository : RamMappingRepository, IGraphRepository
 {
     public IMemoryCache? Cache { get; set; }
 
+    public bool CreateStore(object? payload = null)
+    {
+        return false;
+    }
+
     public void AddNamespace(string prefix, string uri)
     {
         throw new NotImplementedException();

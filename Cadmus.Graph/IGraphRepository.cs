@@ -15,6 +15,15 @@ namespace Cadmus.Graph;
 public interface IGraphRepository : IUidBuilder, IMappingRepository
 {
     /// <summary>
+    /// Creates the target store if it does not exist.
+    /// </summary>
+    /// <param name="payload">Optional payload data to be used in creating
+    /// the store. For instance, an SQL-based store could provide SQL code
+    /// for seeding preset data.</param>
+    /// <returns>True if created, false if already existing.</returns>
+    bool CreateStore(object? payload = null);
+
+    /// <summary>
     /// Gets or sets the optional cache to use for mappings. This improves
     /// performance when fetching mappings from the database. All the
     /// mappings are stored with key <c>nm-</c> + the mapping's ID.

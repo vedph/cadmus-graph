@@ -84,7 +84,11 @@ docker compose -f docker-compose-api.yml up
 
 ## History
 
-- 2023-06-15: updated packages.
+### 2.2.12
+
+- 2023-06-15:
+  - added `CreateStore` method to graph repository.
+  - updated packages.
 
 ### 2.2.10
 
