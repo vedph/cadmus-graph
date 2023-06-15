@@ -84,6 +84,8 @@ docker compose -f docker-compose-api.yml up
 
 ## History
 
+- 2023-06-15: updated packages.
+
 ### 2.2.10
 
 - 2023-06-12: added EF-based PgSql and MySql repositories and tests.
