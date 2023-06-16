@@ -1,6 +1,9 @@
 @echo off
 echo BUILD Cadmus packages
 del .\Cadmus.Graph\bin\Debug\*.*nupkg
+del .\Cadmus.Graph.Ef\bin\Debug\*.*nupkg
+del .\Cadmus.Graph.Ef.MySql\bin\Debug\*.*nupkg
+del .\Cadmus.Graph.Ef.PgSql\bin\Debug\*.*nupkg
 del .\Cadmus.Graph.MySql\bin\Debug\*.*nupkg
 del .\Cadmus.Graph.Sql\bin\Debug\*.*nupkg
 del .\Cadmus.Graph.Extras\bin\Debug\*.*nupkg
