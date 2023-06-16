@@ -4,9 +4,9 @@
     <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <Version>2.2.12</Version>
-    <FileVersion>2.2.12</FileVersion>
-    <AssemblyVersion>2.2.12</AssemblyVersion>
+    <Version>2.2.13</Version>
+    <FileVersion>2.2.13</FileVersion>
+    <AssemblyVersion>2.2.13</AssemblyVersion>
 	<IncludeSymbols>true</IncludeSymbols>
 	<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 	<Authors>Daniele Fusi</Authors>
@@ -20,7 +20,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Cadmus.Index.Sql" Version="6.1.5" />
+    <PackageReference Include="Cadmus.Index.Sql" Version="6.1.8" />
     <PackageReference Include="SqlKata.Execution" Version="2.4.0" />
   </ItemGroup>
 
