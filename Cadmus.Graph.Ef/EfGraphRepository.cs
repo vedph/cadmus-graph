@@ -1435,16 +1435,13 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
                         t.Sid == triple.Sid &&
                         t.Tag!.ToLower() == tag);
 
-        string? objectLiteral = triple.ObjectLiteral?.ToLower();
-        string? literalType = triple.LiteralType?.ToLower();
-        string? literalLanguage = triple.LiteralLanguage?.ToLower();
-
-        triples = triple.ObjectId > 0
+        triples = triple.ObjectId != null && triple.ObjectId > 0
             ? triples.Where(t => t.ObjectId == triple.ObjectId)
             : triples.Where(t => t.ObjectId == null &&
-                t.ObjectLiteral!.ToLower() == objectLiteral &&
-                t.LiteralType!.ToLower() == literalType &&
-                t.LiteralLanguage!.ToLower() == literalLanguage);
+                // literals must match for casing too
+                t.ObjectLiteral == triple.ObjectLiteral &&
+                t.LiteralType == triple.LiteralType &&
+                t.LiteralLanguage == triple.LiteralLanguage);
 
         return triples.FirstOrDefault();
     }
@@ -1472,7 +1469,7 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
         {
             old.SubjectId = triple.SubjectId;
             old.PredicateId = triple.PredicateId;
-            old.ObjectId = triple.ObjectId;
+            old.ObjectId = triple.ObjectId == 0? null : triple.ObjectId;
             old.ObjectLiteral = triple.ObjectLiteral;
             old.ObjectLiteralIx = triple.ObjectLiteralIx;
             old.LiteralType = triple.LiteralType;

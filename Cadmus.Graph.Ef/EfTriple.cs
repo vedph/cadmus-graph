@@ -1,9 +1,22 @@
 ﻿namespace Cadmus.Graph.Ef;
 
+/// <summary>
+/// Entity Framework triple entity.
+/// </summary>
+/// <seealso cref="Triple" />
 public class EfTriple : Triple
 {
+    /// <summary>
+    /// Gets or sets the subject.
+    /// </summary>
     public EfNode? Subject { get; set; }
+    /// <summary>
+    /// Gets or sets the predicate.
+    /// </summary>
     public EfNode? Predicate { get; set; }
+    /// <summary>
+    /// Gets or sets the object.
+    /// </summary>
     public EfNode? Object { get; set; }
 
     public EfTriple()
@@ -17,7 +30,7 @@ public class EfTriple : Triple
         Id = triple.Id;
         SubjectId = triple.SubjectId;
         PredicateId = triple.PredicateId;
-        ObjectId = triple.ObjectId;
+        ObjectId = triple.ObjectId == 0? null : triple.ObjectId;
         ObjectLiteral = triple.ObjectLiteral;
         ObjectLiteralIx = triple.ObjectLiteralIx;
         LiteralType = triple.LiteralType;
@@ -34,7 +47,7 @@ public class EfTriple : Triple
             Id = Id,
             SubjectId = SubjectId,
             PredicateId = PredicateId,
-            ObjectId = ObjectId,
+            ObjectId = ObjectId == 0? null : ObjectId,
             ObjectLiteral = ObjectLiteral,
             ObjectLiteralIx = ObjectLiteralIx,
             LiteralType = LiteralType,
