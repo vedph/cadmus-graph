@@ -5,6 +5,7 @@
     - [Demo](#demo)
     - [API](#api)
   - [History](#history)
+    - [2.2.18](#2218)
     - [2.2.17](#2217)
     - [2.2.16](#2216)
     - [2.2.15](#2215)
@@ -95,6 +96,10 @@ docker compose -f docker-compose-api.yml up
 ```
 
 ## History
+
+### 2.2.18
+
+- 2023-06-23: added `TripleObjectSupplier` utility class.
 
 ### 2.2.17
 
