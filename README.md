@@ -5,6 +5,7 @@
     - [Demo](#demo)
     - [API](#api)
   - [History](#history)
+    - [2.2.16](#2216)
     - [2.2.15](#2215)
     - [2.2.14](#2214)
     - [2.2.13](#2213)
@@ -93,6 +94,10 @@ docker compose -f docker-compose-api.yml up
 ```
 
 ## History
+
+### 2.2.16
+
+- 2023-06-23: fixes to casing in EF-based comparisons.
 
 ### 2.2.15
 

@@ -63,9 +63,15 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
             context.NamespaceEntries.AsNoTracking();
 
         if (!string.IsNullOrEmpty(filter.Prefix))
-            lookups = lookups.Where(l => l.Id.Contains(filter.Prefix));
+        {
+            lookups = lookups.Where(l => l.Id.ToLower().Contains(
+                filter.Prefix.ToLower()));
+        }
         if (!string.IsNullOrEmpty(filter.Uri))
-            lookups = lookups.Where(l => l.Uri.Contains(filter.Uri));
+        {
+            lookups = lookups.Where(l => l.Uri.ToLower().Contains(
+                filter.Uri.ToLower()));
+        }
 
         // get total and ret if zero
         int total = lookups.Count();
@@ -76,7 +82,7 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
                 Array.Empty<NamespaceEntry>());
         }
 
-        var results = lookups.OrderBy(l => l.Id)
+        var results = lookups.OrderBy(l => l.Id.ToLower())
             .Skip((filter.PageNumber - 1) * filter.PageSize)
             .Take(filter.PageSize)
             .Select(l => l.ToNamespaceEntry())
@@ -98,7 +104,7 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
 
         using CadmusGraphDbContext context = GetContext();
         EfNamespaceEntry? lookup = context.NamespaceEntries
-            .FirstOrDefault(l => l.Id == prefix);
+            .FirstOrDefault(l => l.Id.ToLower() == prefix.ToLower());
         return lookup?.Uri;
     }
 
@@ -117,7 +123,8 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
 
         using CadmusGraphDbContext context = GetContext();
         EfNamespaceEntry? old = context.NamespaceEntries
-            .FirstOrDefault(l => l.Id == prefix && l.Uri == uri);
+            .FirstOrDefault(l => l.Id.ToLower() == prefix.ToLower() &&
+                                 l.Uri.ToLower() == uri.ToLower());
         if (old == null)
         {
             context.NamespaceEntries.Add(new EfNamespaceEntry
@@ -140,7 +147,7 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
 
         using CadmusGraphDbContext context = GetContext();
         EfNamespaceEntry? entry = context.NamespaceEntries
-            .FirstOrDefault(l => l.Id == prefix);
+            .FirstOrDefault(l => l.Id.ToLower() == prefix.ToLower());
         if (entry != null)
         {
             context.NamespaceEntries.Remove(entry);
@@ -158,7 +165,7 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
 
         using CadmusGraphDbContext context = GetContext();
         IEnumerable<EfNamespaceEntry> entries = context.NamespaceEntries
-            .Where(l => l.Uri == uri);
+            .Where(l => l.Uri.ToLower() == uri.ToLower());
         if (entries.Any())
         {
             context.NamespaceEntries.RemoveRange(entries);
@@ -183,7 +190,8 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
         using CadmusGraphDbContext context = GetContext();
 
         // check if any unsuffixed UID is already in use
-        if (!context.UidEntries.Any(l => l.Unsuffixed == unsuffixed))
+        if (!context.UidEntries.Any(
+            l => l.Unsuffixed.ToLower() == unsuffixed.ToLower()))
         {
             // no: just insert the unsuffixed UID
             context.UidEntries.Add(new EfUidEntry
@@ -199,7 +207,9 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
         // yes: check if a record with the same unsuffixed & SID exists.
         // If so, reuse it; otherwise, add a new suffixed UID
         EfUidEntry? entry = context.UidEntries
-            .FirstOrDefault(l => l.Unsuffixed == unsuffixed && l.Sid == sid);
+            .FirstOrDefault(l =>
+                l.Unsuffixed.ToLower() == unsuffixed.ToLower() &&
+                l.Sid.ToLower() == sid.ToLower());
 
         // found: reuse it, nothing gets inserted
         if (entry != null)
@@ -225,7 +235,7 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
     {
         // if the URI already exists, just return its ID
         EfUriEntry? entry = context.UriEntries.AsNoTracking()
-            .FirstOrDefault(l => l.Uri == uri);
+            .FirstOrDefault(l => l.Uri.ToLower() == uri.ToLower());
         if (entry != null) return entry.Id;
 
         // otherwise, add it
@@ -243,7 +253,7 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
     {
         // if the URI already exists, just return its ID
         EfUriEntry? entry = context.UriEntries.AsNoTracking()
-            .FirstOrDefault(l => l.Uri == uri);
+            .FirstOrDefault(l => l.Uri.ToLower() == uri.ToLower());
         if (entry != null)
         {
             newUri = false;
@@ -300,7 +310,7 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
 
         using CadmusGraphDbContext context = GetContext();
         EfUriEntry? entry = context.UriEntries.AsNoTracking()
-            .FirstOrDefault(l => l.Uri == uri);
+            .FirstOrDefault(l => l.Uri.ToLower() == uri.ToLower());
         return entry?.Id ?? 0;
     }
     #endregion
@@ -311,7 +321,10 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
     {
         // uid
         if (!string.IsNullOrEmpty(filter.Uid))
-            nodes = nodes.Where(n => n.UriEntry!.Uri.Contains(filter.Uid));
+        {
+            nodes = nodes.Where(n => n.UriEntry!.Uri.ToLower().Contains(
+                filter.Uid.ToLower()));
+        }
 
         // class
         if (filter.IsClass != null)
@@ -320,15 +333,17 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
         // tag
         if (filter.Tag != null)
         {
+            string? tag = filter.Tag.ToLower();
             if (filter.Tag.Length == 0) nodes = nodes.Where(n => n.Tag == null);
-            else nodes = nodes.Where(n => n.Tag == filter.Tag);
+            else nodes = nodes.Where(n => n.Tag!.ToLower() == tag);
         }
 
         // label
         if (!string.IsNullOrEmpty(filter.Label))
         {
+            string? label = filter.Label.ToLower();
             nodes = nodes.Where(
-                n => n.Label != null && n.Label.Contains(filter.Label));
+                n => n.Label != null && n.Label.ToLower().Contains(label));
         }
 
         // source type
@@ -339,9 +354,11 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
         if (!string.IsNullOrEmpty(filter.Sid))
         {
             if (filter.IsSidPrefix)
-                nodes = nodes.Where(n => n.Sid != null && n.Sid.StartsWith(filter.Sid));
-            else
-                nodes = nodes.Where(n => n.Sid == filter.Sid);
+            {
+                nodes = nodes.Where(n => n.Sid != null &&
+                    n.Sid.ToLower().StartsWith(filter.Sid.ToLower()));
+            }
+            else nodes = nodes.Where(n => n.Sid == filter.Sid);
         }
 
         // class IDs
@@ -429,7 +446,7 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
                 Array.Empty<UriNode>());
         }
 
-        nodes = nodes.OrderBy(n => n.Label).ThenBy(n => n.Id);
+        nodes = nodes.OrderBy(n => n.Label!.ToLower()).ThenBy(n => n.Id);
         List<EfNode> results = nodes.Skip(filter.GetSkipCount())
             .Take(filter.PageSize).ToList();
         return new DataPage<UriNode>(filter.PageNumber, filter.PageSize, total,
@@ -479,7 +496,7 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
         EfNode? node = context.Nodes
             .Include(n => n.UriEntry)
             .AsNoTracking()
-            .FirstOrDefault(n => n.UriEntry!.Uri == uri);
+            .FirstOrDefault(n => n.UriEntry!.Uri.ToLower() == uri.ToLower());
         return node?.ToUriNode(node.UriEntry!.Uri);
     }
 
@@ -504,7 +521,7 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
         // a
         EfNode? a = context.Nodes.Include(n => n.UriEntry)
             .AsNoTracking()
-            .FirstOrDefault(n => n.UriEntry!.Uri == "rdf:type");
+            .FirstOrDefault(n => n.UriEntry!.Uri.ToLower() == "rdf:type");
         if (a == null)
         {
             context.Nodes.Add(a = new EfNode
@@ -518,7 +535,7 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
         // sub
         EfNode? sub = context.Nodes.Include(n => n.UriEntry)
             .AsNoTracking()
-            .FirstOrDefault(n => n.UriEntry!.Uri == "rdfs:subClassOf");
+            .FirstOrDefault(n => n.UriEntry!.Uri.ToLower() == "rdfs:subclassof");
         if (sub == null)
         {
             context.Nodes.Add(sub = new EfNode
@@ -608,8 +625,9 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
         (int aId, int subId) = GetASubIds();
         foreach (UriNode node in nodes.Where(n => n.Uri != null))
         {
+            string? nodeUri = node.Uri?.ToLower();
             EfUriEntry? uri = context.UriEntries.AsNoTracking()
-                .FirstOrDefault(e => e.Uri == node.Uri);
+                .FirstOrDefault(e => e.Uri.ToLower() == nodeUri);
             if (uri == null)
             {
                 uri = new EfUriEntry
@@ -702,8 +720,9 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
                 filter.PageNumber, filter.PageSize, 0, Array.Empty<UriNode>());
         }
 
-        nodes = nodes.OrderBy(n => n.Label)
-                     .ThenBy(n => n.UriEntry!.Uri).ThenBy(n => n.Id)
+        nodes = nodes.OrderBy(n => n.Label!.ToLower())
+                     .ThenBy(n => n.UriEntry!.Uri.ToLower())
+                     .ThenBy(n => n.Id)
                      .Skip(filter.GetSkipCount()).Take(filter.PageSize);
 
         List<EfNode> results = nodes.ToList();
@@ -746,11 +765,17 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
 
         // literal type
         if (!string.IsNullOrEmpty(filter.LiteralType))
-            triples = triples.Where(t => t.LiteralType == filter.LiteralType);
+        {
+            triples = triples.Where(
+                t => t.LiteralType!.ToLower() == filter.LiteralType.ToLower());
+        }
 
         // literal language
         if (!string.IsNullOrEmpty(filter.LiteralLanguage))
-            triples = triples.Where(t => t.LiteralLanguage == filter.LiteralLanguage);
+        {
+            triples = triples.Where(t =>
+                t.LiteralLanguage!.ToLower() == filter.LiteralLanguage.ToLower());
+        }
 
         // min literal number
         if (filter.MinLiteralNumber.HasValue)
@@ -800,9 +825,15 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
         if (!string.IsNullOrEmpty(filter.Sid))
         {
             if (filter.IsSidPrefix)
-                triples = triples.Where(t => t.Sid!.StartsWith(filter.Sid));
+            {
+                triples = triples.Where(t => t.Sid!
+                    .ToLower().StartsWith(filter.Sid.ToLower()));
+            }
             else
-                triples = triples.Where(t => t.Sid == filter.Sid);
+            {
+                triples = triples.Where(
+                    t => t.Sid!.ToLower() == filter.Sid.ToLower());
+            }
         }
 
         // tag (null if empty)
@@ -811,7 +842,10 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
             if (filter.Tag.Length == 0)
                 triples = triples.Where(t => t.Tag == null);
             else
-                triples = triples.Where(t => t.Tag == filter.Tag);
+            {
+                triples = triples
+                    .Where(t => t.Tag!.ToLower() == filter.Tag.ToLower());
+            }
         }
 
         return triples;
@@ -844,8 +878,10 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
                 0, Array.Empty<UriTriple>());
         }
 
-        triples = triples.OrderBy(t => t.ObjectLiteralIx).ThenBy(t => t.Id)
-            .Skip(filter.GetSkipCount()).Take(filter.PageSize);
+        triples = triples.OrderBy(t => t.ObjectLiteralIx!.ToLower())
+            .ThenBy(t => t.Id)
+            .Skip(filter.GetSkipCount())
+            .Take(filter.PageSize);
 
         List<EfTriple> results = triples.ToList();
         return new DataPage<UriTriple>(filter.PageNumber, filter.PageSize, total,
@@ -872,14 +908,19 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
         if (!string.IsNullOrEmpty(filter.Uid))
         {
             properties = properties.Where(
-                p => p.Node!.UriEntry!.Uri.Contains(filter.Uid));
+                p => p.Node!.UriEntry!.Uri.ToLower().Contains(filter.Uid.ToLower()));
         }
 
         if (!string.IsNullOrEmpty(filter.DataType))
-            properties = properties.Where(p => p.DataType == filter.DataType);
-
+        {
+            properties = properties.Where(
+                p => p.DataType!.ToLower() == filter.DataType.ToLower());
+        }
         if (!string.IsNullOrEmpty(filter.LiteralEditor))
-            properties = properties.Where(p => p.LitEditor == filter.LiteralEditor);
+        {
+            properties = properties.Where(p =>
+                p.LitEditor!.ToLower() == filter.LiteralEditor.ToLower());
+        }
 
         // get total and return if zero
         int total = properties.Count();
@@ -889,7 +930,7 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
                 0, Array.Empty<UriProperty>());
         }
 
-        properties = properties.OrderBy(p => p.Node!.UriEntry!.Uri)
+        properties = properties.OrderBy(p => p.Node!.UriEntry!.Uri.ToLower())
             .Skip(filter.GetSkipCount()).Take(filter.PageSize);
 
         List<EfProperty> results = properties.ToList();
@@ -929,7 +970,7 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
             .Include(p => p.Node)
             .ThenInclude(n => n!.UriEntry)
             .AsNoTracking()
-            .FirstOrDefault(p => p.Node!.UriEntry!.Uri == uri);
+            .FirstOrDefault(p => p.Node!.UriEntry!.Uri.ToLower() == uri.ToLower());
         return property?.ToUriProperty();
     }
 
@@ -1014,10 +1055,16 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
             mappings = mappings.Where(m => m.SourceType == filter.SourceType);
 
         if (!string.IsNullOrEmpty(filter.Name))
-            mappings = mappings.Where(m => m.Name.Contains(filter.Name));
+        {
+            mappings = mappings.Where(m =>
+                m.Name.ToLower().Contains(filter.Name.ToLower()));
+        }
 
         if (!string.IsNullOrEmpty(filter.Facet))
-            mappings = mappings.Where(m => m.FacetFilter == filter.Facet);
+        {
+            mappings = mappings.Where(m =>
+                m.FacetFilter!.ToLower() == filter.Facet.ToLower());
+        }
 
         if (filter.Flags.HasValue)
         {
@@ -1026,10 +1073,16 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
         }
 
         if (!string.IsNullOrEmpty(filter.PartType))
-            mappings = mappings.Where(m => m.PartTypeFilter == filter.PartType);
+        {
+            mappings = mappings.Where(m =>
+                m.PartTypeFilter!.ToLower() == filter.PartType.ToLower());
+        }
 
         if (!string.IsNullOrEmpty(filter.PartRole))
-            mappings = mappings.Where(m => m.PartRoleFilter == filter.PartRole);
+        {
+            mappings = mappings.Where(m =>
+                m.PartRoleFilter!.ToLower() == filter.PartRole.ToLower());
+        }
 
         return mappings;
     }
@@ -1091,7 +1144,8 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
         if (!string.IsNullOrEmpty(filter.Facet))
         {
             mappings = mappings.Where(
-                m => m.FacetFilter == null || m.FacetFilter == filter.Facet);
+                m => m.FacetFilter == null ||
+                     m.FacetFilter.ToLower() == filter.Facet.ToLower());
         }
 
         // flags (all the flags specified must be present)
@@ -1106,14 +1160,14 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
         if (!string.IsNullOrEmpty(filter.PartType))
         {
             mappings = mappings.Where(m => m.PartTypeFilter == null ||
-                m.PartTypeFilter == filter.PartType);
+                m.PartTypeFilter.ToLower() == filter.PartType.ToLower());
         }
 
         // part role
         if (!string.IsNullOrEmpty(filter.PartRole))
         {
             mappings = mappings.Where(m => m.PartRoleFilter == null ||
-                m.PartRoleFilter == filter.PartRole);
+                m.PartRoleFilter.ToLower() == filter.PartRole.ToLower());
         }
 
         return mappings;
@@ -1134,7 +1188,8 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
             .Include(m => m.NodeOutputs)
             .Include(m => m.TripleOutputs)
             .Where(m => m.ParentId == mapping.Id)
-            .OrderBy(m => m.Name).ThenBy(m => m.Id)
+            .OrderBy(m => m.Name.ToLower())
+            .ThenBy(m => m.Id)
             .ToList();
 
         foreach (EfMapping child in mapping.Children)
@@ -1168,7 +1223,7 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
                 Array.Empty<NodeMapping>());
         }
 
-        mappings = mappings.OrderBy(m => m.Name).ThenBy(m => m.Id);
+        mappings = mappings.OrderBy(m => m.Name.ToLower()).ThenBy(m => m.Id);
 
         List<EfMapping> results = filter.PageSize > 0
             ? mappings.Skip(filter.GetSkipCount()).Take(filter.PageSize).ToList()
@@ -1340,8 +1395,8 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
                 0, Array.Empty<UriTriple>());
         }
 
-        triples = triples.OrderBy(t => t.Subject!.UriEntry!.Uri)
-            .ThenBy(t => t.Predicate!.UriEntry!.Uri)
+        triples = triples.OrderBy(t => t.Subject!.UriEntry!.Uri.ToLower())
+            .ThenBy(t => t.Predicate!.UriEntry!.Uri.ToLower())
             .ThenBy(t => t.Id)
             .Skip(filter.GetSkipCount());
 
@@ -1372,18 +1427,24 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
     private static EfTriple? FindTripleByValue(Triple triple,
         CadmusGraphDbContext context)
     {
+        string? tag = triple.Tag?.ToLower();
+
         IQueryable<EfTriple> triples = context.Triples
             .Where(t => t.SubjectId == triple.SubjectId &&
                         t.PredicateId == triple.PredicateId &&
                         t.Sid == triple.Sid &&
-                        t.Tag == triple.Tag);
+                        t.Tag!.ToLower() == tag);
+
+        string? objectLiteral = triple.ObjectLiteral?.ToLower();
+        string? literalType = triple.LiteralType?.ToLower();
+        string? literalLanguage = triple.LiteralLanguage?.ToLower();
 
         triples = triple.ObjectId > 0
             ? triples.Where(t => t.ObjectId == triple.ObjectId)
             : triples.Where(t => t.ObjectId == null &&
-                t.ObjectLiteral == triple.ObjectLiteral &&
-                t.LiteralType == triple.LiteralType &&
-                t.LiteralLanguage == triple.LiteralLanguage);
+                t.ObjectLiteral!.ToLower() == objectLiteral &&
+                t.LiteralType!.ToLower() == literalType &&
+                t.LiteralLanguage!.ToLower() == literalLanguage);
 
         return triples.FirstOrDefault();
     }
@@ -1800,7 +1861,8 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
         // SID nodes
         List<EfNode> nodes = context.Nodes.Include(n => n.UriEntry)
             .AsNoTracking()
-            .Where(n => n.Sid != null && n.Sid.StartsWith(sourceId))
+            .Where(n => n.Sid != null &&
+                        n.Sid.ToLower().StartsWith(sourceId.ToLower()))
             .ToList();
 
         // SID triples
@@ -1809,7 +1871,8 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
             .Include(t => t.Predicate)
             .Include(t => t.Object)
             .AsNoTracking()
-            .Where(t => t.Sid != null && t.Sid.StartsWith(sourceId))
+            .Where(t => t.Sid != null &&
+                        t.Sid.ToLower().StartsWith(sourceId.ToLower()))
             .ToList();
 
         return new GraphSet(
@@ -1832,11 +1895,11 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
 
         // delete all nodes whose SID is not null and starts with sourceId
         context.Nodes.RemoveRange(context.Nodes.Where(
-            n => n.Sid != null && n.Sid.StartsWith(sourceId)));
+            n => n.Sid != null && n.Sid.ToLower().StartsWith(sourceId.ToLower())));
 
         // delete all triples whose SID is not null and starts with sourceId
         context.Triples.RemoveRange(context.Triples.Where(
-            t => t.Sid != null && t.Sid.StartsWith(sourceId)));
+            t => t.Sid != null && t.Sid.ToLower().StartsWith(sourceId.ToLower())));
 
         context.SaveChanges();
     }
@@ -1869,12 +1932,13 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
                 return a.SubjectId == b.SubjectId &&
                     a.PredicateId == b.PredicateId &&
                     a.ObjectId == b.ObjectId &&
-                    a.ObjectLiteral == b.ObjectLiteral &&
-                    a.Sid == b.Sid;
+                    a.ObjectLiteral?.ToLower() == b.ObjectLiteral?.ToLower() &&
+                    a.Sid?.ToLower() == b.Sid?.ToLower();
             });
 
         // filter deleted nodes to ensure that no property/class gets deleted
-        nodeGrouper.FilterDeleted(n => !n.IsClass && n.Tag != Node.TAG_PROPERTY);
+        nodeGrouper.FilterDeleted(n => !n.IsClass &&
+                                       n.Tag?.ToLower() != Node.TAG_PROPERTY);
 
         // nodes
         List<int> nodeIds = new();

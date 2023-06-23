@@ -24,7 +24,7 @@ public sealed class EfMySqlGraphRepository : EfGraphRepository, IGraphRepository
     public static string GetSchema()
     {
         using StreamReader reader = new(typeof(EfMySqlGraphRepository).Assembly
-            .GetManifestResourceStream("Cadmus.Graph.Ef.MySql.Assets.Schema.pgsql")!,
+            .GetManifestResourceStream("Cadmus.Graph.Ef.MySql.Assets.Schema.mysql")!,
             Encoding.UTF8);
         return reader.ReadToEnd();
     }
