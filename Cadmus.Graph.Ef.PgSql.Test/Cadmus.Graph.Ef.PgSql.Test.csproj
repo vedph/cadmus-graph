@@ -6,14 +6,14 @@
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
-    <Version>2.2.18</Version>
-    <FileVersion>2.2.18</FileVersion>
-    <AssemblyVersion>2.2.18</AssemblyVersion>
+    <Version>2.2.19</Version>
+    <FileVersion>2.2.19</FileVersion>
+    <AssemblyVersion>2.2.19</AssemblyVersion>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Fusi.DbManager.PgSql" Version="3.0.3" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.6.2" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.6.3" />
     <PackageReference Include="xunit" Version="2.4.2" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.5">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

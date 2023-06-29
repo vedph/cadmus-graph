@@ -4,9 +4,9 @@
     <TargetFramework>net7.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Version>2.2.18</Version>
-    <FileVersion>2.2.18</FileVersion>
-    <AssemblyVersion>2.2.18</AssemblyVersion>
+    <Version>2.2.19</Version>
+    <FileVersion>2.2.19</FileVersion>
+    <AssemblyVersion>2.2.19</AssemblyVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,8 +20,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.7" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="7.0.7" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.8" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="7.0.8" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>

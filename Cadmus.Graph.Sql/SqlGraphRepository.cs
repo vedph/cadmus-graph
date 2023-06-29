@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -1914,8 +1915,9 @@ public abstract class SqlGraphRepository : IConfigurable<SqlOptions>
 
             trans.Commit();
         }
-        catch
+        catch (Exception ex)
         {
+            Debug.WriteLine("AddThesaurus: " + ex.ToString());
             trans.Rollback();
             throw;
         }
@@ -2120,8 +2122,9 @@ public abstract class SqlGraphRepository : IConfigurable<SqlOptions>
 
             trans.Commit();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Debug.WriteLine("DeleteGraphSet: " + ex.ToString());
             trans.Rollback();
             throw;
         }
@@ -2274,8 +2277,9 @@ public abstract class SqlGraphRepository : IConfigurable<SqlOptions>
             }
             trans.Commit();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Debug.WriteLine("UpdateGraph: " + ex.ToString());
             trans.Rollback();
             throw;
         }

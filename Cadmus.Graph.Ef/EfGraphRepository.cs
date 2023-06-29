@@ -1901,7 +1901,7 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
         context.SaveChanges();
     }
 
-    private void UpdateGraph(string? sourceId, IList<UriNode> nodes,
+    private IList<int> UpdateGraph(string? sourceId, IList<UriNode> nodes,
         IList<UriTriple> triples, CadmusGraphDbContext context)
     {
         // corner case: sourceId = null/empty:
@@ -1911,7 +1911,7 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
         if (string.IsNullOrEmpty(sourceId))
         {
             foreach (UriNode node in nodes) AddNode(node, true, false, context);
-            return;
+            return nodes.Select(n => n.Id).ToList();
         }
 
         // get old set
@@ -2020,12 +2020,7 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
             tripleGrouper.Added[i].Id = newTriple.Id;
         }
 
-        // update classes for changed nodes
-        foreach (int nodeId in nodeIds)
-        {
-            (int aId, int subId) = GetASubIds();
-            UpdateNodeClasses(nodeId, aId, subId, context);
-        }
+        return nodeIds;
     }
 
     /// <summary>
@@ -2110,18 +2105,30 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
             var tripleGroups = set.GetTriplesByGuid();
 
             // order by key so that empty (=null SID) keys come before
+            HashSet<int> nodeIds = new();
             foreach (string key in nodeGroups.Keys.OrderBy(s => s))
             {
-                UpdateGraph(key,
+                var ids = UpdateGraph(key,
                     nodeGroups[key],
                     tripleGroups.ContainsKey(key)
                         ? tripleGroups[key]
                         : Array.Empty<UriTriple>(), context);
+
+                foreach (int id in ids) nodeIds.Add(id);
             }
             trans.Commit();
+
+            // node classes
+            Debug.WriteLine("Updating node classes");
+            (int aId, int subId) = GetASubIds();
+            foreach (int nodeId in nodeIds)
+            {
+                UpdateNodeClasses(nodeId, aId, subId, context);
+            }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Debug.WriteLine("UpdateGraph: " + ex.ToString());
             trans.Rollback();
             throw;
         }

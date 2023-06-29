@@ -22,3 +22,4 @@ internal sealed class MockItemEidMetadataSource : IMetadataSource
         if (_eid != null) metadata["item-eid"] = _eid;
     }
 }
+

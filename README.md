@@ -5,6 +5,7 @@
     - [Demo](#demo)
     - [API](#api)
   - [History](#history)
+    - [2.2.19](#2219)
     - [2.2.18](#2218)
     - [2.2.17](#2217)
     - [2.2.16](#2216)
@@ -96,6 +97,12 @@ docker compose -f docker-compose-api.yml up
 ```
 
 ## History
+
+### 2.2.19
+
+- 2023-06-29:
+  - updated packages.
+  - moved update classes outside of transaction when updating graph.
 
 ### 2.2.18
 
