@@ -1624,20 +1624,20 @@ public abstract class SqlGraphRepositoryTest
             },
             Note = "An editorial note about this event."
         });
-        // setup updater (note that we discard metadata supplier for item's EID,
-        // as it's not needed for this test and it would require additional
-        // dependencies)
-        GraphUpdater updater = new(repository);
-
+        // setup updater
+        GraphUpdater updater = new(repository)
+        {
+            MetadataSupplier = new MetadataSupplier()
+                .AddMetadataSource(new MockItemEidMetadataSource(part.Id, "alpha"))
+        };
         updater.Update(item, part);
 
         // nodes
         string eventUri = $"itn:events/{part.Id}/alpha-send";
         string sid = $"{part.Id}/alpha-send";
-        // the expected work URI should end with the item's EID, but here
-        // the mapper has no access to it because for simplicity we have
-        // omitted the EID metadata supplier
-        string workUriPrefix = $"itn:works/{item.Id}/";
+        // the expected work URI ends with the item's EID (here provided by
+        // the mock supplier)
+        string workUri = $"itn:works/{item.Id}/alpha";
         Node? nodeEvent = repository.GetNodeByUri(eventUri);
         Assert.NotNull(nodeEvent);
         Assert.False(nodeEvent.IsClass);
@@ -1656,7 +1656,7 @@ public abstract class SqlGraphRepositoryTest
         Assert.Equal(2, nodeTs.SourceType);
         Assert.Equal(sid, nodeTs.Sid);
         // work node
-        Node? nodeWork = repository.GetNodeByUri(workUriPrefix);
+        Node? nodeWork = repository.GetNodeByUri(workUri);
         Assert.NotNull(nodeWork);
         Assert.False(nodeWork.IsClass);
         Assert.Equal(4, nodeWork.SourceType);
@@ -1745,6 +1745,66 @@ public abstract class SqlGraphRepositoryTest
         });
         Assert.Equal(1, page.Total);
         Assert.Equal("1250 AD", page.Items[0].ObjectLiteral);
+    }
+
+    protected void DoUpdateGraph_Work_Ok()
+    {
+        const string ITEM_ID = "125b510b-6159-4396-b61c-5a4a40488ee8";
+        const string PART_ID = "dbf5c6aa-7781-45fd-accb-5c5365e2596f";
+        Reset();
+        IGraphRepository repository = GetRepository();
+        // load mappings
+        string json = TestHelper.LoadResourceText("MappingsDoc.json");
+        JsonSerializerOptions options = new()
+        {
+            AllowTrailingCommas = true,
+            PropertyNameCaseInsensitive = true,
+        };
+        options.Converters.Add(new NodeMappingOutputJsonConverter());
+        NodeMappingDocument doc = JsonSerializer.Deserialize<NodeMappingDocument>
+            (json, options)!;
+        // save mappings into DB
+        foreach (NodeMapping mapping in doc.GetMappings())
+            repository.AddMapping(mapping);
+        // item with metadata part with EID=alpha
+        IItem item = new Item
+        {
+            Id = ITEM_ID,
+            Title = "Alpha work",
+            Description = "Alpha work description",
+            FacetId = "work",
+            SortKey = "alphawork",
+            UserId = "zeus",
+            CreatorId = "zeus"
+        };
+        MetadataPart part = new()
+        {
+            Id = PART_ID,
+            ItemId = ITEM_ID,
+            UserId = "zeus",
+            CreatorId = "zeus",
+        };
+        part.Metadata.Add(new Metadatum
+        {
+            Name = "eid",
+            Value = "alpha"
+        });
+        // setup updater
+        GraphUpdater updater = new(repository)
+        {
+            MetadataSupplier = new MetadataSupplier()
+                .AddMetadataSource(new MockItemEidMetadataSource(part.Id, "alpha"))
+        };
+
+        // update
+        updater.Update(item, part);
+
+        // work node
+        string workUri = $"itn:works/{item.Id}/alpha";
+        Node? nodeWork = repository.GetNodeByUri(workUri);
+        Assert.NotNull(nodeWork);
+        Assert.False(nodeWork.IsClass);
+        Assert.Equal(2, nodeWork.SourceType);
     }
     #endregion
 }
