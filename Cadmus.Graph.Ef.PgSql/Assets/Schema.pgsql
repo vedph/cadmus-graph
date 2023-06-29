@@ -213,6 +213,6 @@ AS $function$
         INNER JOIN triple t ON t.s_id=cn.id AND t.p_id=sub_id
         LEFT JOIN node n2 ON t.o_id=n2.id AND n2.is_class=true
     )
-    SELECT instance_id, cn.id, cn.level FROM cn);
+    SELECT instance_id, cn.id, cn.level FROM cn WHERE cn.id IS NOT NULL);
 $function$
 ;

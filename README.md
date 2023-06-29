@@ -5,6 +5,7 @@
     - [Demo](#demo)
     - [API](#api)
   - [History](#history)
+    - [2.2.20](#2220)
     - [2.2.19](#2219)
     - [2.2.18](#2218)
     - [2.2.17](#2217)
@@ -97,6 +98,10 @@ docker compose -f docker-compose-api.yml up
 ```
 
 ## History
+
+### 2.2.20
+
+- 2023-06-29: fix to populate node classes SQL function (check for null class ID).
 
 ### 2.2.19
 
