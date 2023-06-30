@@ -99,6 +99,8 @@ docker compose -f docker-compose-api.yml up
 
 ## History
 
+- 2023-06-30: fix to `EfGraphRepository.UpdateGraph` to avoid duplicate nodes.
+
 ### 2.2.20
 
 - 2023-06-29: fix to populate node classes SQL function (check for null class ID).

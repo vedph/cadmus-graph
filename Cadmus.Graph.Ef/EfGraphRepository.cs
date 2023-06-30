@@ -2037,19 +2037,17 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
         try
         {
             // ensure to save each new node's URI, thus getting its ID
-            HashSet<string> nodeUris = new();
-            foreach (UriNode node in set.Nodes)
-            {
-                nodeUris.Add(node.Uri!);
-                if (node.Id == 0) node.Id = AddUri(node.Uri!, context);
-            }
+            foreach (UriNode node in set.Nodes.Where(n => n.Id == 0))
+                node.Id = AddUri(node.Uri!, context);
 
+            // triples
             foreach (UriTriple triple in set.Triples)
             {
                 if (triple.SubjectId == 0)
                 {
-                    triple.SubjectId = AddUri(triple.SubjectUri!, context);
-                    if (!nodeUris.Contains(triple.SubjectUri!))
+                    triple.SubjectId = AddUri(triple.SubjectUri!, context,
+                        out bool newUri);
+                    if (newUri)
                     {
                         // add node implicit in triple
                         set.Nodes.Add(new UriNode
@@ -2065,8 +2063,9 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
 
                 if (triple.PredicateId == 0)
                 {
-                    triple.PredicateId = AddUri(triple.PredicateUri!, context);
-                    if (!nodeUris.Contains(triple.PredicateUri!))
+                    triple.PredicateId = AddUri(triple.PredicateUri!, context,
+                        out bool newUri);
+                    if (newUri)
                     {
                         // add node implicit in triple,
                         // but this shold not happen for predicates
@@ -2076,7 +2075,8 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
                             Uri = triple.PredicateUri,
                             Label = triple.PredicateUri,
                             Sid = triple.Sid,
-                            SourceType = Node.SOURCE_IMPLICIT
+                            SourceType = Node.SOURCE_IMPLICIT,
+                            Tag = Node.TAG_PROPERTY
                         });
                     }
                 }
@@ -2084,8 +2084,9 @@ public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions
                 if ((triple.ObjectId == null || triple.ObjectId == 0) &&
                     !string.IsNullOrEmpty(triple.ObjectUri))
                 {
-                    triple.ObjectId = AddUri(triple.ObjectUri, context);
-                    if (!nodeUris.Contains(triple.ObjectUri!))
+                    triple.ObjectId = AddUri(triple.ObjectUri, context,
+                        out bool newUri);
+                    if (newUri)
                     {
                         // add node implicit in triple
                         set.Nodes.Add(new UriNode

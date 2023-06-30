@@ -62,7 +62,7 @@
         "nodes": {
           "work": "itn:works/{$part-id}/{@value} itn:works/{@value}"
         },
-        "triples": [ "{?work} a E90_symbolic_object" ]
+        "triples": [ "{?work} a crm:E90_symbolic_object" ]
       }
     },
     {
@@ -292,7 +292,7 @@
           "event": "itn:events/{$id} itn:events/{@eid}"
         },
         "triples": [
-          "{?event} a crm:E7_Activity",
+          "{?event} a crm:E7_activity",
           "{?event} crm:P2_has_type itn:event-types/text.version",
           "{?event} crm:P67_refers_to {$work}"
         ],
