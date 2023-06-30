@@ -6,10 +6,16 @@ namespace Cadmus.Graph.Sql.Test;
 
 internal sealed class MockItemEidMetadataSource : IMetadataSource
 {
-    private readonly string? _pid;
-    private readonly string? _eid;
+    private string? _pid;
+    private string? _eid;
 
     public MockItemEidMetadataSource(string? pid, string? eid)
+    {
+        _pid = pid;
+        _eid = eid;
+    }
+
+    public void Set(string? pid, string? eid)
     {
         _pid = pid;
         _eid = eid;

@@ -60,7 +60,7 @@
       "sid": "{$part-id}/{@[0].value}",
       "output": {
         "nodes": {
-          "work": "itn:works/{$item-id}/{@value} itn:works/{@value}"
+          "work": "itn:works/{$part-id}/{@value} itn:works/{@value}"
         },
         "triples": [ "{?work} a E90_symbolic_object" ]
       }
@@ -76,7 +76,7 @@
       "output": {
         "metadata": {
           "id": "{$part-id}/{@eid}",
-          "work": "itn:works/{$item-id}/{$item-eid}"
+          "work": "itn:works/{$metadata-pid}/{$item-eid}"
         },
         "nodes": {
           "event": "itn:events/{$id} itn:events/{@eid}"
@@ -145,7 +145,7 @@
         ],
         "metadata": {
           "id": "{$part-id}/{@eid}",
-          "work": "itn:works/{$item-id}/{$item-eid}"
+          "work": "itn:works/{$metadata-pid}/{$item-eid}"
         }
       },
       "children": [
@@ -206,7 +206,7 @@
         ],
         "metadata": {
           "id": "{$part-id}/{@eid}",
-          "work": "itn:works/{$item-id}/{$item-eid}"
+          "work": "itn:works/{$metadata-pid}/{$item-eid}"
         }
       },
       "children": [
@@ -257,7 +257,7 @@
         ],
         "metadata": {
           "id": "{$part-id}/{@eid}",
-          "work": "itn:works/{$item-id}/{$item-eid}"
+          "work": "itn:works/{$metadata-pid}/{$item-eid}"
         }
       },
       "children": [
@@ -298,7 +298,7 @@
         ],
         "metadata": {
           "id": "{$part-id}/{@eid}",
-          "work": "itn:works/{$item-id}/{$item-eid}"
+          "work": "itn:works/{$metadata-pid}/{$item-eid}"
         }
       },
       "children": [

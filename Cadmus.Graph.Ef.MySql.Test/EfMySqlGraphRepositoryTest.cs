@@ -259,10 +259,13 @@ public sealed class EfMySqlGraphRepositoryTest : SqlGraphRepositoryTest
     public void FindMappings_Ok() => DoFindMappings_Ok();
 
     [Fact]
-    public void UpdateGraph_Ok() => DoUpdateGraph_Ok();
+    public void UpdateGraph_Event_Ok() => DoUpdateGraph_Event_Ok();
 
     [Fact]
     public void UpdateGraph_Work_Ok() => DoUpdateGraph_Work_Ok();
+
+    [Fact]
+    public void UpdateGraph_RelatedWork_Ok() => DoUpdateGraph_RelatedWork_Ok();
     #endregion
 
 #pragma warning restore S2699 // Tests should include assertions

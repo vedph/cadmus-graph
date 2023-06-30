@@ -1550,7 +1550,7 @@ public abstract class SqlGraphRepositoryTest
         Assert.False(results[1].HasChildren);
     }
 
-    protected void DoUpdateGraph_Ok()
+    protected void DoUpdateGraph_Event_Ok()
     {
         const string ITEM_ID = "125b510b-6159-4396-b61c-5a4a40488ee8";
         const string PART_ID = "dbf5c6aa-7781-45fd-accb-5c5365e2596f";
@@ -1637,7 +1637,7 @@ public abstract class SqlGraphRepositoryTest
         string sid = $"{part.Id}/alpha-send";
         // the expected work URI ends with the item's EID (here provided by
         // the mock supplier)
-        string workUri = $"itn:works/{item.Id}/alpha";
+        string workUri = $"itn:works/{PART_ID}/alpha";
         Node? nodeEvent = repository.GetNodeByUri(eventUri);
         Assert.NotNull(nodeEvent);
         Assert.False(nodeEvent.IsClass);
@@ -1800,8 +1800,137 @@ public abstract class SqlGraphRepositoryTest
         updater.Update(item, part);
 
         // work node
-        string workUri = $"itn:works/{item.Id}/alpha";
+        string workUri = $"itn:works/{PART_ID}/alpha";
         Node? nodeWork = repository.GetNodeByUri(workUri);
+        Assert.NotNull(nodeWork);
+        Assert.False(nodeWork.IsClass);
+        Assert.Equal(2, nodeWork.SourceType);
+    }
+
+    protected void DoUpdateGraph_RelatedWork_Ok()
+    {
+        const string ITEM_A_ID = "125b510b-6159-4396-b61c-5a4a40488ee8";
+        const string ITEM_B_ID = "14b1048a-86ab-49db-a061-ffaedfe7d98e";
+        const string PART_A_ID = "dbf5c6aa-7781-45fd-accb-5c5365e2596f";
+        const string PART_B_ID = "38e9a400-4f83-436d-9a15-037a5111932b";
+        Reset();
+        IGraphRepository repository = GetRepository();
+        // load mappings
+        string json = TestHelper.LoadResourceText("MappingsDoc.json");
+        JsonSerializerOptions options = new()
+        {
+            AllowTrailingCommas = true,
+            PropertyNameCaseInsensitive = true,
+        };
+        options.Converters.Add(new NodeMappingOutputJsonConverter());
+        NodeMappingDocument doc = JsonSerializer.Deserialize<NodeMappingDocument>
+            (json, options)!;
+        // save mappings into DB
+        foreach (NodeMapping mapping in doc.GetMappings())
+            repository.AddMapping(mapping);
+
+        // work alpha
+        IItem workA = new Item
+        {
+            Id = ITEM_A_ID,
+            Title = "Alpha work",
+            Description = "Alpha work description",
+            FacetId = "work",
+            SortKey = "alphawork",
+            UserId = "zeus",
+            CreatorId = "zeus"
+        };
+        MetadataPart partA = new()
+        {
+            Id = PART_A_ID,
+            ItemId = ITEM_A_ID,
+            UserId = "zeus",
+            CreatorId = "zeus",
+        };
+        partA.Metadata.Add(new Metadatum
+        {
+            Name = "eid",
+            Value = "alpha"
+        });
+        // create node for work alpha
+        MockItemEidMetadataSource metaSource = new(partA.Id, "alpha");
+        GraphUpdater updater = new(repository)
+        {
+            MetadataSupplier = new MetadataSupplier()
+                .AddMetadataSource(metaSource)
+        };
+        updater.Update(workA, partA);
+
+        // work beta
+        IItem workB = new Item
+        {
+            Id = ITEM_B_ID,
+            Title = "Beta work",
+            Description = "Beta work description",
+            FacetId = "work",
+            SortKey = "betawork",
+            UserId = "zeus",
+            CreatorId = "zeus"
+        };
+        MetadataPart partB = new()
+        {
+            Id = PART_B_ID,
+            ItemId = ITEM_B_ID,
+            UserId = "zeus",
+            CreatorId = "zeus",
+        };
+        partB.Metadata.Add(new Metadatum
+        {
+            Name = "eid",
+            Value = "beta"
+        });
+        // create node for work beta
+        metaSource.Set(partB.Id, "beta");
+        updater.Update(workB, partB);
+
+        // event: work alpha is previous version of work beta
+        HistoricalEventsPart eventsA = new()
+        {
+            ItemId = ITEM_A_ID,
+            UserId = "zeus",
+            CreatorId = "zeus"
+        };
+        eventsA.Events.Add(new HistoricalEvent
+        {
+            Eid = "version",
+            Type = "text.version",
+            RelatedEntities = new List<RelatedEntity>
+            {
+                new RelatedEntity
+                {
+                    Id = new AssertedCompositeId
+                    {
+                        Target = new PinTarget
+                        {
+                            ItemId = ITEM_B_ID,
+                            PartId = PART_B_ID,
+                            PartTypeId = eventsA.TypeId,
+                            Name = "eid",
+                            Value = "beta"
+                        }
+                    }
+                }
+            }
+        });
+        workA.Parts.Add(eventsA);
+        metaSource.Set(partA.Id, "alpha");
+
+        updater.Update(workA, eventsA);
+
+        // work nodes
+        string workAUri = $"itn:works/{PART_A_ID}/alpha";
+        Node? nodeWork = repository.GetNodeByUri(workAUri);
+        Assert.NotNull(nodeWork);
+        Assert.False(nodeWork.IsClass);
+        Assert.Equal(2, nodeWork.SourceType);
+
+        string workBUri = $"itn:works/{PART_B_ID}/beta";
+        nodeWork = repository.GetNodeByUri(workBUri);
         Assert.NotNull(nodeWork);
         Assert.False(nodeWork.IsClass);
         Assert.Equal(2, nodeWork.SourceType);
