@@ -14,7 +14,8 @@ namespace Cadmus.Graph.Ef;
 /// <summary>
 /// Base class for Entity-Framework-based graph repositories.
 /// </summary>
-public abstract class EfGraphRepository : IConfigurable<EfGraphRepositoryOptions>
+public abstract class EfGraphRepository : IUidBuilder,
+    IConfigurable<EfGraphRepositoryOptions>
 {
     /// <summary>
     /// Gets the connection string.

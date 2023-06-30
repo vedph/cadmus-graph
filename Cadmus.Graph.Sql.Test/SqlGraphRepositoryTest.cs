@@ -1903,6 +1903,7 @@ public abstract class SqlGraphRepositoryTest
             {
                 new RelatedEntity
                 {
+                    Relation = "text:version:previous",
                     Id = new AssertedCompositeId
                     {
                         Target = new PinTarget
@@ -1942,38 +1943,44 @@ public abstract class SqlGraphRepositoryTest
         Assert.False(nodeEvent.IsClass);
         Assert.Equal(2, nodeEvent.SourceType);
 
-        // 5 triples
+        // triples
         DataPage<UriTriple> page = repository.GetTriples(new TripleFilter());
-        Assert.Equal(5, page.Total);
+        Assert.Equal(6, page.Total);
 
         // itn:works/alpha a crm:E90_symbolic_object
         Assert.NotNull(page.Items.FirstOrDefault(t =>
             t.SubjectUri == workAUri &&
             t.PredicateUri == "rdf:type" &&
-            t.ObjectUri == "crm:E90_symbolic_object"));
+            t.ObjectUri == "crm:e90_symbolic_object"));
 
         // itn:works/beta a crm:E90_symbolic_object
         Assert.NotNull(page.Items.FirstOrDefault(t =>
             t.SubjectUri == workBUri &&
             t.PredicateUri == "rdf:type" &&
-            t.ObjectUri == "crm:E90_symbolic_object"));
+            t.ObjectUri == "crm:e90_symbolic_object"));
 
         // itn:events/version a crm:E7_activity
         Assert.NotNull(page.Items.FirstOrDefault(t =>
             t.SubjectUri == eventUri &&
             t.PredicateUri == "rdf:type" &&
-            t.ObjectUri == "crm:E7_activity"));
+            t.ObjectUri == "crm:e7_activity"));
 
         // itn:events/version crm:P2_has_type itn:event-types/text.version
         Assert.NotNull(page.Items.FirstOrDefault(t =>
             t.SubjectUri == eventUri &&
-            t.PredicateUri == "crm:P2_has_type" &&
+            t.PredicateUri == "crm:p2_has_type" &&
             t.ObjectUri == "itn:event-types/text.version"));
+
+        // itn:events/version P67_refers_to itn:works/alpha
+        Assert.NotNull(page.Items.FirstOrDefault(t =>
+            t.SubjectUri == eventUri &&
+            t.PredicateUri == "crm:p67_refers_to" &&
+            t.ObjectUri == workAUri));
 
         // itn:events/version P67_refers_to itn:works/beta
         Assert.NotNull(page.Items.FirstOrDefault(t =>
             t.SubjectUri == eventUri &&
-            t.PredicateUri == "crm:P67_refers_to" &&
+            t.PredicateUri == "crm:p67_refers_to" &&
             t.ObjectUri == workBUri));
     }
     #endregion

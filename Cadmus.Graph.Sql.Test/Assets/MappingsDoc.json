@@ -309,11 +309,11 @@
           "name": "event_chronotopes"
         },
         {
-          "name": "text collection event/related/refers_to",
+          "name": "text version event/related/refers_to",
           "source": "relatedEntities[?relation=='text:version:previous']",
           "output": {
             "nodes": {
-              "previous": "{@id}"
+              "previous": "itn:works/{@id.target.partId}/{@id.target.value} itn:works/{@id.target.value}"
             },
             "triples": [ "{?event} crm:P67_refers_to {?previous}" ]
           }
