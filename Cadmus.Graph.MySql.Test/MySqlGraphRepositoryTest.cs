@@ -72,12 +72,12 @@ public sealed class MySqlGraphRepositoryTest : SqlGraphRepositoryTest
         => DoAddUid_NoClash_AddedNoSuffix();
 
     [Fact]
-    public void AddUid_Clash_AddedWithSuffix()
-        => DoAddUid_Clash_AddedWithSuffix();
+    public void AddUid_ClashUnique_AddedWithSuffix()
+        => DoAddUid_ClashUnique_AddedWithSuffix();
 
     [Fact]
-    public void AddUid_ClashButSameSid_ReusedWithSuffix()
-        => DoAddUid_ClashButSameSid_ReusedWithSuffix();
+    public void AddUid_ClashNotUnique_ReusedWithSuffix()
+        => DoAddUid_ClashNotUnique_ReusedWithSuffix();
     #endregion
 
     #region Uri

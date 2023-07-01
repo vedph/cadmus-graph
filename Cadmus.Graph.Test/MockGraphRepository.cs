@@ -13,7 +13,14 @@ namespace Cadmus.Graph.Test;
 
 internal class MockGraphRepository : RamMappingRepository, IGraphRepository
 {
+    private readonly RamUidBuilder _uidBuilder;
+
     public IMemoryCache? Cache { get; set; }
+
+    public MockGraphRepository()
+    {
+        _uidBuilder = new RamUidBuilder();
+    }
 
     public bool CreateStore(object? payload = null)
     {
@@ -53,7 +60,7 @@ internal class MockGraphRepository : RamMappingRepository, IGraphRepository
 
     public string BuildUid(string unsuffixed, string sid)
     {
-        throw new NotImplementedException();
+        return _uidBuilder.BuildUid(unsuffixed, sid);
     }
 
     public void DeleteGraphSet(string sourceId)

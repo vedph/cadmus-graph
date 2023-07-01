@@ -37,7 +37,11 @@ public class GraphUpdater
     public GraphUpdater(IGraphRepository repository)
     {
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
-        _mapper = new JsonNodeMapper { IsMappingTracingEnabled = true };
+        _mapper = new JsonNodeMapper
+        {
+            IsMappingTracingEnabled = true,
+            UidBuilder = repository
+        };
         _itemAdapter = new ItemGraphSourceAdapter();
         _partAdapter = new PartGraphSourceAdapter();
         Metadata = new Dictionary<string, object>();

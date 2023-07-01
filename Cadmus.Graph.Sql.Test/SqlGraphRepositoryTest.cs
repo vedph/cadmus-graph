@@ -207,20 +207,22 @@ public abstract class SqlGraphRepositoryTest
         Assert.Equal("x:persons/john_doe", uid);
     }
 
-    protected void DoAddUid_Clash_AddedWithSuffix()
+    protected void DoAddUid_ClashUnique_AddedWithSuffix()
     {
         Reset();
         IGraphRepository repository = GetRepository();
         string sid = Guid.NewGuid().ToString();
-        string uid1 = repository.BuildUid("x:persons/john_doe", sid);
+        string uid1 = repository.BuildUid("x:timespans/ts##", sid);
 
-        string uid2 = repository.BuildUid("x:persons/john_doe",
+        string uid2 = repository.BuildUid("x:timespans/ts##",
             Guid.NewGuid().ToString());
 
         Assert.NotEqual(uid1, uid2);
+        Assert.Equal("x:timespans/ts", uid1);
+        Assert.Equal("x:timespans/ts#2", uid2);
     }
 
-    protected void DoAddUid_ClashButSameSid_ReusedWithSuffix()
+    protected void DoAddUid_ClashNotUnique_ReusedWithSuffix()
     {
         Reset();
         IGraphRepository repository = GetRepository();

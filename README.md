@@ -5,6 +5,7 @@
     - [Demo](#demo)
     - [API](#api)
   - [History](#history)
+    - [2.3.0](#230)
     - [2.2.20](#2220)
     - [2.2.19](#2219)
     - [2.2.18](#2218)
@@ -99,6 +100,11 @@ docker compose -f docker-compose-api.yml up
 
 ## History
 
+### 2.3.0
+
+- 2023-07-01: changed `IUidBuilder` implementations so that:
+  - SID is no more used in matching UIDs, as the same UID might be generated in the context of different SIDs (e.g. a link to an entity in another part);
+  - added convention by which a generated UID which should always be unique (by eventually receiving a numeric suffix; e.g. a timespan) should end with `##`. These `##` will then be removed or replaced with `#` plus a unique number.
 - 2023-06-30: fix to `EfGraphRepository.UpdateGraph` to avoid duplicate nodes.
 
 ### 2.2.20

@@ -132,7 +132,7 @@ public sealed class GraphUpdaterTest
         repository.UpdateGraph(set);
 
         var nodePage = repository.GetNodes(new NodeFilter());
-        Assert.Equal(22, nodePage.Total);
+        Assert.Equal(21, nodePage.Total);
 
         var triplePage = repository.GetTriples(new TripleFilter());
         Assert.Equal(9 + 7, triplePage.Total);
