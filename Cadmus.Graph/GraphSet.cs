@@ -106,8 +106,7 @@ public class GraphSet
     /// <returns>Dictionary.</returns>
     public IDictionary<string, IList<UriTriple>> GetTriplesByGuid()
     {
-        Dictionary<string, IList<UriTriple>> dct =
-            new();
+        Dictionary<string, IList<UriTriple>> dct = new();
 
         foreach (UriTriple triple in Triples)
         {

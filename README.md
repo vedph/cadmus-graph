@@ -5,6 +5,7 @@
     - [Demo](#demo)
     - [API](#api)
   - [History](#history)
+    - [2.3.1](#231)
     - [2.3.0](#230)
     - [2.2.20](#2220)
     - [2.2.19](#2219)
@@ -99,6 +100,10 @@ docker compose -f docker-compose-api.yml up
 ```
 
 ## History
+
+### 2.3.1
+
+- 2023-07-04: fixes to graph updater.
 
 ### 2.3.0
 

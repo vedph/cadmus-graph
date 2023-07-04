@@ -1875,9 +1875,9 @@ public abstract class EfGraphRepository : IUidBuilder,
 
         // SID triples
         List<EfTriple> triples = context.Triples
-            .Include(t => t.Subject)
-            .Include(t => t.Predicate)
-            .Include(t => t.Object)
+            .Include(t => t.Subject).ThenInclude(n => n!.UriEntry)
+            .Include(t => t.Predicate).ThenInclude(n => n!.UriEntry)
+            .Include(t => t.Object).ThenInclude(n => n!.UriEntry)
             .AsNoTracking()
             .Where(t => t.Sid != null &&
                         t.Sid.ToLower().StartsWith(sourceId.ToLower()))
@@ -1945,8 +1945,12 @@ public abstract class EfGraphRepository : IUidBuilder,
             });
 
         // filter deleted nodes to ensure that no property/class gets deleted
-        nodeGrouper.FilterDeleted(n => !n.IsClass &&
-                                       n.Tag?.ToLower() != Node.TAG_PROPERTY);
+        nodeGrouper.FilterDeleted(n =>
+            !n.IsClass &&
+            n.Tag?.ToLower() != Node.TAG_PROPERTY &&
+            triples.All(t => t.SubjectId != n.Id &&
+                             t.PredicateId != n.Id &&
+                             t.ObjectId != n.Id));
 
         // nodes
         List<int> nodeIds = new();

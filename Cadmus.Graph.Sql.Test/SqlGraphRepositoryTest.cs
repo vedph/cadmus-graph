@@ -2150,7 +2150,6 @@ public abstract class SqlGraphRepositoryTest
 
         updater.Update(workA, eventsA);
 
-        // TODO
         // work nodes
         string workAUri = $"itn:works/{PART_A_ID}/alpha";
         Node? nodeWork = repository.GetNodeByUri(workAUri);
@@ -2179,7 +2178,7 @@ public abstract class SqlGraphRepositoryTest
 
         // triples
         DataPage<UriTriple> page = repository.GetTriples(new TripleFilter());
-        Assert.Equal(6, page.Total);
+        Assert.Equal(8, page.Total);
 
         // itn:works/alpha a crm:E90_symbolic_object
         Assert.NotNull(page.Items.FirstOrDefault(t =>
@@ -2190,6 +2189,12 @@ public abstract class SqlGraphRepositoryTest
         // itn:works/beta a crm:E90_symbolic_object
         Assert.NotNull(page.Items.FirstOrDefault(t =>
             t.SubjectUri == workBUri &&
+            t.PredicateUri == "rdf:type" &&
+            t.ObjectUri == "crm:e90_symbolic_object"));
+
+        // itn:works/gamma a crm:E90_symbolic_object
+        Assert.NotNull(page.Items.FirstOrDefault(t =>
+            t.SubjectUri == workGUri &&
             t.PredicateUri == "rdf:type" &&
             t.ObjectUri == "crm:e90_symbolic_object"));
 
@@ -2216,6 +2221,12 @@ public abstract class SqlGraphRepositoryTest
             t.SubjectUri == eventUri &&
             t.PredicateUri == "crm:p67_refers_to" &&
             t.ObjectUri == workBUri));
+
+        // itn:events/version P67_refers_to itn:works/gamma
+        Assert.NotNull(page.Items.FirstOrDefault(t =>
+            t.SubjectUri == eventUri &&
+            t.PredicateUri == "crm:p67_refers_to" &&
+            t.ObjectUri == workGUri));
     }
     #endregion
 }

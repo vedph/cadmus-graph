@@ -267,6 +267,10 @@ public sealed class MySqlGraphRepositoryTest : SqlGraphRepositoryTest
 
     [Fact]
     public void UpdateGraph_RelatedWork_Ok() => DoUpdateGraph_RelatedWork_Ok();
+
+    [Fact]
+    public void UpdateGraph_RelatedWorkUpdate_Ok()
+        => DoUpdateGraph_RelatedWorkUpdate_Ok();
     #endregion
 
 #pragma warning restore S2699 // Tests should include assertions
