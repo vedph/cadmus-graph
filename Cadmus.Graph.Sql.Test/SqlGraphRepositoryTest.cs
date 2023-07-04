@@ -1985,5 +1985,237 @@ public abstract class SqlGraphRepositoryTest
             t.PredicateUri == "crm:p67_refers_to" &&
             t.ObjectUri == workBUri));
     }
+
+    protected void DoUpdateGraph_RelatedWorkUpdate_Ok()
+    {
+        const string ITEM_A_ID = "125b510b-6159-4396-b61c-5a4a40488ee8";
+        const string ITEM_B_ID = "14b1048a-86ab-49db-a061-ffaedfe7d98e";
+        const string ITEM_G_ID = "14a31d6e-ea2b-4392-9d18-c45bbbfbe4c0";
+        const string PART_A_ID = "dbf5c6aa-7781-45fd-accb-5c5365e2596f";
+        const string PART_B_ID = "38e9a400-4f83-436d-9a15-037a5111932b";
+        const string PART_G_ID = "b9b274cc-7bba-42d3-960c-cb442c625d80";
+        Reset();
+        IGraphRepository repository = GetRepository();
+        // load mappings
+        string json = TestHelper.LoadResourceText("MappingsDoc.json");
+        JsonSerializerOptions options = new()
+        {
+            AllowTrailingCommas = true,
+            PropertyNameCaseInsensitive = true,
+        };
+        options.Converters.Add(new NodeMappingOutputJsonConverter());
+        NodeMappingDocument doc = JsonSerializer.Deserialize<NodeMappingDocument>
+            (json, options)!;
+        // save mappings into DB
+        foreach (NodeMapping mapping in doc.GetMappings())
+            repository.AddMapping(mapping);
+
+        // work alpha
+        IItem workA = new Item
+        {
+            Id = ITEM_A_ID,
+            Title = "Alpha work",
+            Description = "Alpha work description",
+            FacetId = "work",
+            SortKey = "alphawork",
+            UserId = "zeus",
+            CreatorId = "zeus"
+        };
+        MetadataPart partA = new()
+        {
+            Id = PART_A_ID,
+            ItemId = ITEM_A_ID,
+            UserId = "zeus",
+            CreatorId = "zeus",
+        };
+        partA.Metadata.Add(new Metadatum
+        {
+            Name = "eid",
+            Value = "alpha"
+        });
+        // create node for work alpha
+        MockItemEidMetadataSource metaSource = new(partA.Id, "alpha");
+        GraphUpdater updater = new(repository)
+        {
+            MetadataSupplier = new MetadataSupplier()
+                .AddMetadataSource(metaSource)
+        };
+        updater.Update(workA, partA);
+
+        // work beta
+        IItem workB = new Item
+        {
+            Id = ITEM_B_ID,
+            Title = "Beta work",
+            Description = "Beta work description",
+            FacetId = "work",
+            SortKey = "betawork",
+            UserId = "zeus",
+            CreatorId = "zeus"
+        };
+        MetadataPart partB = new()
+        {
+            Id = PART_B_ID,
+            ItemId = ITEM_B_ID,
+            UserId = "zeus",
+            CreatorId = "zeus",
+        };
+        partB.Metadata.Add(new Metadatum
+        {
+            Name = "eid",
+            Value = "beta"
+        });
+        // create node for work beta
+        metaSource.Set(partB.Id, "beta");
+        updater.Update(workB, partB);
+
+        // work gamma
+        IItem workG = new Item
+        {
+            Id = ITEM_G_ID,
+            Title = "Gamma work",
+            Description = "Gamma work description",
+            FacetId = "work",
+            SortKey = "gammawork",
+            UserId = "zeus",
+            CreatorId = "zeus"
+        };
+        MetadataPart partG = new()
+        {
+            Id = PART_G_ID,
+            ItemId = ITEM_G_ID,
+            UserId = "zeus",
+            CreatorId = "zeus",
+        };
+        partG.Metadata.Add(new Metadatum
+        {
+            Name = "eid",
+            Value = "gamma"
+        });
+        // create node for work gamma
+        metaSource.Set(partG.Id, "gamma");
+        updater.Update(workG, partG);
+
+        // event: work alpha is previous version of work beta
+        HistoricalEventsPart eventsA = new()
+        {
+            ItemId = ITEM_A_ID,
+            UserId = "zeus",
+            CreatorId = "zeus"
+        };
+        eventsA.Events.Add(new HistoricalEvent
+        {
+            Eid = "version",
+            Type = "text.version",
+            RelatedEntities = new List<RelatedEntity>
+            {
+                new RelatedEntity
+                {
+                    Relation = "text:version:previous",
+                    Id = new AssertedCompositeId
+                    {
+                        Target = new PinTarget
+                        {
+                            ItemId = ITEM_B_ID,
+                            PartId = PART_B_ID,
+                            PartTypeId = partB.TypeId,
+                            Name = "eid",
+                            Value = "beta"
+                        }
+                    }
+                }
+            }
+        });
+        workA.Parts.Add(eventsA);
+        metaSource.Set(partA.Id, "alpha");
+        updater.Update(workA, eventsA);
+
+        // update the event adding another related entity:
+        // work alpha is previous version of work gamma
+        eventsA.Events[0].RelatedEntities.Add(new RelatedEntity
+        {
+            Relation = "text:version:previous",
+            Id = new AssertedCompositeId
+            {
+                Target = new PinTarget
+                {
+                    ItemId = ITEM_G_ID,
+                    PartId = PART_G_ID,
+                    PartTypeId = partG.TypeId,
+                    Name = "eid",
+                    Value = "gamma"
+                }
+            }
+        });
+
+        updater.Update(workA, eventsA);
+
+        // TODO
+        // work nodes
+        string workAUri = $"itn:works/{PART_A_ID}/alpha";
+        Node? nodeWork = repository.GetNodeByUri(workAUri);
+        Assert.NotNull(nodeWork);
+        Assert.False(nodeWork.IsClass);
+        Assert.Equal(2, nodeWork.SourceType);
+
+        string workBUri = $"itn:works/{PART_B_ID}/beta";
+        nodeWork = repository.GetNodeByUri(workBUri);
+        Assert.NotNull(nodeWork);
+        Assert.False(nodeWork.IsClass);
+        Assert.Equal(2, nodeWork.SourceType);
+
+        string workGUri = $"itn:works/{PART_G_ID}/gamma";
+        nodeWork = repository.GetNodeByUri(workGUri);
+        Assert.NotNull(nodeWork);
+        Assert.False(nodeWork.IsClass);
+        Assert.Equal(2, nodeWork.SourceType);
+
+        // event node
+        string eventUri = $"itn:events/{eventsA.Id}/version";
+        Node? nodeEvent = repository.GetNodeByUri(eventUri);
+        Assert.NotNull(nodeEvent);
+        Assert.False(nodeEvent.IsClass);
+        Assert.Equal(2, nodeEvent.SourceType);
+
+        // triples
+        DataPage<UriTriple> page = repository.GetTriples(new TripleFilter());
+        Assert.Equal(6, page.Total);
+
+        // itn:works/alpha a crm:E90_symbolic_object
+        Assert.NotNull(page.Items.FirstOrDefault(t =>
+            t.SubjectUri == workAUri &&
+            t.PredicateUri == "rdf:type" &&
+            t.ObjectUri == "crm:e90_symbolic_object"));
+
+        // itn:works/beta a crm:E90_symbolic_object
+        Assert.NotNull(page.Items.FirstOrDefault(t =>
+            t.SubjectUri == workBUri &&
+            t.PredicateUri == "rdf:type" &&
+            t.ObjectUri == "crm:e90_symbolic_object"));
+
+        // itn:events/version a crm:E7_activity
+        Assert.NotNull(page.Items.FirstOrDefault(t =>
+            t.SubjectUri == eventUri &&
+            t.PredicateUri == "rdf:type" &&
+            t.ObjectUri == "crm:e7_activity"));
+
+        // itn:events/version crm:P2_has_type itn:event-types/text.version
+        Assert.NotNull(page.Items.FirstOrDefault(t =>
+            t.SubjectUri == eventUri &&
+            t.PredicateUri == "crm:p2_has_type" &&
+            t.ObjectUri == "itn:event-types/text.version"));
+
+        // itn:events/version P67_refers_to itn:works/alpha
+        Assert.NotNull(page.Items.FirstOrDefault(t =>
+            t.SubjectUri == eventUri &&
+            t.PredicateUri == "crm:p67_refers_to" &&
+            t.ObjectUri == workAUri));
+
+        // itn:events/version P67_refers_to itn:works/beta
+        Assert.NotNull(page.Items.FirstOrDefault(t =>
+            t.SubjectUri == eventUri &&
+            t.PredicateUri == "crm:p67_refers_to" &&
+            t.ObjectUri == workBUri));
+    }
     #endregion
 }
