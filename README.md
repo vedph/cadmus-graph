@@ -5,6 +5,7 @@
     - [Demo](#demo)
     - [API](#api)
   - [History](#history)
+    - [2.3.2](#232)
     - [2.3.1](#231)
     - [2.3.0](#230)
     - [2.2.20](#2220)
@@ -100,6 +101,10 @@ docker compose -f docker-compose-api.yml up
 ```
 
 ## History
+
+### 2.3.2
+
+- 2023-07-09: added builtin `_substring` macro.
 
 ### 2.3.1
 

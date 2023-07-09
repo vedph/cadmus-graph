@@ -53,7 +53,8 @@ public abstract class NodeMapper : DataDictionary
     /// <summary>
     /// Gets or sets a value indicating whether applied mappings tracing is
     /// enabled. This property is used by implementors to trace the list of
-    /// applied mappings in the metadata, under key <see cref="APPLIED_MAPPING_LIST"/>.
+    /// applied mappings in the metadata, under key
+    /// <see cref="APPLIED_MAPPING_LIST"/>.
     /// </summary>
     public bool IsMappingTracingEnabled { get; set; }
 
@@ -76,6 +77,7 @@ public abstract class NodeMapper : DataDictionary
 
         // builtin macros
         _macros["_hdate"] = new HistoricalDateMacro();
+        _macros["_substring"] = new SubstringMacro();
     }
 
     public void SetMacros(IDictionary<string, INodeMappingMacro>? macros)
