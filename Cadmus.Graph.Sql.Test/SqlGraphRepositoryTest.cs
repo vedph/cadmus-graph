@@ -329,7 +329,7 @@ public abstract class SqlGraphRepositoryTest
         });
 
         Assert.Equal(1, page.Total);
-        Assert.Equal(1, page.Items.Count);
+        Assert.Single(page.Items);
         Assert.Equal("Node 05", page.Items[0].Label);
     }
 
@@ -361,7 +361,7 @@ public abstract class SqlGraphRepositoryTest
         });
 
         Assert.Equal(1, page.Total);
-        Assert.Equal(1, page.Items.Count);
+        Assert.Single(page.Items);
         Assert.Equal("Node 01", page.Items[0].Label);
     }
 
@@ -377,7 +377,7 @@ public abstract class SqlGraphRepositoryTest
         });
 
         Assert.Equal(1, page.Total);
-        Assert.Equal(1, page.Items.Count);
+        Assert.Single(page.Items);
         Assert.Equal("Node 01", page.Items[0].Label);
     }
 
@@ -466,7 +466,7 @@ public abstract class SqlGraphRepositoryTest
         });
 
         Assert.Equal(1, page.Total);
-        Assert.Equal(1, page.Items.Count);
+        Assert.Single(page.Items);
         Assert.Equal("Argos", page.Items[0].Label);
     }
 
@@ -509,7 +509,7 @@ public abstract class SqlGraphRepositoryTest
         });
 
         Assert.Equal(1, page.Total);
-        Assert.Equal(1, page.Items.Count);
+        Assert.Single(page.Items);
         Assert.Equal("Argos", page.Items[0].Label);
     }
 
@@ -700,7 +700,7 @@ public abstract class SqlGraphRepositoryTest
         });
 
         Assert.Equal(1, page.Total);
-        Assert.Equal(1, page.Items.Count);
+        Assert.Single(page.Items);
     }
 
     protected void DoGetProperties_ByDataType_Ok()
@@ -715,7 +715,7 @@ public abstract class SqlGraphRepositoryTest
         });
 
         Assert.Equal(1, page.Total);
-        Assert.Equal(1, page.Items.Count);
+        Assert.Single(page.Items);
     }
 
     protected void DoGetProperties_ByLiteralEditor_Ok()
@@ -730,7 +730,7 @@ public abstract class SqlGraphRepositoryTest
         });
 
         Assert.Equal(1, page.Total);
-        Assert.Equal(1, page.Items.Count);
+        Assert.Single(page.Items);
     }
 
     protected void DoGetProperty_NotExisting_Null()
@@ -995,7 +995,7 @@ public abstract class SqlGraphRepositoryTest
         });
 
         Assert.Equal(1, page.Total);
-        Assert.Equal(1, page.Items.Count);
+        Assert.Single(page.Items);
     }
 
     protected void DoGetTriples_BySidPrefix_Ok()
@@ -1438,6 +1438,48 @@ public abstract class SqlGraphRepositoryTest
 
         NodeMapping? mapping2 = repository.GetMapping(mapping.Id);
         Assert.NotNull (mapping2);
+        Assert.Equal(mapping.SourceType, mapping2!.SourceType);
+        Assert.Equal(mapping.Name, mapping2!.Name);
+        Assert.Equal(mapping.FacetFilter, mapping2.FacetFilter);
+        Assert.Equal(mapping.Description, mapping2.Description);
+    }
+
+    protected void DoAddMappingByName_NotExisting_Ok()
+    {
+        Reset();
+        IGraphRepository repository = GetRepository();
+
+        // item mapping
+        NodeMapping mapping = GetMappings(1)[0];
+        repository.AddMappingByName(mapping);
+
+        Assert.True(mapping.Id > 0);
+        NodeMapping? mapping2 = repository.GetMapping(mapping.Id);
+        Assert.NotNull(mapping2);
+        AssertMappingsEqual(mapping, mapping2!, true, true);
+    }
+
+    protected void DoAddMappingByName_Existing_Ok()
+    {
+        Reset();
+        IGraphRepository repository = GetRepository();
+
+        // item mapping
+        NodeMapping mapping = new()
+        {
+            FacetFilter = "person",
+            Name = "Item",
+            Description = "Description"
+        };
+        repository.AddMappingByName(mapping);
+
+        // update
+        mapping.Id = 0;
+        mapping.Description = "Updated!";
+        repository.AddMappingByName(mapping);
+
+        NodeMapping? mapping2 = repository.GetMapping(mapping.Id);
+        Assert.NotNull(mapping2);
         Assert.Equal(mapping.SourceType, mapping2!.SourceType);
         Assert.Equal(mapping.Name, mapping2!.Name);
         Assert.Equal(mapping.FacetFilter, mapping2.FacetFilter);

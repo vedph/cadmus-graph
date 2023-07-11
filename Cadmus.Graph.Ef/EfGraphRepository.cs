@@ -1293,6 +1293,37 @@ public abstract class EfGraphRepository : IUidBuilder,
     }
 
     /// <summary>
+    /// Adds the mapping by name. If a mapping with the same name already
+    /// exists, it will be updated. Names are not case sensitive.
+    /// </summary>
+    /// <param name="mapping">The mapping.</param>
+    /// <returns>The ID of the mapping.</returns>
+    /// <exception cref="ArgumentNullException">mapping</exception>
+    /// <exception cref="InvalidOperationException">Adding mappings by name
+    /// requires ID=0</exception>
+    public int AddMappingByName(NodeMapping mapping)
+    {
+        if (mapping is null) throw new ArgumentNullException(nameof(mapping));
+        if (mapping.Id != 0)
+            throw new InvalidOperationException("Adding mappings by name requires ID=0");
+
+        using CadmusGraphDbContext context = GetContext();
+
+        // replace mapping if existing
+        EfMapping? old = context.Mappings
+            .FirstOrDefault(m => m.Name.ToLower() == mapping.Name!.ToLower());
+        if (old != null) context.Remove(old);
+
+        // add new mapping with its children
+        EfMapping newMapping = new(mapping);
+        context.Mappings.Add(newMapping);
+
+        context.SaveChanges();
+        mapping.Id = newMapping.Id;
+        return newMapping.Id;
+    }
+
+    /// <summary>
     /// Deletes the specified node mapping.
     /// </summary>
     /// <param name="id">The mapping identifier.</param>

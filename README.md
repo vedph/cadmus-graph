@@ -5,6 +5,7 @@
     - [Demo](#demo)
     - [API](#api)
   - [History](#history)
+    - [2.3.3](#233)
     - [2.3.2](#232)
     - [2.3.1](#231)
     - [2.3.0](#230)
@@ -101,6 +102,10 @@ docker compose -f docker-compose-api.yml up
 ```
 
 ## History
+
+### 2.3.3
+
+- 2023-07-11: added `AddMappingByName` to mappings repository.
 
 ### 2.3.2
 

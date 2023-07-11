@@ -248,6 +248,12 @@ public sealed class MySqlGraphRepositoryTest : SqlGraphRepositoryTest
     public void AddMapping_Existing_Ok() => DoAddMapping_Existing_Ok();
 
     [Fact]
+    public void AddMappingByName_NotExisting_Ok() => DoAddMappingByName_NotExisting_Ok();
+
+    [Fact]
+    public void AddMappingByName_Existing_Ok() => DoAddMappingByName_Existing_Ok();
+
+    [Fact]
     public void DeleteMapping_NotExisting_Nope() => DoDeleteMapping_NotExisting_Nope();
 
     [Fact]

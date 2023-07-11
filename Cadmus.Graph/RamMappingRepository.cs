@@ -156,6 +156,33 @@ public class RamMappingRepository : IMappingRepository
     }
 
     /// <summary>
+    /// Adds the mapping by name. If a mapping with the same name already
+    /// exists, it will be updated. Names are not case sensitive.
+    /// </summary>
+    /// <param name="mapping">The mapping.</param>
+    /// <returns>
+    /// The ID of the mapping.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">mapping</exception>
+    /// <exception cref="InvalidOperationException">Adding mappings by name
+    /// requires ID=0</exception>
+    public int AddMappingByName(NodeMapping mapping)
+    {
+        if (mapping is null) throw new ArgumentNullException(nameof(mapping));
+        if (mapping.Id != 0)
+            throw new InvalidOperationException("Adding mappings by name requires ID=0");
+
+        NodeMapping? old = Mappings.Find(m => m.Name?.Equals(mapping.Name,
+            StringComparison.OrdinalIgnoreCase) == true);
+
+        if (old != null) Mappings.Remove(old);
+        else mapping.Id = GetNextId();
+
+        Mappings.Add(mapping);
+        return mapping.Id;
+    }
+
+    /// <summary>
     /// Imports mappings from the specified JSON code representing a mappings
     /// document.
     /// </summary>

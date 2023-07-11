@@ -1230,6 +1230,64 @@ public abstract class SqlGraphRepository : IConfigurable<SqlOptions>
         return mapping.Id;
     }
 
+    public int AddMappingByName(NodeMapping mapping)
+    {
+        if (mapping == null) throw new ArgumentNullException(nameof(mapping));
+        if (mapping.Id != 0)
+            throw new InvalidOperationException("Adding mappings by name requires ID=0");
+
+        using QueryFactory qf = GetQueryFactory();
+
+        // insert or update the mapping
+        var newMapping = new
+        {
+            id = mapping.Id,
+            parent_id = mapping.ParentId == 0
+                    ? null : (int?)mapping.ParentId,
+            ordinal = mapping.Ordinal,
+            name = mapping.Name,
+            source_type = mapping.SourceType,
+            facet_filter = mapping.FacetFilter,
+            group_filter = mapping.GroupFilter,
+            flags_filter = mapping.FlagsFilter,
+            title_filter = mapping.TitleFilter,
+            part_type_filter = mapping.PartTypeFilter,
+            part_role_filter = mapping.PartRoleFilter,
+            description = mapping.Description,
+            source = mapping.Source,
+            sid = mapping.Sid
+        };
+
+        if (qf.Query("mapping").Where("name", mapping.Name).Exists())
+        {
+            qf.Query("mapping").Where("name", mapping.Id)
+              .Update(newMapping);
+            DeleteMappingOutput(mapping.Id, qf);
+        }
+        else
+        {
+            mapping.Id = qf.Query("mapping")
+                           .InsertGetId<int>(newMapping);
+            if (mapping.HasChildren)
+            {
+                foreach (NodeMapping child in mapping.Children)
+                    child.ParentId = mapping.Id;
+            }
+        }
+
+        // add its output
+        if (mapping.Output != null) AddMappingOutput(mapping, qf);
+
+        // add its children
+        if (mapping.HasChildren)
+        {
+            foreach (NodeMapping child in mapping.Children)
+                AddMapping(child, qf);
+        }
+
+        return mapping.Id;
+    }
+
     /// <summary>
     /// Deletes the specified node mapping.
     /// </summary>

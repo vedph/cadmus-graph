@@ -101,6 +101,8 @@ CREATE TABLE "mapping" (
 	CONSTRAINT mapping_pk PRIMARY KEY (id),
 	CONSTRAINT mapping_fk FOREIGN KEY (parent_id) REFERENCES "mapping"(id) ON DELETE CASCADE ON UPDATE CASCADE
 );
+CREATE INDEX mapping_facet_filter_idx ON public.mapping USING btree (facet_filter);
+CREATE INDEX mapping_name_idx ON public.mapping USING btree (name);
 
 -- mapping_out_node
 CREATE TABLE mapping_out_node (

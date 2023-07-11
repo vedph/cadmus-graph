@@ -114,7 +114,7 @@ public sealed class JsonNodeMapperTest
 
         mapper.Map(json, mapping, set);
 
-        Assert.Equal(1, set.Nodes.Count);
-        Assert.Equal(1, set.Triples.Count);
+        Assert.Single(set.Nodes);
+        Assert.Single(set.Triples);
     }
 }

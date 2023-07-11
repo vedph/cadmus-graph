@@ -31,6 +31,14 @@ public interface IMappingRepository
     int AddMapping(NodeMapping mapping);
 
     /// <summary>
+    /// Adds the mapping by name. If a mapping with the same name already
+    /// exists, it will be updated. Names are not case sensitive.
+    /// </summary>
+    /// <param name="mapping">The mapping.</param>
+    /// <returns>The ID of the mapping.</returns>
+    int AddMappingByName(NodeMapping mapping);
+
+    /// <summary>
     /// Deletes the mapping with the specified ID.
     /// </summary>
     /// <param name="id">The identifier.</param>
