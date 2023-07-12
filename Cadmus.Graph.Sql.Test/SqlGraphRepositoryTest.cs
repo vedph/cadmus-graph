@@ -2270,5 +2270,180 @@ public abstract class SqlGraphRepositoryTest
             t.PredicateUri == "crm:p67_refers_to" &&
             t.ObjectUri == workGUri));
     }
+
+    protected void DoUpdateGraph_Delete_Ok()
+    {
+        const string PERSON_ITEM_ID = "125b510b-6159-4396-b61c-5a4a40488ee8";
+        const string PERSON_METADATA_ID = "d16a0f72-6ab7-4ab9-8220-4c05a07c3e10";
+
+        const string WORK_ITEM_ID = "c1155e4d-45ed-4595-aee8-a11a8af2ad46";
+        const string WORK_METADATA_ID = "2add838c-1b4e-4596-a939-8f3737355ab7";
+        const string WORK_INFO_ID = "6caf3210-81b8-4cfd-a326-d42e28f60752";
+
+        Reset();
+        IGraphRepository repository = GetRepository();
+        // load mappings
+        string json = TestHelper.LoadResourceText("MappingsDoc.json");
+        JsonSerializerOptions options = new()
+        {
+            AllowTrailingCommas = true,
+            PropertyNameCaseInsensitive = true,
+        };
+        options.Converters.Add(new NodeMappingOutputJsonConverter());
+        NodeMappingDocument doc = JsonSerializer.Deserialize<NodeMappingDocument>
+            (json, options)!;
+        // save mappings into DB
+        foreach (NodeMapping mapping in doc.GetMappings())
+            repository.AddMapping(mapping);
+
+        // person (Petrarch)
+        IItem person = new Item
+        {
+            Id = PERSON_ITEM_ID,
+            Title = "Petrarch",
+            Description = "Petrarch description",
+            FacetId = "person",
+            SortKey = "petrarch",
+            UserId = "zeus",
+            CreatorId = "zeus"
+        };
+        // person metadata
+        MetadataPart personMetadata = new()
+        {
+            Id = PERSON_METADATA_ID,
+            ItemId = PERSON_ITEM_ID,
+            UserId = "zeus",
+            CreatorId = "zeus",
+        };
+        personMetadata.Metadata.Add(new Metadatum
+        {
+            Name = "eid",
+            Value = "petrarch"
+        });
+
+        // work (alpha)
+        IItem work = new Item
+        {
+            Id = WORK_ITEM_ID,
+            Title = "Alpha work",
+            Description = "Alpha work description",
+            FacetId = "work",
+            SortKey = "alpha",
+            UserId = "zeus",
+            CreatorId = "zeus"
+        };
+        // work metadata
+        MetadataPart workMetadata = new()
+        {
+            Id = WORK_METADATA_ID,
+            ItemId = WORK_ITEM_ID,
+            UserId = "zeus",
+            CreatorId = "zeus",
+        };
+        workMetadata.Metadata.Add(new Metadatum
+        {
+            Name = "eid",
+            Value = "alpha"
+        });
+        // work info
+        LiteraryWorkInfoPart workInfo = new()
+        {
+            Id = WORK_INFO_ID,
+            ItemId = WORK_ITEM_ID,
+            UserId = "zeus",
+            CreatorId = "zeus",
+            AuthorIds = new List<AssertedCompositeId>
+            {
+                new AssertedCompositeId
+                {
+                    Target = new PinTarget
+                    {
+                        ItemId = PERSON_ITEM_ID,
+                        PartId = PERSON_METADATA_ID,
+                        Label = "Petrarch",
+                        Name = "eid",
+                        Value = "petrarch"
+                    }
+                }
+            },
+            Genre = "epic",
+            Languages = new List<string> { "it" },
+            Titles = new List<AssertedTitle>
+            {
+                new AssertedTitle
+                {
+                    Language = "it",
+                    Value = "L'alfa"
+                }
+            }
+        };
+
+        // create node for author
+        MockItemEidMetadataSource metaSource = new(personMetadata.Id, "petrarch");
+        GraphUpdater updater = new(repository)
+        {
+            MetadataSupplier = new MetadataSupplier()
+                .AddMetadataSource(metaSource)
+        };
+        updater.Update(person, personMetadata);
+
+        // create node for work
+        metaSource.Set(workMetadata.Id, "alpha");
+        updater.Update(work, workMetadata);
+
+        // add work info
+        updater.Update(work, workInfo);
+
+        // person nodes
+        string personUri = $"itn:persons/{PERSON_METADATA_ID}/petrarch";
+        Node? nodePerson = repository.GetNodeByUri(personUri);
+        Assert.NotNull(nodePerson);
+        Assert.False(nodePerson.IsClass);
+        Assert.Equal(2, nodePerson.SourceType);
+
+        // work nodes
+        string workUri = $"itn:works/{WORK_METADATA_ID}/alpha";
+        Node? nodeWork = repository.GetNodeByUri(workUri);
+        Assert.NotNull(nodeWork);
+        Assert.False(nodeWork.IsClass);
+        Assert.Equal(2, nodeWork.SourceType);
+
+        // triples
+        DataPage<UriTriple> page = repository.GetTriples(new TripleFilter());
+        Assert.Equal(12, page.Total);
+
+        // itn:works/alpha a crm:E90_symbolic_object
+        Assert.NotNull(page.Items.FirstOrDefault(t =>
+            t.SubjectUri == workUri &&
+            t.PredicateUri == "rdf:type" &&
+            t.ObjectUri == "crm:e90_symbolic_object"));
+
+        // itn:persons/petrarch a crm:E21_person
+        Assert.NotNull(page.Items.FirstOrDefault(t =>
+            t.SubjectUri == personUri &&
+            t.PredicateUri == "rdf:type" &&
+            t.ObjectUri == "crm:e21_person"));
+
+        // delete info
+        repository.DeleteGraphSet(workInfo.Id);
+
+        // work info triples were deleted
+        page = repository.GetTriples(new TripleFilter());
+        Assert.Equal(2, page.Total);
+
+        // work info nodes were deleted
+        // (we filter by null tag because some properties get added by mappings)
+        Assert.Equal(2, repository.GetNodes(new NodeFilter
+            { Sid = PERSON_METADATA_ID + "/petrarch", Tag = "" }).Total);
+        Assert.Equal(2, repository.GetNodes(new NodeFilter
+            { Sid = WORK_METADATA_ID + "/alpha", Tag = "" }).Total);
+        Assert.Equal(0, repository.GetNodes(new NodeFilter
+            { Sid = WORK_INFO_ID, Tag = "" }).Total);
+
+        // add work info back
+        updater.Update(work, workInfo);
+
+        // TODO
+    }
     #endregion
 }
