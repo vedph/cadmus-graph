@@ -1993,7 +1993,7 @@ public abstract class EfGraphRepository : IUidBuilder,
         foreach (UriNode node in nodeGrouper.Added)
         {
             nodeIds.Add(node.Id);
-            node.Id = AddUri(node.Uri!, context);
+            if (node.Id == 0) node.Id = AddUri(node.Uri!, context);
             AddNode(node, true, false, context);
         }
         foreach (UriNode node in nodeGrouper.Updated)
@@ -2012,6 +2012,7 @@ public abstract class EfGraphRepository : IUidBuilder,
                 if (t.ObjectId != null) nodeIds.Add(t.ObjectId.Value);
             }
         }
+
         List<EfTriple> newTriples = new(tripleGrouper.Added.Count);
         foreach (UriTriple triple in tripleGrouper.Added)
         {
@@ -2027,6 +2028,7 @@ public abstract class EfGraphRepository : IUidBuilder,
                 context.Triples.Add(newTriple);
             }
         }
+
         foreach (UriTriple triple in tripleGrouper.Updated)
         {
             int existingId = FindTripleByValue(triple, context)?.Id ?? 0;
@@ -2093,7 +2095,7 @@ public abstract class EfGraphRepository : IUidBuilder,
                 {
                     triple.SubjectId = AddUri(triple.SubjectUri!, context,
                         out bool newUri);
-                    if (newUri)
+                    if (newUri || context.Nodes.Find(triple.SubjectId) == null)
                     {
                         // add node implicit in triple
                         set.Nodes.Add(new UriNode
@@ -2111,7 +2113,7 @@ public abstract class EfGraphRepository : IUidBuilder,
                 {
                     triple.PredicateId = AddUri(triple.PredicateUri!, context,
                         out bool newUri);
-                    if (newUri)
+                    if (newUri || context.Nodes.Find(triple.PredicateId) == null)
                     {
                         // add node implicit in triple,
                         // but this shold not happen for predicates
@@ -2132,7 +2134,7 @@ public abstract class EfGraphRepository : IUidBuilder,
                 {
                     triple.ObjectId = AddUri(triple.ObjectUri, context,
                         out bool newUri);
-                    if (newUri)
+                    if (newUri || context.Nodes.Find(triple.ObjectId) == null)
                     {
                         // add node implicit in triple
                         set.Nodes.Add(new UriNode

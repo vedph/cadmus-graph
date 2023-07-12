@@ -276,6 +276,9 @@ public sealed class EfMySqlGraphRepositoryTest : SqlGraphRepositoryTest
     [Fact]
     public void UpdateGraph_RelatedWorkUpdate_Ok()
         => DoUpdateGraph_RelatedWorkUpdate_Ok();
+
+    [Fact]
+    public void UpdateGraph_Delete_Ok() => DoUpdateGraph_Delete_Ok();
     #endregion
 
 #pragma warning restore S2699 // Tests should include assertions

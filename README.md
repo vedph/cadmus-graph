@@ -5,6 +5,7 @@
     - [Demo](#demo)
     - [API](#api)
   - [History](#history)
+    - [2.3.4](#234)
     - [2.3.3](#233)
     - [2.3.2](#232)
     - [2.3.1](#231)
@@ -102,6 +103,10 @@ docker compose -f docker-compose-api.yml up
 ```
 
 ## History
+
+### 2.3.4
+
+- 2023-07-12: fixes to graph updater: in adding triples, not only ensure that the URI exists, but also that the corresponding node exists.
 
 ### 2.3.3
 

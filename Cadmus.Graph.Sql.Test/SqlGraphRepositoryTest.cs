@@ -2443,7 +2443,10 @@ public abstract class SqlGraphRepositoryTest
         // add work info back
         updater.Update(work, workInfo);
 
-        // TODO
+        Assert.Equal(16, repository.GetNodes(new NodeFilter()).Total);
+
+        page = repository.GetTriples(new TripleFilter());
+        Assert.Equal(12, page.Total);
     }
     #endregion
 }
