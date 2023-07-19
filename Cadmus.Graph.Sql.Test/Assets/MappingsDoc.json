@@ -57,7 +57,7 @@
       "partTypeFilter": "it.vedph.metadata",
       "description": "Map a person item to a node via the item's EID extracted from its MetadataPart.",
       "source": "metadata[?name=='eid']",
-      "sid": "{$part-id}/{@[0].value}",
+      "sid": "{$part-id}/{@value}",
       "output": {
         "nodes": {
           "person": "itn:persons/{$part-id}/{@value} itn:persons/{@value}"
@@ -72,7 +72,7 @@
       "partTypeFilter": "it.vedph.metadata",
       "description": "Map a work item to a node via the item's EID extracted from its MetadataPart.",
       "source": "metadata[?name=='eid']",
-      "sid": "{$part-id}/{@[0].value}",
+      "sid": "{$part-id}/{@value}",
       "output": {
         "nodes": {
           "work": "itn:works/{$part-id}/{@value} itn:works/{@value}"
@@ -87,7 +87,7 @@
       "partTypeFilter": "it.vedph.historical-events",
       "description": "Map text sent event",
       "source": "events[?type=='text.send']",
-      "sid": "{$part-id}/{@[0].eid}",
+      "sid": "{$part-id}/{@eid}",
       "output": {
         "metadata": {
           "id": "{$part-id}/{@eid}",
@@ -148,7 +148,7 @@
       "partTypeFilter": "it.vedph.historical-events",
       "description": "Map text reception event",
       "source": "events[?type=='text.reception']",
-      "sid": "{$part-id}/{@[0].eid}",
+      "sid": "{$part-id}/{@eid}",
       "output": {
         "nodes": {
           "event": "itn:events/{$id} itn:events/{@eid}"
@@ -209,7 +209,7 @@
       "partTypeFilter": "it.vedph.historical-events",
       "description": "Map text transcription event",
       "source": "events[?type=='text.transcription']",
-      "sid": "{$part-id}/{@[0].eid}",
+      "sid": "{$part-id}/{@eid}",
       "output": {
         "nodes": {
           "event": "itn:events/{$id} itn:events/{@eid}"
@@ -260,7 +260,7 @@
       "partTypeFilter": "it.vedph.historical-events",
       "description": "Map text collection event",
       "source": "events[?type=='text.collection']",
-      "sid": "{$part-id}/{@[0].eid}",
+      "sid": "{$part-id}/{@eid}",
       "output": {
         "nodes": {
           "event": "itn:events/{$id} itn:events/{@eid}"
@@ -301,7 +301,7 @@
       "partTypeFilter": "it.vedph.historical-events",
       "description": "Map text version event",
       "source": "events[?type=='text.version']",
-      "sid": "{$part-id}/{@[0].eid}",
+      "sid": "{$part-id}/{@eid}",
       "output": {
         "nodes": {
           "event": "itn:events/{$id} itn:events/{@eid}"
@@ -383,85 +383,6 @@
             },
             "triples": [ "{?creation} crm:P14_carried_out_by {?author}" ]
           }
-        },
-        {
-          "name": "work info",
-          "sourceType": 2,
-          "facetFilter": "work",
-          "partTypeFilter": "it.vedph.itinera.literary-work-info",
-          "description": "Map work info",
-          "source": ".",
-          "sid": "{$part-id}",
-          "output": {
-            "nodes": {
-              "creation": "itn:events/creation## itn:events/creation",
-              "work": "itn:works/{$metadata-pid}/{$item-eid}"
-            },
-            "triples": [
-              "{?creation} a crm:E65_Creation",
-              "{?creation} crm:P94_has_created {?work}"
-            ]
-          },
-          "children": [
-            {
-              "name": "work-info/author-ids (external global)",
-              "source": "authorIds[?!target.name && starts_with(target.gid, '@')]",
-              "output": {
-                "nodes": {
-                  "author": "{!_substring({@target.gid} & 1)}"
-                },
-                "triples": [ "{?creation} crm:P14_carried_out_by {?author}" ]
-              }
-            },
-            {
-              "name": "work-info/author-ids (external local)",
-              "source": "authorIds[?!target.name && !(starts_with(target.gid, '@'))]",
-              "output": {
-                "nodes": {
-                  "author": "{@target.gid}"
-                },
-                "triples": [ "{?creation} crm:P14_carried_out_by {?author}" ]
-              }
-            },
-            {
-              "name": "work-info/author-ids (internal)",
-              "source": "authorIds[?target.name]",
-              "output": {
-                "nodes": {
-                  "author": "itn:persons/{@target.partId}/{@target.value} itn:persons/{@target.value}"
-                },
-                "triples": [ "{?creation} crm:P14_carried_out_by {?author}" ]
-              }
-            },
-            {
-              "name": "work-info/titles",
-              "source": "titles",
-              "output": {
-                "nodes": {
-                  "title": "itn:titles/title##"
-                },
-                "triples": [
-                  "{?work} crm:P102_has_title {?title}",
-                  "{?title} a crm:E35_Title",
-                  "{?title} crm:P190_has_symbolic_content \"{@value}\"",
-                  "{?title} P72_has_language \"{@language}\""
-                ]
-              }
-            },
-            {
-              "name": "work-info/isLost",
-              "source": "[?isLost==true].isLost",
-              "output": {
-                "nodes": {
-                  "destruction": "itn:events/destruction## itn:events/destruction"
-                },
-                "triples": [
-                  "{?destruction} a crm:E6_Destruction",
-                  "{?destruction} crm:P13_destroyed {?work}"
-                ]
-              }
-            }
-          ]
         }
       ]
     }

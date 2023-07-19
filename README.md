@@ -5,6 +5,7 @@
     - [Demo](#demo)
     - [API](#api)
   - [History](#history)
+    - [2.3.5](#235)
     - [2.3.4](#234)
     - [2.3.3](#233)
     - [2.3.2](#232)
@@ -103,6 +104,10 @@ docker compose -f docker-compose-api.yml up
 ```
 
 ## History
+
+### 2.3.5
+
+- 2023-07-19: fixes to SID building in JSON node mapper. The inherited SID is overwritten by a child mapping when this has its SID template specified. Also, any inherited SID including the `index` metadatum (`{$index}`) is recalculated at each item iteration.
 
 ### 2.3.4
 

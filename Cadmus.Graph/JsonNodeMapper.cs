@@ -20,6 +20,7 @@ public sealed class JsonNodeMapper : NodeMapper, INodeMapper
     private JsonDocument? _doc;
     private int _sourceType;
     private string? _lastSid;
+    private string? _lastSidSource;
 
     public JsonNodeMapper()
     {
@@ -139,7 +140,7 @@ public sealed class JsonNodeMapper : NodeMapper, INodeMapper
     private void ApplyMapping(string? sid, string json, NodeMapping mapping,
         GraphSet target, int itemIndex = -1)
     {
-        Logger?.LogDebug($"Mapping {mapping}");
+        Logger?.LogDebug("Mapping {mapping}", mapping);
 
         if (IsMappingTracingEnabled)
         {
@@ -156,14 +157,6 @@ public sealed class JsonNodeMapper : NodeMapper, INodeMapper
                 traced.Add(mapping);
         }
 
-        // generate SID if required
-        //if (string.IsNullOrEmpty(sid) && mapping.Sid != null)
-        //{
-        //    _doc = JsonDocument.Parse(json);
-        //    sid = ResolveTemplate(mapping.Sid!, false);
-        //    if (!string.IsNullOrEmpty(sid)) _lastSid = sid;
-        //}
-
         // if we're dealing with an array's item, we do not want to compute
         // the mapping's expression, but just use the received json
         // representing the item itself.
@@ -175,6 +168,9 @@ public sealed class JsonNodeMapper : NodeMapper, INodeMapper
                 result = mapping.Source == "."
                     ? json
                     : _jmes.Transform(json, mapping.Source);
+                // provide index anyway, because some mappings might need it,
+                // even if effectively used only for array items later
+                Data["index"] = -1;
             }
             catch (Exception ex)
             {
@@ -187,15 +183,26 @@ public sealed class JsonNodeMapper : NodeMapper, INodeMapper
         // get the result into the current document
         _doc = JsonDocument.Parse(result);
 
-        // generate SID if required
-        if (string.IsNullOrEmpty(sid) && mapping.Sid != null)
+        // generate SID if specified in mapping
+        if (mapping.Sid != null)
         {
-            //_doc = JsonDocument.Parse(json);
+            sid = ResolveTemplate(mapping.Sid!, false);
+            if (!string.IsNullOrEmpty(sid))
+            {
+                _lastSid = sid;
+                _lastSidSource = mapping.Sid;
+            }
+        }
+        else if (itemIndex > -1 && _lastSidSource?.IndexOf(
+            "$index", StringComparison.Ordinal) > -1)
+        {
+            // corner case: inherited SID with an array item: resolve it
+            // again if including $index
             sid = ResolveTemplate(mapping.Sid!, false);
             if (!string.IsNullOrEmpty(sid)) _lastSid = sid;
         }
 
-        // process it according to its root type:
+        // process document with result, according to its root type
         switch (_doc.RootElement.ValueKind)
         {
             // null or undefined does not trigger output

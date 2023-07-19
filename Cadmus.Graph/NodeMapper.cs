@@ -186,8 +186,7 @@ public abstract class NodeMapper : DataDictionary
     /// the result before returning it.</param>
     public string ResolveTemplate(string template, bool uidFilter)
     {
-        if (template is null)
-            throw new ArgumentNullException(nameof(template));
+        if (template is null) throw new ArgumentNullException(nameof(template));
 
         TemplateTree tree = TemplateTree.Create(template);
         string resolved = tree.Resolve(ResolveNode);

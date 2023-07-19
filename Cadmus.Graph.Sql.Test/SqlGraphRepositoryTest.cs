@@ -1692,13 +1692,13 @@ public abstract class SqlGraphRepositoryTest
         Assert.NotNull(nodePlace);
         Assert.False(nodePlace.IsClass);
         Assert.Equal(2, nodePlace.SourceType);
-        Assert.Equal(sid, nodePlace.Sid);
+        Assert.Equal(sid + "/chronotopes", nodePlace.Sid);
         // timespan node
         Node? nodeTs = repository.GetNodeByUri("itn:timespans/ts");
         Assert.NotNull(nodeTs);
         Assert.False(nodeTs.IsClass);
         Assert.Equal(2, nodeTs.SourceType);
-        Assert.Equal(sid, nodeTs.Sid);
+        Assert.Equal(sid + "/chronotopes", nodeTs.Sid);
         // work node
         Node? nodeWork = repository.GetNodeByUri(workUri);
         Assert.NotNull(nodeWork);
@@ -2410,7 +2410,7 @@ public abstract class SqlGraphRepositoryTest
 
         // triples
         DataPage<UriTriple> page = repository.GetTriples(new TripleFilter());
-        Assert.Equal(12, page.Total);
+        Assert.Equal(5, page.Total);
 
         // itn:works/alpha a crm:E90_symbolic_object
         Assert.NotNull(page.Items.FirstOrDefault(t =>
@@ -2443,10 +2443,10 @@ public abstract class SqlGraphRepositoryTest
         // add work info back
         updater.Update(work, workInfo);
 
-        Assert.Equal(16, repository.GetNodes(new NodeFilter()).Total);
+        Assert.Equal(10, repository.GetNodes(new NodeFilter()).Total);
 
         page = repository.GetTriples(new TripleFilter());
-        Assert.Equal(12, page.Total);
+        Assert.Equal(5, page.Total);
     }
     #endregion
 }
