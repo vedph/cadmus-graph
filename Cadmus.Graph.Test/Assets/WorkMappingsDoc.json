@@ -60,7 +60,7 @@
       "sid": "{$part-id}/{@[0].value}",
       "output": {
         "nodes": {
-          "work": "itn:works/{$item-id}/{@value} itn:works/{@value}"
+          "work": "itn:works/{$item-id}/{@value} [itn:works/{@value}]"
         },
         "triples": [ "{?work} a E90_symbolic_object" ]
       }
@@ -79,7 +79,7 @@
           "work": "itn:works/{$item-id}/{$item-eid}"
         },
         "nodes": {
-          "event": "itn:events/{$id} itn:events/{@eid}"
+          "event": "itn:events/{$id} [itn:events/{@eid}]"
         },
         "triples": [
           "{?event} a crm:E7_Activity",
@@ -136,7 +136,7 @@
       "sid": "{$part-id}/{@[0].eid}",
       "output": {
         "nodes": {
-          "event": "itn:events/{$id} itn:events/{@eid}"
+          "event": "itn:events/{$id} [itn:events/{@eid}]"
         },
         "triples": [
           "{?event} a crm:E7_Activity",
@@ -197,7 +197,7 @@
       "sid": "{$part-id}/{@[0].eid}",
       "output": {
         "nodes": {
-          "event": "itn:events/{$id} itn:events/{@eid}"
+          "event": "itn:events/{$id} [itn:events/{@eid}]"
         },
         "triples": [
           "{?event} a crm:E7_Activity",
@@ -248,7 +248,7 @@
       "sid": "{$part-id}/{@[0].eid}",
       "output": {
         "nodes": {
-          "event": "itn:events/{$id} itn:events/{@eid}"
+          "event": "itn:events/{$id} [itn:events/{@eid}]"
         },
         "triples": [
           "{?event} a crm:E89_propositional_object",
@@ -289,7 +289,7 @@
       "sid": "{$part-id}/{@[0].eid}",
       "output": {
         "nodes": {
-          "event": "itn:events/{$id} itn:events/{@eid}"
+          "event": "itn:events/{$id} [itn:events/{@eid}]"
         },
         "triples": [
           "{?event} a crm:E7_Activity",

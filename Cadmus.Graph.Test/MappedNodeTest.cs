@@ -31,7 +31,7 @@ public sealed class MappedNodeTest
     [Fact]
     public void Parse_UidLabel_Ok()
     {
-        MappedNode? node = MappedNode.Parse("x:persons/guy guy");
+        MappedNode? node = MappedNode.Parse("x:persons/guy [guy]");
         Assert.NotNull(node);
         Assert.Equal("x:persons/guy", node!.Uid);
         Assert.Equal("guy", node.Label);
@@ -41,7 +41,7 @@ public sealed class MappedNodeTest
     [Fact]
     public void Parse_UidTag_Ok()
     {
-        MappedNode? node = MappedNode.Parse("x:persons/guy [tag]");
+        MappedNode? node = MappedNode.Parse("x:persons/guy [|tag]");
         Assert.NotNull(node);
         Assert.Equal("x:persons/guy", node!.Uid);
         Assert.Null(node.Label);
@@ -51,9 +51,21 @@ public sealed class MappedNodeTest
     [Fact]
     public void Parse_UidLabelTag_Ok()
     {
-        MappedNode? node = MappedNode.Parse("x:persons/guy guy [tag]");
+        MappedNode? node = MappedNode.Parse("x:persons/guy [guy|tag]");
         Assert.NotNull(node);
         Assert.Equal("x:persons/guy", node!.Uid);
+        Assert.Equal("guy", node.Label);
+        Assert.Equal("tag", node.Tag);
+    }
+
+    [Fact]
+    public void Parse_UidWithSquaresLabelTag_Ok()
+    {
+        // that's not realistic but ensures that the regex is not confused
+        // by the square brackets in the UID
+        MappedNode? node = MappedNode.Parse("x:persons/[guy] [guy|tag]");
+        Assert.NotNull(node);
+        Assert.Equal("x:persons/[guy]", node!.Uid);
         Assert.Equal("guy", node.Label);
         Assert.Equal("tag", node.Tag);
     }
@@ -78,7 +90,7 @@ public sealed class MappedNodeTest
             Label = "guy"
         };
         string text = node.ToString();
-        Assert.Equal("x:persons/guy guy", text);
+        Assert.Equal("x:persons/guy [guy]", text);
     }
 
     [Fact]
@@ -90,7 +102,7 @@ public sealed class MappedNodeTest
             Tag = "tag"
         };
         string text = node.ToString();
-        Assert.Equal("x:persons/guy [tag]", text);
+        Assert.Equal("x:persons/guy [|tag]", text);
     }
 
     [Fact]
@@ -103,6 +115,6 @@ public sealed class MappedNodeTest
             Tag = "tag"
         };
         string text = node.ToString();
-        Assert.Equal("x:persons/guy guy [tag]", text);
+        Assert.Equal("x:persons/guy [guy|tag]", text);
     }
 }

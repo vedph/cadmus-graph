@@ -5,6 +5,7 @@
     - [Demo](#demo)
     - [API](#api)
   - [History](#history)
+    - [2.4.0](#240)
     - [2.3.5](#235)
     - [2.3.4](#234)
     - [2.3.3](#233)
@@ -104,6 +105,10 @@ docker compose -f docker-compose-api.yml up
 ```
 
 ## History
+
+### 2.4.0
+
+- 2023-07-22: minor breaking change in **mapped node parsing**: instead of `uri`, `uri label`, `uri [tag]`, `uri label [tag]`, the node is now represented as `uri`, `uri [label]`, `uri [|tag]`, `uri [label|tag]`. This way, parsing no more relies on space to define the label, which conflicted with spaces in the URI definition as used by macros like `{!_substring(. & 1)}`. Square brackets before the ending label/tag are correctly allowed.
 
 ### 2.3.5
 

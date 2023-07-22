@@ -60,7 +60,7 @@
       "sid": "{$part-id}/{@value}",
       "output": {
         "nodes": {
-          "person": "itn:persons/{$part-id}/{@value} itn:persons/{@value}"
+          "person": "itn:persons/{$part-id}/{@value} [itn:persons/{@value}]"
         },
         "triples": [ "{?person} a crm:E21_person" ]
       }
@@ -75,7 +75,7 @@
       "sid": "{$part-id}/{@value}",
       "output": {
         "nodes": {
-          "work": "itn:works/{$part-id}/{@value} itn:works/{@value}"
+          "work": "itn:works/{$part-id}/{@value} [itn:works/{@value}]"
         },
         "triples": [ "{?work} a crm:E90_symbolic_object" ]
       }
@@ -94,7 +94,7 @@
           "work": "itn:works/{$metadata-pid}/{$item-eid}"
         },
         "nodes": {
-          "event": "itn:events/{$id} itn:events/{@eid}"
+          "event": "itn:events/{$id} [itn:events/{@eid}]"
         },
         "triples": [
           "{?event} a crm:E7_Activity",
@@ -151,7 +151,7 @@
       "sid": "{$part-id}/{@eid}",
       "output": {
         "nodes": {
-          "event": "itn:events/{$id} itn:events/{@eid}"
+          "event": "itn:events/{$id} [itn:events/{@eid}]"
         },
         "triples": [
           "{?event} a crm:E7_Activity",
@@ -212,7 +212,7 @@
       "sid": "{$part-id}/{@eid}",
       "output": {
         "nodes": {
-          "event": "itn:events/{$id} itn:events/{@eid}"
+          "event": "itn:events/{$id} [itn:events/{@eid}]"
         },
         "triples": [
           "{?event} a crm:E7_Activity",
@@ -263,7 +263,7 @@
       "sid": "{$part-id}/{@eid}",
       "output": {
         "nodes": {
-          "event": "itn:events/{$id} itn:events/{@eid}"
+          "event": "itn:events/{$id} [itn:events/{@eid}]"
         },
         "triples": [
           "{?event} a crm:E89_propositional_object",
@@ -304,7 +304,7 @@
       "sid": "{$part-id}/{@eid}",
       "output": {
         "nodes": {
-          "event": "itn:events/{$id} itn:events/{@eid}"
+          "event": "itn:events/{$id} [itn:events/{@eid}]"
         },
         "triples": [
           "{?event} a crm:E7_activity",
@@ -328,7 +328,7 @@
           "source": "relatedEntities[?relation=='text:version:previous']",
           "output": {
             "nodes": {
-              "previous": "itn:works/{@id.target.partId}/{@id.target.value} itn:works/{@id.target.value}"
+              "previous": "itn:works/{@id.target.partId}/{@id.target.value} [itn:works/{@id.target.value}]"
             },
             "triples": [ "{?event} crm:P67_refers_to {?previous}" ]
           }
@@ -345,8 +345,8 @@
       "sid": "{$part-id}",
       "output": {
         "nodes": {
-          "creation": "itn:events/creation## itn:events/creation",
-          "work": "itn:works/{$metadata-pid}/{$item-eid}"
+          "creation": "itn:events/creation## [itn:events/creation]",
+          "work": "itn:works/{$metadata-pid}/{$item-eid} [itn:works/{$item-eid}]"
         },
         "triples": [
           "{?creation} a crm:E65_Creation",
@@ -379,7 +379,7 @@
           "source": "authorIds[?target.name]",
           "output": {
             "nodes": {
-              "author": "itn:persons/{@target.partId}/{@target.value} itn:persons/{@target.value}"
+              "author": "itn:persons/{@target.partId}/{@target.value} [itn:persons/{@target.value}]"
             },
             "triples": [ "{?creation} crm:P14_carried_out_by {?author}" ]
           }

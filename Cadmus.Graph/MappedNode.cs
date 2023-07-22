@@ -25,8 +25,8 @@ public class MappedNode
 
     /// <summary>
     /// Parse the text representing a <see cref="MappedNode"/>. This consists
-    /// of a URI, optionally followed by space plus a label, and/or a tag
-    /// between square brackets.
+    /// of a URI, optionally followed by a couple of square brackets wrapping
+    /// a label optionally followed by a tag prefixed by <c>|</c>.
     /// </summary>
     /// <param name="text">Text or null.</param>
     /// <returns>Node or null.</returns>
@@ -35,17 +35,19 @@ public class MappedNode
         if (string.IsNullOrEmpty(text)) return null;
 
         Match m = Regex.Match(text,
-            @"^(?<u>[^ ]+)(?:\s+(?<l>[^[][^\s]*))?(?:\s+\[(?<t>[^]]+)\])?",
+            @"^(?<u>(?:(?!\[[^\[\]]+\]$).)*)(?:\[(?<l>[^]|]+)?(?:\|(?<t>[^]]+)\])?)?",
             RegexOptions.Compiled);
+        if (!m.Success) return null;
 
-        return m.Success
-            ? new MappedNode
-            {
-                Uid = m.Groups["u"].Value,
-                Label = m.Groups["l"].Value.Length == 0? null : m.Groups["l"].Value,
-                Tag = m.Groups["t"].Value.Length == 0? null : m.Groups["t"].Value
-            }
-            : null;
+        string label = m.Groups["l"].Value.Trim();
+        string tag = m.Groups["t"].Value.Trim();
+
+        return new MappedNode
+        {
+            Uid = m.Groups["u"].Value.Trim(),
+            Label = label.Length == 0 ? null : label,
+            Tag = tag.Length == 0 ? null : tag
+        };
     }
 
     /// <summary>
@@ -57,8 +59,13 @@ public class MappedNode
         StringBuilder sb = new();
         sb.Append(Uid);
 
-        if (Label != null) sb.Append(' ').Append(Label);
-        if (Tag != null) sb.Append(" [").Append(Tag).Append(']');
+        if (Label != null || Tag != null)
+        {
+            sb.Append(" [");
+            if (!string.IsNullOrEmpty(Label)) sb.Append(Label);
+            if (!string.IsNullOrEmpty(Tag)) sb.Append('|').Append(Tag);
+            sb.Append(']');
+        }
 
         return sb.ToString();
     }
