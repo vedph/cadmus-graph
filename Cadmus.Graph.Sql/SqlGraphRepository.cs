@@ -959,6 +959,7 @@ public abstract class SqlGraphRepository : IConfigurable<SqlOptions>
             Description = d.description,
             Source = d.source,
             Sid = d.sid,
+            ScalarPattern = d.scalar_pattern,
         };
     }
 
@@ -1056,7 +1057,7 @@ public abstract class SqlGraphRepository : IConfigurable<SqlOptions>
         query.Select("id", "parent_id", "ordinal", "name", "source_type",
             "facet_filter", "group_filter", "flags_filter", "title_filter",
             "part_type_filter", "part_role_filter", "description",
-            "source", "sid")
+            "source", "sid", "scalar_pattern")
             .Skip(filter.GetSkipCount())
             .OrderBy("name", "id");
         if (filter.PageSize > 0) query.Limit(filter.PageSize);
@@ -1181,7 +1182,8 @@ public abstract class SqlGraphRepository : IConfigurable<SqlOptions>
             part_role_filter = mapping.PartRoleFilter,
             description = mapping.Description,
             source = mapping.Source,
-            sid = mapping.Sid
+            sid = mapping.Sid,
+            scalar_pattern = mapping.ScalarPattern
         };
 
         if (mapping.Id > 0
@@ -1255,7 +1257,8 @@ public abstract class SqlGraphRepository : IConfigurable<SqlOptions>
             part_role_filter = mapping.PartRoleFilter,
             description = mapping.Description,
             source = mapping.Source,
-            sid = mapping.Sid
+            sid = mapping.Sid,
+            scalar_pattern = mapping.ScalarPattern
         };
 
         if (qf.Query("mapping").Where("name", mapping.Name).Exists())
@@ -1369,7 +1372,7 @@ public abstract class SqlGraphRepository : IConfigurable<SqlOptions>
             .Select("id", "parent_id", "ordinal", "name", "source_type",
             "facet_filter", "group_filter", "flags_filter", "title_filter",
             "part_type_filter", "part_role_filter", "description",
-            "source", "sid");
+            "source", "sid", "scalar_pattern");
         ApplyRunNodeMappingsFilter(filter, query);
         query.OrderBy("ordinal");
 

@@ -5,6 +5,7 @@
     - [Demo](#demo)
     - [API](#api)
   - [History](#history)
+    - [3.0.1](#301)
     - [2.4.0](#240)
     - [2.3.5](#235)
     - [2.3.4](#234)
@@ -105,6 +106,29 @@ docker compose -f docker-compose-api.yml up
 ```
 
 ## History
+
+### 3.0.1
+
+- 2023-07-23: **BREAKING CHANGE**: added `ScalarPattern` property to `Mapping` and updated repositories and SQL schema accordingly. This defines the optional regular expression pattern which should match against a scalar value defined by the mapping's source expression for the mapping to be applied. When this is defined and does not match, the mapping will not be applied. This can be used to overcome the limitations of the source expression in languages like JMESPath, where e.g. `.[?lost==true]` is always evaluated as a match, even when the value of the scalar property `lost` is `false`.
+
+Example usage: this is a child mapping of a work info mapping, which is applied only when the `isLost` property of the source object is `true`:
+
+```json
+{
+  "name": "work-info/isLost",
+  "source": "isLost",
+  "scalarPattern": "true",
+  "output": {
+    "nodes": {
+      "destruction": "itn:events/destruction## [itn:events/destruction]"
+    },
+    "triples": [
+      "{?destruction} a crm:E6_Destruction",
+      "{?destruction} crm:P13_destroyed {?work}"
+    ]
+  }
+}
+```
 
 ### 2.4.0
 

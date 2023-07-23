@@ -98,6 +98,7 @@ CREATE TABLE mapping (
 	description varchar(1000) NULL,
 	source varchar(500) NOT NULL,
 	sid varchar(500) NULL,
+	scalar_pattern varchar(500) NULL,
 	CONSTRAINT mapping_PK PRIMARY KEY (id),
 	CONSTRAINT mapping_FK FOREIGN KEY (parent_id) REFERENCES mapping(id) ON DELETE SET NULL ON UPDATE CASCADE
 )

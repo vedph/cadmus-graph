@@ -199,6 +199,8 @@ public class CadmusGraphDbContext : DbContext
             x.Property(x => x.Source).HasColumnName("source").IsRequired()
                 .HasMaxLength(500);
             x.Property(x => x.Sid).HasColumnName("sid").HasMaxLength(500);
+            x.Property(x => x.ScalarPattern).HasColumnName("scalar_pattern")
+                .HasMaxLength(500);
         });
         // children
         modelBuilder.Entity<EfMapping>()

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Cadmus.Graph;
 
@@ -11,6 +12,8 @@ namespace Cadmus.Graph;
 public class NodeMapping
 {
     private IList<NodeMapping>? _children;
+    private string? _scalarPattern;
+    private Regex? _scalarRegex;
 
     /// <summary>
     /// Gets or sets a numeric identifier for this mapping. This is
@@ -87,6 +90,26 @@ public class NodeMapping
     public string? Sid { get; set; }
 
     /// <summary>
+    /// Gets or sets the optional regular expression pattern which should
+    /// match against a scalar value defined by the mapping's source expression.
+    /// When this is defined and does not match, the mapping will not be applied.
+    /// This can be used to overcome the limitations of the source expression
+    /// in languages like JMESPath, where e.g. <c>.[?lost==true]</c> is always
+    /// evaluated as a match, even when the value of the scalar property "lost"
+    /// is false.
+    /// </summary>
+    public string? ScalarPattern
+    {
+        get => _scalarPattern;
+        set
+        {
+            _scalarPattern = value;
+            _scalarRegex = value != null ?
+                new Regex(value, RegexOptions.Compiled) : null;
+        }
+    }
+
+    /// <summary>
     /// The output of this mapping.
     /// </summary>
     public NodeMappingOutput? Output { get; set; }
@@ -111,6 +134,21 @@ public class NodeMapping
     public NodeMapping()
     {
         Source = "";
+    }
+
+    /// <summary>
+    /// Determines whether the specified value matches the scalar pattern
+    /// defined for this mapping, if any. If no pattern is defined, this
+    /// always returns true.
+    /// </summary>
+    /// <param name="value">The value.</param>
+    /// <returns><c>true</c> if match; otherwise, <c>false</c>.</returns>
+    public bool IsScalarMatch(string? value)
+    {
+        if (_scalarRegex == null) return true;
+
+        if (value == null) return false;
+        return _scalarRegex.IsMatch(value);
     }
 
     /// <summary>
@@ -154,6 +192,7 @@ public class NodeMapping
             Description = Description,
             Source = Source,
             Sid = Sid,
+            ScalarPattern = ScalarPattern,
             Output = Output,
             Children = Children.Select(m => m.Clone()).ToList(),
         };

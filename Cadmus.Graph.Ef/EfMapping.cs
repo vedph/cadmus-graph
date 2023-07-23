@@ -78,6 +78,17 @@ public class EfMapping
     /// </summary>
     public string? Sid { get; set; }
 
+    /// <summary>
+    /// Gets or sets the optional regular expression pattern which should
+    /// match against a scalar value defined by the mapping's source expression.
+    /// When this is defined and does not match, the mapping will not be applied.
+    /// This can be used to overcome the limitations of the source expression
+    /// in languages like JMESPath, where e.g. <c>.[?lost==true]</c> is always
+    /// evaluated as a match, even when the value of the scalar property "lost"
+    /// is false.
+    /// </summary>
+    public string? ScalarPattern { get; set; }
+
     public EfMapping? Parent { get; set; }
 
     public List<EfMapping>? Children { get; set; }
@@ -113,6 +124,7 @@ public class EfMapping
         Description = source.Description;
         Source = source.Source;
         Sid = source.Sid;
+        ScalarPattern = source.ScalarPattern;
 
         // metadata
         if (source.Output?.HasMetadata == true)
@@ -198,6 +210,7 @@ public class EfMapping
             Description = Description,
             Source = Source,
             Sid = Sid,
+            ScalarPattern = ScalarPattern,
             Output = new NodeMappingOutput
             {
                 Metadata = MetaOutputs?.ToDictionary(m => m.Name, m => m.Value)

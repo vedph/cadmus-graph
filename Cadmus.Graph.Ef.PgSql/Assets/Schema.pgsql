@@ -4,7 +4,7 @@ CREATE TABLE namespace_lookup (
 	uri varchar(500) NOT NULL,
 	CONSTRAINT namespace_lookup_pk PRIMARY KEY (id)
 );
-CREATE INDEX namespace_lookup_uri_idx ON public.namespace_lookup USING btree (uri);
+CREATE INDEX namespace_lookup_uri_idx ON namespace_lookup USING btree (uri);
 
 -- uri_lookup
 CREATE TABLE uri_lookup (
@@ -12,7 +12,7 @@ CREATE TABLE uri_lookup (
 	uri varchar(500) NOT NULL,
 	CONSTRAINT uri_lookup_pk PRIMARY KEY (id)
 );
-CREATE INDEX uri_lookup_uri_idx ON public.uri_lookup USING btree (uri);
+CREATE INDEX uri_lookup_uri_idx ON uri_lookup USING btree (uri);
 
 -- uid_lookup
 CREATE TABLE uid_lookup (
@@ -22,7 +22,7 @@ CREATE TABLE uid_lookup (
 	has_suffix boolean NOT NULL,
 	CONSTRAINT uid_lookup_pk PRIMARY KEY (id)
 );
-CREATE INDEX uid_lookup_unsuffixed_idx ON public.uid_lookup USING btree (unsuffixed);
+CREATE INDEX uid_lookup_unsuffixed_idx ON uid_lookup USING btree (unsuffixed);
 
 -- node
 CREATE TABLE node (
@@ -34,8 +34,8 @@ CREATE TABLE node (
 	sid varchar(500) NULL,
 	CONSTRAINT node_pk PRIMARY KEY (id)
 );
--- public.node foreign keys
-ALTER TABLE public.node ADD CONSTRAINT node_fk FOREIGN KEY (id) REFERENCES uri_lookup(id) ON DELETE CASCADE ON UPDATE CASCADE;
+-- node foreign keys
+ALTER TABLE node ADD CONSTRAINT node_fk FOREIGN KEY (id) REFERENCES uri_lookup(id) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- node_class
 CREATE TABLE node_class (
@@ -45,9 +45,9 @@ CREATE TABLE node_class (
 	"level" int4 NOT NULL,
 	CONSTRAINT node_class_pk PRIMARY KEY (id)
 );
--- public.node_class foreign keys
-ALTER TABLE public.node_class ADD CONSTRAINT node_class_fk FOREIGN KEY (node_id) REFERENCES node(id) ON DELETE CASCADE ON UPDATE CASCADE;
-ALTER TABLE public.node_class ADD CONSTRAINT node_class_fk_1 FOREIGN KEY (class_id) REFERENCES node(id) ON DELETE CASCADE ON UPDATE CASCADE;
+-- node_class foreign keys
+ALTER TABLE node_class ADD CONSTRAINT node_class_fk FOREIGN KEY (node_id) REFERENCES node(id) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE node_class ADD CONSTRAINT node_class_fk_1 FOREIGN KEY (class_id) REFERENCES node(id) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- property
 CREATE TABLE property (
@@ -57,8 +57,8 @@ CREATE TABLE property (
 	description varchar(5000) NULL,
 	CONSTRAINT property_pk PRIMARY KEY (id)
 );
--- public.property foreign keys
-ALTER TABLE public.property ADD CONSTRAINT property_fk FOREIGN KEY (id) REFERENCES node(id) ON DELETE CASCADE ON UPDATE CASCADE;
+-- property foreign keys
+ALTER TABLE property ADD CONSTRAINT property_fk FOREIGN KEY (id) REFERENCES node(id) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- triple
 CREATE TABLE triple (
@@ -75,12 +75,12 @@ CREATE TABLE triple (
 	tag varchar(50) NULL,
 	CONSTRAINT triple_pk PRIMARY KEY (id)
 );
-CREATE INDEX triple_o_lit_ix_idx ON public.triple USING btree (o_lit_ix);
-CREATE INDEX triple_sid_idx ON public.triple USING btree (sid);
--- public.triple foreign keys
-ALTER TABLE public.triple ADD CONSTRAINT triple_fk FOREIGN KEY (s_id) REFERENCES node(id) ON DELETE CASCADE ON UPDATE CASCADE;
-ALTER TABLE public.triple ADD CONSTRAINT triple_fk_1 FOREIGN KEY (p_id) REFERENCES node(id) ON DELETE CASCADE ON UPDATE CASCADE;
-ALTER TABLE public.triple ADD CONSTRAINT triple_fk_2 FOREIGN KEY (o_id) REFERENCES node(id) ON DELETE CASCADE ON UPDATE CASCADE;
+CREATE INDEX triple_o_lit_ix_idx ON triple USING btree (o_lit_ix);
+CREATE INDEX triple_sid_idx ON triple USING btree (sid);
+-- triple foreign keys
+ALTER TABLE triple ADD CONSTRAINT triple_fk FOREIGN KEY (s_id) REFERENCES node(id) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE triple ADD CONSTRAINT triple_fk_1 FOREIGN KEY (p_id) REFERENCES node(id) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE triple ADD CONSTRAINT triple_fk_2 FOREIGN KEY (o_id) REFERENCES node(id) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- mapping
 CREATE TABLE "mapping" (
@@ -98,11 +98,12 @@ CREATE TABLE "mapping" (
 	description varchar(1000) NULL,
 	"source" varchar(500) NOT NULL,
 	sid varchar(500) NULL,
+	scalar_pattern varchar(500) NULL,
 	CONSTRAINT mapping_pk PRIMARY KEY (id),
 	CONSTRAINT mapping_fk FOREIGN KEY (parent_id) REFERENCES "mapping"(id) ON DELETE CASCADE ON UPDATE CASCADE
 );
-CREATE INDEX mapping_facet_filter_idx ON public.mapping USING btree (facet_filter);
-CREATE INDEX mapping_name_idx ON public.mapping USING btree (name);
+CREATE INDEX mapping_facet_filter_idx ON mapping USING btree (facet_filter);
+CREATE INDEX mapping_name_idx ON mapping USING btree (name);
 
 -- mapping_out_node
 CREATE TABLE mapping_out_node (
@@ -115,8 +116,8 @@ CREATE TABLE mapping_out_node (
 	tag varchar(100) NULL,
 	CONSTRAINT mapping_out_node_pk PRIMARY KEY (id)
 );
--- public.mapping_out_node foreign keys
-ALTER TABLE public.mapping_out_node ADD CONSTRAINT mapping_out_node_fk FOREIGN KEY (mapping_id) REFERENCES "mapping"(id) ON DELETE CASCADE ON UPDATE CASCADE;
+-- mapping_out_node foreign keys
+ALTER TABLE mapping_out_node ADD CONSTRAINT mapping_out_node_fk FOREIGN KEY (mapping_id) REFERENCES "mapping"(id) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- mapping_out_triple
 CREATE TABLE mapping_out_triple (
@@ -129,8 +130,8 @@ CREATE TABLE mapping_out_triple (
 	ol varchar(10000) NULL,
 	CONSTRAINT mapping_out_triple_pk PRIMARY KEY (id)
 );
--- public.mapping_out_triple foreign keys
-ALTER TABLE public.mapping_out_triple ADD CONSTRAINT mapping_out_triple_fk FOREIGN KEY (mapping_id) REFERENCES "mapping"(id) ON DELETE CASCADE ON UPDATE CASCADE;
+-- mapping_out_triple foreign keys
+ALTER TABLE mapping_out_triple ADD CONSTRAINT mapping_out_triple_fk FOREIGN KEY (mapping_id) REFERENCES "mapping"(id) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- mapping_out_meta
 CREATE TABLE mapping_out_meta (
@@ -141,8 +142,8 @@ CREATE TABLE mapping_out_meta (
 	value varchar(10000) NOT NULL,
 	CONSTRAINT mapping_out_meta_pk PRIMARY KEY (id)
 );
--- public.mapping_out_meta foreign keys
-ALTER TABLE public.mapping_out_meta ADD CONSTRAINT mapping_out_meta_fk FOREIGN KEY (mapping_id) REFERENCES "mapping"(id) ON DELETE CASCADE ON UPDATE CASCADE;
+-- mapping_out_meta foreign keys
+ALTER TABLE mapping_out_meta ADD CONSTRAINT mapping_out_meta_fk FOREIGN KEY (mapping_id) REFERENCES "mapping"(id) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- --------------------------------------------------------
 -- graph preset data
