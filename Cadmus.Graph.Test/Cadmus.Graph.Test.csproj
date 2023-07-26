@@ -5,15 +5,16 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
-    <Version>3.0.1</Version>
-    <FileVersion>3.0.1</FileVersion>
-    <AssemblyVersion>3.0.1</AssemblyVersion>
+    <Version>3.0.4</Version>
+    <FileVersion>3.0.4</FileVersion>
+    <AssemblyVersion>3.0.4</AssemblyVersion>
   </PropertyGroup>
 
   <ItemGroup>
     <None Remove="Assets\Events.json" />
     <None Remove="Assets\Mappings.json" />
     <None Remove="Assets\MappingsDoc.json" />
+    <None Remove="Assets\MappingsDocDepth3.json" />
     <None Remove="Assets\Nodes.json" />
     <None Remove="Assets\Thesauri.json" />
     <None Remove="Assets\WorkMappingsDoc.json" />
@@ -23,6 +24,7 @@
     <EmbeddedResource Include="Assets\Events.json" />
     <EmbeddedResource Include="Assets\Mappings.json" />
     <EmbeddedResource Include="Assets\MappingsDoc.json" />
+    <EmbeddedResource Include="Assets\MappingsDocDepth3.json" />
     <EmbeddedResource Include="Assets\Nodes.json" />
     <EmbeddedResource Include="Assets\Thesauri.json" />
     <EmbeddedResource Include="Assets\WorkMappingsDoc.json" />

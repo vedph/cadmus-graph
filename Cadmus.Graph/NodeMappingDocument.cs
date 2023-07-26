@@ -38,16 +38,15 @@ public class NodeMappingDocument
     {
         if (!mapping.HasChildren) return;
 
-        List<NodeMapping> children = mapping.Children.ToList();
-        for (int i = 0; i < children.Count; i++)
+        for (int i = 0; i < mapping.Children.Count; i++)
         {
-            NodeMapping child = children[i];
-            if (child.Name != null && NamedMappings.TryGetValue(
-                child.Name, out NodeMapping? named))
+            if (mapping.Children[i].Name != null &&
+                NamedMappings.TryGetValue(
+                    mapping.Children[i].Name!, out NodeMapping? named))
             {
                 mapping.Children[i] = named.Clone();
-                ResolveNamedMappings(named);
             }
+            ResolveNamedMappings(mapping.Children[i]);
         }
     }
 

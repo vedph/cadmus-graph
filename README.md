@@ -107,7 +107,11 @@ docker compose -f docker-compose-api.yml up
 
 ## History
 
-- 2023-07-26: updated packages.
+### 3.0.4
+
+- 2023-07-26:
+  - updated packages.
+  - fixes to `NodeMappingDocument` dereferencing.
 
 ### 3.0.1
 

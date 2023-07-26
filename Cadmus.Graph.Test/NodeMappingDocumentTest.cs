@@ -57,20 +57,38 @@ public sealed class NodeMappingDocumentTest
     }
 
     [Fact]
-    public void GetMappings_Ok()
+    public void GetMappings_Depth2_Ok()
     {
         NodeMappingDocument? doc = JsonSerializer.Deserialize<NodeMappingDocument>
-            (TestHelper.LoadResourceText("MappingsDoc.json"), _options);
+            (TestHelper.LoadResourceText("MappingsDocDepth3.json"), _options);
 
         Assert.NotNull(doc);
         List<NodeMapping> mappings = doc.GetMappings().ToList();
-        Assert.Equal(4, mappings.Count);
+        Assert.Equal(2, mappings.Count);
 
-        // birth event has children event_note and event_chronotope by reference
-        NodeMapping? mapping = mappings.Find(m => m.Name == "birth event");
+        // work
+        NodeMapping? mapping = mappings.Find(m => m.Name == "work");
         Assert.NotNull(mapping);
-        Assert.Equal(5, mapping.Children.Count);
-        Assert.NotEqual("", mapping.Children[1].Source);
-        Assert.NotEqual("", mapping.Children[2].Source);
+        Assert.Empty(mapping.Children);
+
+        // work chronotopes
+        mapping = mappings.Find(m => m.Name == "work chronotopes");
+        Assert.NotNull(mapping);
+
+        Assert.Single(mapping.Children);
+        Assert.Equal("work chronotopes/chronotopes", mapping.Children[0].Name);
+
+        NodeMapping mappingCC = mapping.Children[0];
+        Assert.Equal(3, mappingCC.Children.Count);
+        Assert.Equal("work chronotopes/chronotopes/place",
+            mappingCC.Children[0].Name);
+        Assert.True(mappingCC.Children[0].Source?.Length > 0);
+
+        Assert.Equal("work chronotopes/chronotopes/date",
+            mappingCC.Children[1].Name);
+        Assert.True(mappingCC.Children[1].Source?.Length > 0);
+
+        Assert.Equal("work/assertion", mappingCC.Children[2].Name);
+        Assert.True(mappingCC.Children[2].Source?.Length > 0);
     }
 }
