@@ -7,7 +7,7 @@ pause
 c:\exe\nuget add .\Cadmus.Graph.Ef\bin\Debug\Cadmus.Graph.Ef.3.0.1.nupkg -source C:\Projects\_NuGet
 c:\exe\nuget add .\Cadmus.Graph.Ef.MySql\bin\Debug\Cadmus.Graph.Ef.MySql.3.0.1.nupkg -source C:\Projects\_NuGet
 c:\exe\nuget add .\Cadmus.Graph.Ef.PgSql\bin\Debug\Cadmus.Graph.Ef.PgSql.3.0.1.nupkg -source C:\Projects\_NuGet
-c:\exe\nuget add .\Cadmus.Graph.Sql\bin\Debug\Cadmus.Graph.Sql.3.0.1.nupkg -source C:\Projects\_NuGet
+c:\exe\nuget add .\Cadmus.Graph.Sql\bin\Debug\Cadmus.Graph.Sql.3.0.2.nupkg -source C:\Projects\_NuGet
 c:\exe\nuget add .\Cadmus.Graph.MySql\bin\Debug\Cadmus.Graph.MySql.3.0.1.nupkg -source C:\Projects\_NuGet
 c:\exe\nuget add .\Cadmus.Graph.Extras\bin\Debug\Cadmus.Graph.Extras.3.0.1.nupkg -source C:\Projects\_NuGet
 pause

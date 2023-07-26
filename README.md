@@ -107,6 +107,8 @@ docker compose -f docker-compose-api.yml up
 
 ## History
 
+- 2023-07-26: updated packages.
+
 ### 3.0.1
 
 - 2023-07-23: **BREAKING CHANGE**: added `ScalarPattern` property to `Mapping` and updated repositories and SQL schema accordingly. This defines the optional regular expression pattern which should match against a scalar value defined by the mapping's source expression for the mapping to be applied. When this is defined and does not match, the mapping will not be applied. This can be used to overcome the limitations of the source expression in languages like JMESPath, where e.g. `.[?lost==true]` is always evaluated as a match, even when the value of the scalar property `lost` is `false`.

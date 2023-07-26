@@ -27,7 +27,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Cadmus.Mongo" Version="6.1.11" />
+    <PackageReference Include="Cadmus.Mongo" Version="6.1.14" />
     <PackageReference Include="Fusi.DbManager.MySql" Version="3.0.3" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.6.3" />
     <PackageReference Include="xunit" Version="2.5.0" />
