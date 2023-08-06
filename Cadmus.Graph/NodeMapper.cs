@@ -76,17 +76,55 @@ public abstract class NodeMapper : DataDictionary
         UidBuilder = new RamUidBuilder();
 
         // builtin macros
-        _macros["_hdate"] = new HistoricalDateMacro();
-        _macros["_substring"] = new SubstringMacro();
+        ResetMacros();
     }
 
-    public void SetMacros(IDictionary<string, INodeMappingMacro>? macros)
+    /// <summary>
+    /// Adds the specified macro.
+    /// </summary>
+    /// <param name="key">The key.</param>
+    /// <param name="macro">The macro.</param>
+    /// <exception cref="ArgumentNullException">key or macro</exception>
+    public void AddMacro(string key, INodeMappingMacro macro)
+    {
+        if (key is null) throw new ArgumentNullException(nameof(key));
+        if (macro is null) throw new ArgumentNullException(nameof(macro));
+
+        _macros[key] = macro;
+    }
+
+    /// <summary>
+    /// Deletes the macro with the specified key.
+    /// </summary>
+    /// <param name="key">The key.</param>
+    /// <exception cref="ArgumentNullException">key</exception>
+    public void DeleteMacro(string key)
+    {
+        if (key is null) throw new ArgumentNullException(nameof(key));
+        _macros.Remove(key);
+    }
+
+    /// <summary>
+    /// Sets the macros to the specified ones, removing any existing macro.
+    /// </summary>
+    /// <param name="macros">The macros to set.</param>
+    /// <exception cref="ArgumentNullException">macros</exception>
+    public void SetMacros(IDictionary<string, INodeMappingMacro> macros)
+    {
+        if (macros == null) throw new ArgumentNullException(nameof(macros));
+
+        _macros.Clear();
+        foreach (var p in macros) _macros[p.Key] = p.Value;
+    }
+
+    /// <summary>
+    /// Resets the macros to the builtin ones.
+    /// </summary>
+    public void ResetMacros()
     {
         _macros.Clear();
-        if (macros != null)
-        {
-            foreach (var p in macros) _macros[p.Key] = p.Value;
-        }
+        _macros["_hdate"] = new HistoricalDateMacro();
+        _macros["_substring"] = new SubstringMacro();
     }
 
     private string ResolveMacro(string macro)

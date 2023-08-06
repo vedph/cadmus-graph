@@ -5,6 +5,8 @@
     - [Demo](#demo)
     - [API](#api)
   - [History](#history)
+    - [3.0.5](#305)
+    - [3.0.4](#304)
     - [3.0.1](#301)
     - [2.4.0](#240)
     - [2.3.5](#235)
@@ -106,6 +108,10 @@ docker compose -f docker-compose-api.yml up
 ```
 
 ## History
+
+### 3.0.5
+
+- 2023-08-06: more methods for macros in node mapper (`INodeMapper`). You can use these methods to add more macros to the graph mapper when configuring DI for `GraphUpdater`.
 
 ### 3.0.4
 

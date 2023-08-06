@@ -16,7 +16,7 @@ public interface INodeMapper : IHasDataDictionary
     /// Gets or sets the URI builder function. This is used to build URIs
     /// from SID and UID.
     /// </summary>
-    public IUidBuilder UidBuilder { get; set; }
+    IUidBuilder UidBuilder { get; set; }
 
     /// <summary>
     /// The object representing the mapping source context, usually
@@ -26,13 +26,31 @@ public interface INodeMapper : IHasDataDictionary
     /// this rather refers to the source's context. For instance, when
     /// mapping a part you would still need to know about its parent item.
     /// </summary>
-    public GraphSource? Context { get; set; }
+    GraphSource? Context { get; set; }
+
+    /// <summary>
+    /// Adds the specified macro.
+    /// </summary>
+    /// <param name="key">The key.</param>
+    /// <param name="macro">The macro.</param>
+    void AddMacro(string key, INodeMappingMacro macro);
+
+    /// <summary>
+    /// Deletes the macro with the specified key.
+    /// </summary>
+    /// <param name="key">The key.</param>
+    void DeleteMacro(string key);
 
     /// <summary>
     /// Sets the macros to use in this mapper.
     /// </summary>
     /// <param name="macros">The macros.</param>
-    void SetMacros(IDictionary<string, INodeMappingMacro>? macros);
+    void SetMacros(IDictionary<string, INodeMappingMacro> macros);
+
+    /// <summary>
+    /// Resets the macros to the builtin ones.
+    /// </summary>
+    void ResetMacros();
 
     /// <summary>
     /// Maps the data <paramref name="source"/> into the graph set

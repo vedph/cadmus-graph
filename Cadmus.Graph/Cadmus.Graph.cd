@@ -27,7 +27,7 @@
       <Compartment Name="Methods" Collapsed="true" />
     </Compartments>
     <TypeIdentifier>
-      <HashCode>QAACAAAAEAAgAAAEAAAEAAAAAAgAAAAAAAAAAAAAAIA=</HashCode>
+      <HashCode>QAACAIAAEAAgAAAMAAAEAAABAAgAAAAAAACAAAAAAIA=</HashCode>
       <FileName>Triple.cs</FileName>
     </TypeIdentifier>
   </Class>
@@ -48,7 +48,7 @@
       <Compartment Name="Methods" Collapsed="true" />
     </Compartments>
     <TypeIdentifier>
-      <HashCode>AAASBAAAAggkABQEEBEMAAQAAAAAAAEAEgAACAAAAAA=</HashCode>
+      <HashCode>AgASBAAAAggkABQEEBEMAAQAAAAAgAEQEgAACAAAAJA=</HashCode>
       <FileName>NodeMapping.cs</FileName>
     </TypeIdentifier>
     <ShowAsAssociation>
@@ -59,14 +59,14 @@
     </ShowAsCollectionAssociation>
   </Class>
   <Class Name="Cadmus.Graph.NodeMapper">
-    <Position X="6" Y="7.75" Width="1.75" />
+    <Position X="6" Y="8.5" Width="1.75" />
     <Members>
       <Method Name="NodeMapper" Hidden="true" />
       <Method Name="ResolveMacro" Hidden="true" />
       <Method Name="ResolveNode" Hidden="true" />
     </Members>
     <TypeIdentifier>
-      <HashCode>CAAAAAAAAiIAAAAgEBQAAAAAAgAAAAAAAAAAAAAEAAA=</HashCode>
+      <HashCode>CAAAAAAAAiIBAAAgEBQAIEAAA4AAAAAAAAAAAAAEAAA=</HashCode>
       <FileName>NodeMapper.cs</FileName>
     </TypeIdentifier>
     <ShowAsAssociation>
@@ -103,7 +103,7 @@
     </TypeIdentifier>
   </Class>
   <Class Name="Cadmus.Graph.JsonNodeMapper">
-    <Position X="6" Y="11.25" Width="1.75" />
+    <Position X="6" Y="12.75" Width="1.75" />
     <Members>
       <Method Name="AddNodes" Hidden="true" />
       <Method Name="AddTriples" Hidden="true" />
@@ -115,7 +115,7 @@
       <Compartment Name="Fields" Collapsed="true" />
     </Compartments>
     <TypeIdentifier>
-      <HashCode>QAAAIAAIABAAAAAAAAQAYAAAAAAAAAAAAIAAAAFAAAA=</HashCode>
+      <HashCode>QAAAIAAIABAAAAAAAAQAYAAAAAAAAAAAAIAAAIFAAAA=</HashCode>
       <FileName>JsonNodeMapper.cs</FileName>
     </TypeIdentifier>
     <Lollipop Position="0.2" />
@@ -183,7 +183,7 @@
       <Compartment Name="Fields" Collapsed="true" />
     </Compartments>
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAgAAAAAAAAAAAABAAIAAAAAAAAAAAAAABAA=</HashCode>
+      <HashCode>AAAAAAAAAgAAAAAAAAAAAAAAAIAAAAAAAAAAAAAABAA=</HashCode>
       <FileName>RamUidBuilder.cs</FileName>
     </TypeIdentifier>
     <Lollipop Position="0.2" />
@@ -223,7 +223,7 @@
   <Class Name="Cadmus.Graph.TripleFilter">
     <Position X="15.5" Y="9.25" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>QAIAAAAAEAAgAAAAAAAEAAAAAAgAAAAAAAAAAAAAAIA=</HashCode>
+      <HashCode>UAIAAAAAEAAgAAAAAAAEAAAAAIAAAAAAAAAAAAAAAIA=</HashCode>
       <FileName>TripleFilter.cs</FileName>
     </TypeIdentifier>
   </Class>
@@ -275,26 +275,29 @@
     </TypeIdentifier>
   </Class>
   <Class Name="Cadmus.Graph.GraphUpdater">
-    <Position X="6" Y="14" Width="1.75" />
+    <Position X="0.5" Y="10.5" Width="1.75" />
     <Members>
+      <Method Name="Explain" Hidden="true" />
       <Method Name="GraphUpdater" Hidden="true" />
+      <Method Name="SetMapperMetadata" Hidden="true" />
+      <Method Name="Update" Hidden="true" />
     </Members>
     <Compartments>
       <Compartment Name="Fields" Collapsed="true" />
     </Compartments>
     <TypeIdentifier>
-      <HashCode>AQUAAAAAAABAAAAAAAADAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <HashCode>gAUAQAAAAgBAAAAAAAADIEAABQAAAAAAAAAAAAAEAAA=</HashCode>
       <FileName>GraphUpdater.cs</FileName>
     </TypeIdentifier>
     <ShowAsAssociation>
+      <Field Name="_repository" />
+      <Field Name="_mapper" />
       <Field Name="_itemAdapter" />
       <Field Name="_partAdapter" />
-      <Field Name="_mapper" />
-      <Field Name="_repository" />
     </ShowAsAssociation>
   </Class>
   <Class Name="Cadmus.Graph.Adapters.ItemGraphSourceAdapter" Collapsed="true">
-    <Position X="9" Y="14.75" Width="2" />
+    <Position X="3.5" Y="12" Width="2" />
     <TypeIdentifier>
       <HashCode>AAAKAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAMAAAAAQ=</HashCode>
       <FileName>Adapters\ItemGraphSourceAdapter.cs</FileName>
@@ -302,7 +305,7 @@
     <Lollipop Position="0.2" />
   </Class>
   <Class Name="Cadmus.Graph.Adapters.PartGraphSourceAdapter" Collapsed="true">
-    <Position X="9" Y="15.75" Width="2" />
+    <Position X="3.5" Y="13.25" Width="2" />
     <TypeIdentifier>
       <HashCode>QAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAQAAIAAAAAA=</HashCode>
       <FileName>Adapters\PartGraphSourceAdapter.cs</FileName>
@@ -310,9 +313,9 @@
     <Lollipop Position="0.2" />
   </Class>
   <Interface Name="Cadmus.Graph.INodeMapper">
-    <Position X="6" Y="5.25" Width="1.75" />
+    <Position X="6" Y="5.5" Width="1.75" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAjIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <HashCode>AAAAAAAAAjIAAAAAAAAAIEAAAQAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>INodeMapper.cs</FileName>
     </TypeIdentifier>
   </Interface>
@@ -340,7 +343,7 @@
   <Interface Name="Cadmus.Graph.IGraphRepository">
     <Position X="0.5" Y="0.5" Width="2" />
     <TypeIdentifier>
-      <HashCode>sAgACgAohAEABAAAFAAAAAQEHAAAAAQZAQgBgABMBQA=</HashCode>
+      <HashCode>sAgACgEghAFAAAAAFAAAQAQEHAABAAQZAAgRAQBMBQA=</HashCode>
       <FileName>IGraphRepository.cs</FileName>
     </TypeIdentifier>
   </Interface>

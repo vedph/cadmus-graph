@@ -47,6 +47,32 @@ public class GraphUpdater
         Metadata = new Dictionary<string, object>();
     }
 
+    /// <summary>
+    /// Adds the specified macro.
+    /// </summary>
+    /// <param name="key">The key.</param>
+    /// <param name="macro">The macro.</param>
+    public void AddMacro(string key, INodeMappingMacro macro)
+        => _mapper.AddMacro(key, macro);
+
+    /// <summary>
+    /// Deletes the macro with the specified key.
+    /// </summary>
+    /// <param name="key">The key.</param>
+    public void DeleteMacro(string key) => _mapper.DeleteMacro(key);
+
+    /// <summary>
+    /// Sets the macros to use in this mapper.
+    /// </summary>
+    /// <param name="macros">The macros.</param>
+    public void SetMacros(IDictionary<string, INodeMappingMacro> macros) =>
+        _mapper.SetMacros(macros);
+
+    /// <summary>
+    /// Resets the macros to the builtin ones.
+    /// </summary>
+    public void ResetMacros() => _mapper.ResetMacros();
+
     private void SetMapperMetadata()
     {
         _mapper.Data.Clear();
