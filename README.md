@@ -5,6 +5,7 @@
     - [Demo](#demo)
     - [API](#api)
   - [History](#history)
+    - [3.0.6](#306)
     - [3.0.5](#305)
     - [3.0.4](#304)
     - [3.0.1](#301)
@@ -108,6 +109,12 @@ docker compose -f docker-compose-api.yml up
 ```
 
 ## History
+
+### 3.0.6
+
+- 2023-08-09:
+  - fix to `GraphSet` null checks.
+  - updated packages.
 
 ### 3.0.5
 

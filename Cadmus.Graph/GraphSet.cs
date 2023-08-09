@@ -88,12 +88,12 @@ public class GraphSet
     {
         Dictionary<string, IList<UriNode>> dct = new();
 
-        foreach (UriNode triple in Nodes)
+        foreach (UriNode node in Nodes)
         {
-            string key = triple.Sid?[..36] ?? "";
+            string key = node.Sid != null? node.Sid[..36] : "";
 
             if (!dct.ContainsKey(key)) dct[key] = new List<UriNode>();
-            dct[key].Add(triple);
+            dct[key].Add(node);
         }
         return dct;
     }
@@ -110,7 +110,7 @@ public class GraphSet
 
         foreach (UriTriple triple in Triples)
         {
-            string key = triple.Sid?[..36] ?? "";
+            string key = triple.Sid != null? triple.Sid[..36] : "";
 
             if (!dct.ContainsKey(key)) dct[key] = new List<UriTriple>();
             dct[key].Add(triple);
