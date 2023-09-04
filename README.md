@@ -110,6 +110,10 @@ docker compose -f docker-compose-api.yml up
 
 ## History
 
+### 3.0.7
+
+- 2023-09-04: updated packages.
+
 ### 3.0.6
 
 - 2023-08-09:
