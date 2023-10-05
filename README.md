@@ -1,67 +1,5 @@
 # Cadmus.Graph
 
-- [Cadmus.Graph](#cadmusgraph)
-  - [Docker](#docker)
-    - [Demo](#demo)
-    - [API](#api)
-  - [History](#history)
-    - [4.0.0](#400)
-    - [3.0.7](#307)
-    - [3.0.6](#306)
-    - [3.0.5](#305)
-    - [3.0.4](#304)
-    - [3.0.1](#301)
-    - [2.4.0](#240)
-    - [2.3.5](#235)
-    - [2.3.4](#234)
-    - [2.3.3](#233)
-    - [2.3.2](#232)
-    - [2.3.1](#231)
-    - [2.3.0](#230)
-    - [2.2.20](#2220)
-    - [2.2.19](#2219)
-    - [2.2.18](#2218)
-    - [2.2.17](#2217)
-    - [2.2.16](#2216)
-    - [2.2.15](#2215)
-    - [2.2.14](#2214)
-    - [2.2.13](#2213)
-    - [2.2.12](#2212)
-    - [2.2.10](#2210)
-    - [2.2.9](#229)
-    - [2.2.8](#228)
-    - [2.2.7](#227)
-    - [2.2.5](#225)
-    - [2.2.4](#224)
-    - [2.2.3](#223)
-    - [2.2.2](#222)
-    - [2.2.0](#220)
-    - [2.1.12](#2112)
-    - [2.1.11](#2111)
-    - [2.1.10](#2110)
-    - [2.1.5](#215)
-    - [2.1.4](#214)
-    - [2.1.3](#213)
-    - [2.1.0](#210)
-    - [2.0.11](#2011)
-    - [2.0.6](#206)
-    - [2.0.5](#205)
-    - [2.0.4](#204)
-    - [2.0.3](#203)
-    - [2.0.2](#202)
-    - [1.0.1](#101)
-    - [1.0.0](#100)
-    - [0.1.1](#011)
-    - [0.1.0](#010)
-    - [0.0.9](#009)
-    - [0.0.8](#008)
-    - [API History](#api-history)
-      - [0.0.1](#001)
-    - [Demo History](#demo-history)
-      - [0.0.5](#005)
-      - [0.0.4](#004)
-      - [0.0.1](#001-1)
-
 This library represents a enhanced graph mapping tool for Cadmus, bypassing pins and directly using JSON-encoded objects, whatever their type.
 
 For more information see the [documentation](docs/index.md) (still incomplete).
@@ -114,7 +52,11 @@ docker compose -f docker-compose-api.yml up
 
 ### 4.0.0
 
-- 2023-10-05: ⚠️ refactored database schema to remove mapping rules redundancy.
+- 2023-10-05:
+  - ⚠️ refactored database schema to remove mapping rules redundancy.
+  - completed migration to PostgreSQL.
+
+>Note: Docker images have not been updated yet.
 
 ### 3.0.7
 
