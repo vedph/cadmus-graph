@@ -12,8 +12,10 @@ public interface IMappingRepository
     /// </summary>
     /// <param name="filter">The filter. Set page size=0 to get all
     /// the mappings at once.</param>
+    /// <param name="descendants">True to load the descendants of each mapping.
+    /// </param>
     /// <returns>Page.</returns>
-    DataPage<NodeMapping> GetMappings(NodeMappingFilter filter);
+    DataPage<NodeMapping> GetMappings(NodeMappingFilter filter, bool descendants);
 
     /// <summary>
     /// Gets the mapping with the specified ID.
@@ -23,20 +25,11 @@ public interface IMappingRepository
     NodeMapping? GetMapping(int id);
 
     /// <summary>
-    /// Adds or updates the specified mapping. A new mapping has ID=0, and
-    /// will receive a new ID.
+    /// Adds or updates the specified mapping by its name.
     /// </summary>
     /// <param name="mapping">The mapping.</param>
     /// <returns>The ID of the mapping.</returns>
     int AddMapping(NodeMapping mapping);
-
-    /// <summary>
-    /// Adds the mapping by name. If a mapping with the same name already
-    /// exists, it will be updated. Names are not case sensitive.
-    /// </summary>
-    /// <param name="mapping">The mapping.</param>
-    /// <returns>The ID of the mapping.</returns>
-    int AddMappingByName(NodeMapping mapping);
 
     /// <summary>
     /// Deletes the mapping with the specified ID.

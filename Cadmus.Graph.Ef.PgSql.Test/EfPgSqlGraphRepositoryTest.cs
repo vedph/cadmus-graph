@@ -1,4 +1,4 @@
-using Cadmus.Graph.Sql.Test;
+using Cadmus.Graph.Ef.Test;
 using Fusi.DbManager;
 using Fusi.DbManager.PgSql;
 using Xunit;
@@ -6,7 +6,7 @@ using Xunit;
 namespace Cadmus.Graph.Ef.PgSql.Test;
 
 [Collection(nameof(NonParallelResourceCollection))]
-public sealed class EfPgSqlGraphRepositoryTest : SqlGraphRepositoryTest
+public sealed class EfPgSqlGraphRepositoryTest : EfGraphRepositoryTest
 {
     private IDbManager? _manager;
 
@@ -241,6 +241,9 @@ public sealed class EfPgSqlGraphRepositoryTest : SqlGraphRepositoryTest
     #endregion
 
     #region Mapping
+    [Fact]
+    public void LoadMappings_Ok() => DoLoadMappings_Ok();
+
     [Fact]
     public void AddMapping_NotExisting_Ok() => DoAddMapping_NotExisting_Ok();
 

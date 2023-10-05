@@ -12,14 +12,14 @@ using System.Linq;
 using System.Text.Json;
 using Xunit;
 
-namespace Cadmus.Graph.Sql.Test;
+namespace Cadmus.Graph.Ef.Test;
 
 /// <summary>
 /// Base class for SQL-based graph repositories tests.
 /// </summary>
-public abstract class SqlGraphRepositoryTest
+public abstract class EfGraphRepositoryTest
 {
-    private const string DB_NAME = "cadmus-index-test";
+    private const string DB_NAME = "cadmus-graph-test";
 
     /// <summary>
     /// Gets the connection string template.
@@ -1166,8 +1166,8 @@ public abstract class SqlGraphRepositoryTest
 
     #region Thesaurus
     static private Stream GetResourceStream(string name) =>
-        typeof(SqlGraphRepositoryTest).Assembly.GetManifestResourceStream(
-        "Cadmus.Graph.Sql.Test.Assets." + name)!;
+        typeof(EfGraphRepositoryTest).Assembly.GetManifestResourceStream(
+        "Cadmus.Graph.Ef.Test.Assets." + name)!;
 
     private static Thesaurus GetThesaurus()
     {
@@ -1312,6 +1312,76 @@ public abstract class SqlGraphRepositoryTest
     #endregion
 
     #region Mapping
+    // MappingsDoc.json:
+    // - event_note: T #4
+    // - event_chronotopes: #5
+    //   - event_chronotopes/place: NT #6
+    //   - event_chronotopes/date: MNT #7
+    // - person: NT #1
+    // - work: NT #2
+    // - text_sent_event: MNT #3
+    //   - *event_note #4
+    //   - *event_chronotopes #5
+    //   - text_sent_event/related/carried_out_by: NT #8
+    //   - text_sent_event/related/has_participant: NT #9
+    // - text_reception_event: MNT #10
+    //   - *event_note #4
+    //   - *event_chronotopes #5
+    //   - text_reception_event/related/carried_out_by: NT #11
+    //   - text_reception_event/related/has_participant: NT #12
+    // - text_transcription_event: MNT #13
+    //   - *event_note #4
+    //   - *event_chronotopes #5
+    //   - text_transcription_event/related/carried_out_by: NT #14
+    //   - text_transcription_event/related/has_produced: NT #15
+    // - text_collection_event: MNT #16
+    //   - *event_note #4
+    //   - *event_chronotopes #5
+    //   - text_collection_event/related/has_component: NT #17
+    // - text_version_event: MNT #18
+    //   - *event_note #4
+    //   - *event_chronotopes #5
+    //   - text_collection_event/related/refers_to: NT #19
+    // - work_info: NT #20
+    //   - work_info/author-ids@eg #21
+    //   - work_info/author-ids@el #22
+    //   - work_info/author-ids@i #23
+
+    protected void DoLoadMappings_Ok()
+    {
+        Reset();
+        IGraphRepository repository = GetRepository();
+
+        // load mappings
+        string json = TestHelper.LoadResourceText("MappingsDoc.json");
+        JsonSerializerOptions options = new()
+        {
+            AllowTrailingCommas = true,
+            PropertyNameCaseInsensitive = true,
+        };
+        options.Converters.Add(new NodeMappingOutputJsonConverter());
+        NodeMappingDocument doc = JsonSerializer.Deserialize<NodeMappingDocument>
+            (json, options)!;
+        // save mappings into DB
+        foreach (NodeMapping mapping in doc.GetMappings())
+            repository.AddMapping(mapping);
+
+        // root mappings
+        DataPage<NodeMapping> page = repository.GetMappings(new NodeMappingFilter
+        {
+            PageSize = 30
+        }, true);
+        Assert.Equal(8, page.Total);
+
+        // child mappings
+        page = repository.GetMappings(new NodeMappingFilter
+        {
+            PageSize = 30,
+            ParentId = 5
+        }, true);
+        Assert.Equal(2, page.Total);
+    }
+
     private static void AssertMappingsEqual(NodeMapping expected,
         NodeMapping actual, bool output, bool children)
     {

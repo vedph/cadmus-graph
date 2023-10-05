@@ -1,6 +1,4 @@
-﻿using Cadmus.Graph.MySql;
-using Fusi.DbManager.MySql;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Polly;
 using System;
 using System.Data.Common;
@@ -10,6 +8,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using System.Threading;
+using Fusi.DbManager.PgSql;
+using Cadmus.Graph.Ef.PgSql;
 
 namespace Cadmus.Graph.Api.Services;
 
@@ -63,7 +63,7 @@ public sealed class DatabaseSeedService : IHostedService
         string cst = config.GetConnectionString("Template")!;
         string db = config.GetValue<string>("DatabaseName")!;
 
-        MySqlDbManager dbManager = new(cst);
+        PgSqlDbManager dbManager = new(cst);
         if (dbManager.Exists(db))
         {
             logger?.LogInformation("Database {DatabaseName} exists", db);
@@ -71,8 +71,8 @@ public sealed class DatabaseSeedService : IHostedService
         }
 
         // else create and seed it
-        logger?.LogInformation($"Creating database {db}");
-        dbManager.CreateDatabase(db, MySqlGraphRepository.GetSchema(), null);
+        logger?.LogInformation("Creating database {DatabaseName}", db);
+        dbManager.CreateDatabase(db, EfPgSqlGraphRepository.GetSchema(), null);
 
         // fill with sample data
         FillGraph(repository);

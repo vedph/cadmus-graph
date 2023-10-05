@@ -5,6 +5,8 @@
     - [Demo](#demo)
     - [API](#api)
   - [History](#history)
+    - [4.0.0](#400)
+    - [3.0.7](#307)
     - [3.0.6](#306)
     - [3.0.5](#305)
     - [3.0.4](#304)
@@ -68,7 +70,7 @@ For more information see the [documentation](docs/index.md) (still incomplete).
 
 ## Docker
 
-Both the API project and the demo Blazor app are development tools, not intended for production. The API project provides a backend to frontend apps, while the Blazor demo provides a UI to test the mapping engine.
+🐋 Both the API project and the demo Blazor app are development tools, not intended for production. The API project provides a backend to frontend apps, while the Blazor demo provides a UI to test the mapping engine.
 
 As interactive test tools, both these projects can be containerized and run in other system.
 
@@ -109,6 +111,10 @@ docker compose -f docker-compose-api.yml up
 ```
 
 ## History
+
+### 4.0.0
+
+- 2023-10-05: ⚠️ refactored database schema to remove mapping rules redundancy.
 
 ### 3.0.7
 

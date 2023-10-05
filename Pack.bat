@@ -4,8 +4,6 @@ del .\Cadmus.Graph\bin\Debug\*.*nupkg
 del .\Cadmus.Graph.Ef\bin\Debug\*.*nupkg
 del .\Cadmus.Graph.Ef.MySql\bin\Debug\*.*nupkg
 del .\Cadmus.Graph.Ef.PgSql\bin\Debug\*.*nupkg
-del .\Cadmus.Graph.MySql\bin\Debug\*.*nupkg
-del .\Cadmus.Graph.Sql\bin\Debug\*.*nupkg
 del .\Cadmus.Graph.Extras\bin\Debug\*.*nupkg
 
 cd .\Cadmus.Graph
@@ -18,12 +16,6 @@ cd .\Cadmus.Graph.Ef.MySql
 dotnet pack -c Debug -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg
 cd..
 cd .\Cadmus.Graph.Ef.PgSql
-dotnet pack -c Debug -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg
-cd..
-cd .\Cadmus.Graph.MySql
-dotnet pack -c Debug -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg
-cd..
-cd .\Cadmus.Graph.Sql
 dotnet pack -c Debug -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg
 cd..
 cd .\Cadmus.Graph.Extras

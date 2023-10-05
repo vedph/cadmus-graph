@@ -1,44 +1,40 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
     <Version>4.0.0</Version>
     <FileVersion>4.0.0</FileVersion>
     <AssemblyVersion>4.0.0</AssemblyVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Assets\Events.json" />
-    <None Remove="Assets\Mappings.json" />
     <None Remove="Assets\MappingsDoc.json" />
-    <None Remove="Assets\MappingsDocDepth3.json" />
-    <None Remove="Assets\Nodes.json" />
+    <None Remove="Assets\Petrarch-n.json" />
+    <None Remove="Assets\Petrarch-t.json" />
     <None Remove="Assets\Thesauri.json" />
-    <None Remove="Assets\WorkMappingsDoc.json" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Assets\Events.json" />
-    <EmbeddedResource Include="Assets\Mappings.json" />
     <EmbeddedResource Include="Assets\MappingsDoc.json" />
-    <EmbeddedResource Include="Assets\MappingsDocDepth3.json" />
-    <EmbeddedResource Include="Assets\Nodes.json" />
+    <EmbeddedResource Include="Assets\Petrarch-n.json" />
+    <EmbeddedResource Include="Assets\Petrarch-t.json" />
     <EmbeddedResource Include="Assets\Thesauri.json" />
-    <EmbeddedResource Include="Assets\WorkMappingsDoc.json" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Cadmus.General.Parts" Version="5.0.5" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.7.2" />
-    <PackageReference Include="xunit" Version="2.5.1" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.5.1">
+	<PackageReference Include="Cadmus.General.Parts" Version="5.0.5" />
+	<PackageReference Include="Fusi.DbManager" Version="3.0.1" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.7.1" />
+    <PackageReference Include="xunit" Version="2.4.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.5">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="coverlet.collector" Version="6.0.0">
+    <PackageReference Include="coverlet.collector" Version="3.2.0">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>

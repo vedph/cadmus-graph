@@ -85,7 +85,6 @@ ALTER TABLE triple ADD CONSTRAINT triple_fk_2 FOREIGN KEY (o_id) REFERENCES node
 -- mapping
 CREATE TABLE "mapping" (
 	id serial4 NOT NULL,
-	parent_id int4 NULL,
 	ordinal int4 NOT NULL,
 	"name" varchar(100) NOT NULL,
 	source_type int4 NOT NULL,
@@ -99,11 +98,19 @@ CREATE TABLE "mapping" (
 	"source" varchar(500) NOT NULL,
 	sid varchar(500) NULL,
 	scalar_pattern varchar(500) NULL,
-	CONSTRAINT mapping_pk PRIMARY KEY (id),
-	CONSTRAINT mapping_fk FOREIGN KEY (parent_id) REFERENCES "mapping"(id) ON DELETE CASCADE ON UPDATE CASCADE
+	CONSTRAINT mapping_pk PRIMARY KEY (id)
 );
 CREATE INDEX mapping_facet_filter_idx ON mapping USING btree (facet_filter);
 CREATE INDEX mapping_name_idx ON mapping USING btree (name);
+
+-- mapping_link
+CREATE TABLE mapping_link (
+	parent_id int4 NOT NULL,
+	child_id int4 NOT NULL,
+	CONSTRAINT mapping_link_pk PRIMARY KEY (parent_id, child_id),
+	CONSTRAINT mapping_link_fk_parent FOREIGN KEY (parent_id) REFERENCES "mapping"(id) ON DELETE CASCADE ON UPDATE CASCADE,
+	CONSTRAINT mapping_link_fk_child FOREIGN KEY (child_id) REFERENCES "mapping"(id) ON DELETE CASCADE ON UPDATE CASCADE
+);
 
 -- mapping_out_node
 CREATE TABLE mapping_out_node (

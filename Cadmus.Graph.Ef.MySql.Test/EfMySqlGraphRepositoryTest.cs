@@ -1,4 +1,4 @@
-using Cadmus.Graph.Sql.Test;
+using Cadmus.Graph.Ef.Test;
 using Fusi.DbManager;
 using Fusi.DbManager.MySql;
 using Xunit;
@@ -6,7 +6,7 @@ using Xunit;
 namespace Cadmus.Graph.Ef.MySql.Test;
 
 [Collection(nameof(NonParallelResourceCollection))]
-public sealed class EfMySqlGraphRepositoryTest : SqlGraphRepositoryTest
+public sealed class EfMySqlGraphRepositoryTest : EfGraphRepositoryTest
 {
     private IDbManager? _manager;
 
@@ -240,6 +240,9 @@ public sealed class EfMySqlGraphRepositoryTest : SqlGraphRepositoryTest
     #endregion
 
     #region Mapping
+    [Fact]
+    public void LoadMappings_Ok() => DoLoadMappings_Ok();
+
     [Fact]
     public void AddMapping_NotExisting_Ok() => DoAddMapping_NotExisting_Ok();
 

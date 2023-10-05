@@ -98,9 +98,12 @@ public class RamMappingRepository : IMappingRepository
     /// </summary>
     /// <param name="filter">The filter. Set page size=0 to get all
     /// the mappings at once.</param>
+    /// <param name="descendants">True to load the descendants of each mapping.
+    /// </param>
     /// <returns>The page.</returns>
     /// <exception cref="ArgumentNullException">filter</exception>
-    public DataPage<NodeMapping> GetMappings(NodeMappingFilter filter)
+    public DataPage<NodeMapping> GetMappings(NodeMappingFilter filter,
+        bool descendants)
     {
         IQueryable<NodeMapping> mappings =
             ApplyNodeMappingFilter(filter, Mappings.AsQueryable());

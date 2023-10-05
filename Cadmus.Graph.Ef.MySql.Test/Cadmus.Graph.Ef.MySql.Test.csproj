@@ -6,16 +6,16 @@
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
-    <Version>3.0.7</Version>
-    <FileVersion>3.0.7</FileVersion>
-    <AssemblyVersion>3.0.7</AssemblyVersion>
+    <Version>4.0.0</Version>
+    <FileVersion>4.0.0</FileVersion>
+    <AssemblyVersion>4.0.0</AssemblyVersion>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Fusi.DbManager.MySql" Version="3.0.3" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.7.2" />
-    <PackageReference Include="xunit" Version="2.5.0" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.5.0">
+    <PackageReference Include="xunit" Version="2.5.1" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.5.1">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
@@ -27,7 +27,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Cadmus.Graph.Ef.MySql\Cadmus.Graph.Ef.MySql.csproj" />
-    <ProjectReference Include="..\Cadmus.Graph.Sql.Test\Cadmus.Graph.Sql.Test.csproj" />
+    <ProjectReference Include="..\Cadmus.Graph.Ef.Test\Cadmus.Graph.Ef.Test.csproj" />
   </ItemGroup>
 
 </Project>

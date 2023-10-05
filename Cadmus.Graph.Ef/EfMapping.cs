@@ -2,6 +2,11 @@
 
 namespace Cadmus.Graph.Ef;
 
+/// <summary>
+/// An entity representing a node mapping with zero or one parent and
+/// zero or more children. In the database, mappings are added or updated
+/// by their name. The numeric ID is used internally.
+/// </summary>
 public class EfMapping
 {
     /// <summary>
@@ -9,12 +14,6 @@ public class EfMapping
     /// assigned when the mapping is archived in a database.
     /// </summary>
     public int Id { get; set; }
-
-    /// <summary>
-    /// Gets or sets the parent mapping's identifier. This is assigned
-    /// when the mapping is archived in a database.
-    /// </summary>
-    public int? ParentId { get; set; }
 
     /// <summary>
     /// Gets or sets an optional ordinal value used to define the order
@@ -89,9 +88,16 @@ public class EfMapping
     /// </summary>
     public string? ScalarPattern { get; set; }
 
-    public EfMapping? Parent { get; set; }
+    /// <summary>
+    /// Gets or sets the links to all the parent mappings of this mapping.
+    /// The same mapping can be shared by multiple parents
+    /// </summary>
+    public List<EfMappingLink>? ParentLinks { get; set; }
 
-    public List<EfMapping>? Children { get; set; }
+    /// <summary>
+    /// Gets or sets the links to all the children mappings of this mapping.
+    /// </summary>
+    public List<EfMappingLink>? ChildLinks { get; set; }
 
     public List<EfMappingMetaOutput>? MetaOutputs { get; set; }
 
@@ -111,7 +117,6 @@ public class EfMapping
 
         // copy source into this object
         Id = source.Id;
-        ParentId = source.ParentId == 0? null : source.ParentId;
         Ordinal = source.Ordinal;
         Name = source.Name ?? "";
         SourceType = source.SourceType;
@@ -180,24 +185,14 @@ public class EfMapping
                 });
             }
         }
-
-        // children
-        if (source.HasChildren)
-        {
-            Children = new List<EfMapping>();
-            foreach (NodeMapping child in source.Children)
-            {
-                Children.Add(new EfMapping(child));
-            }
-        }
     }
 
-    public NodeMapping ToNodeMapping()
+    public NodeMapping ToNodeMapping(int parentId)
     {
         return new NodeMapping
         {
             Id = Id,
-            ParentId = ParentId ?? 0,
+            ParentId = parentId,
             Ordinal = Ordinal,
             Name = Name,
             SourceType = SourceType,
@@ -233,8 +228,6 @@ public class EfMapping
                     }).ToList()
                     ?? new List<MappedTriple>()
             },
-            Children = Children?.Select(c => c.ToNodeMapping()).ToList()
-                ?? new List<NodeMapping>()
         };
     }
 

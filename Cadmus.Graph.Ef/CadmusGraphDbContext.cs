@@ -15,6 +15,7 @@ public class CadmusGraphDbContext : DbContext
     public DbSet<EfNamespaceEntry> NamespaceEntries { get; set; }
     public DbSet<EfUidEntry> UidEntries { get; set; }
     public DbSet<EfMapping> Mappings { get; set; }
+    public DbSet<EfMappingLink> MappingLinks { get; set; }
     public DbSet<EfMappingMetaOutput> MappingMetaOutputs { get; set; }
     public DbSet<EfMappingNodeOutput> MappingNodeOutputs { get; set; }
     public DbSet<EfMappingTripleOutput> MappingTripleOutputs { get; set; }
@@ -173,13 +174,31 @@ public class CadmusGraphDbContext : DbContext
             x.Property(x => x.OL).HasColumnName("ol").HasMaxLength(10000);
         });
 
+        // mapping_link
+        modelBuilder.Entity<EfMappingLink>().ToTable("mapping_link");
+        modelBuilder.Entity<EfMappingLink>(x =>
+        {
+            x.HasKey(x => new { x.ParentId, x.ChildId });
+            x.Property(x => x.ParentId).HasColumnName("parent_id");
+            x.Property(x => x.ChildId).HasColumnName("child_id");
+
+            x.HasOne(l => l.Parent)
+                .WithMany(m => m.ChildLinks)
+                .HasForeignKey(l => l.ParentId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            x.HasOne(l => l.Child)
+                .WithMany(m => m.ParentLinks)
+                .HasForeignKey(l => l.ChildId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
         // mapping
         modelBuilder.Entity<EfMapping>().ToTable("mapping");
         modelBuilder.Entity<EfMapping>(x =>
         {
             x.HasKey(x => x.Id);
             x.Property(x => x.Id).HasColumnName("id").ValueGeneratedOnAdd();
-            x.Property(x => x.ParentId).HasColumnName("parent_id");
             x.Property(x => x.Ordinal).IsRequired().HasColumnName("ordinal");
             x.Property(x => x.Name).HasColumnName("name").IsRequired().HasMaxLength(100);
             x.Property(x => x.SourceType).HasColumnName("source_type").IsRequired();
@@ -202,11 +221,6 @@ public class CadmusGraphDbContext : DbContext
             x.Property(x => x.ScalarPattern).HasColumnName("scalar_pattern")
                 .HasMaxLength(500);
         });
-        // children
-        modelBuilder.Entity<EfMapping>()
-            .HasOne(m => m.Parent)
-            .WithMany(m => m.Children)
-            .HasForeignKey(m => m.ParentId);
         // output metadata
         modelBuilder.Entity<EfMapping>()
             .HasMany(m => m.MetaOutputs)

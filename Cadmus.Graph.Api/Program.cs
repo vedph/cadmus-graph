@@ -1,5 +1,3 @@
-using Cadmus.Graph.MySql;
-using Cadmus.Index.Sql;
 using System;
 using System.Linq;
 using System.Collections;
@@ -11,6 +9,8 @@ using Cadmus.Graph.Api.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using Cadmus.Graph.Ef.PgSql;
+using Cadmus.Graph.Ef;
 
 namespace Cadmus.Graph.Api;
 
@@ -57,8 +57,8 @@ public static class Program
             {
                 var config = provider.GetService<IConfiguration>()!;
                 string cst = config.GetConnectionString("Template")!;
-                var repository = new MySqlGraphRepository();
-                repository.Configure(new SqlOptions
+                var repository = new EfPgSqlGraphRepository();
+                repository.Configure(new EfGraphRepositoryOptions
                 {
                     ConnectionString = string.Format(cst,
                         config.GetValue<string>("DatabaseName") ?? "cadmus-graph")

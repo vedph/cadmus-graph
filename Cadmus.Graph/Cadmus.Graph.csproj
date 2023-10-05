@@ -4,9 +4,9 @@
     <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <Version>3.0.7</Version>
-    <FileVersion>3.0.7</FileVersion>
-    <AssemblyVersion>3.0.7</AssemblyVersion>
+    <Version>4.0.0</Version>
+    <FileVersion>4.0.0</FileVersion>
+    <AssemblyVersion>4.0.0</AssemblyVersion>
     <IncludeSymbols>true</IncludeSymbols>
 	<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 	<Authors>Daniele Fusi</Authors>
@@ -20,7 +20,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Cadmus.Core" Version="6.1.16" />
+    <PackageReference Include="Cadmus.Core" Version="6.1.18" />
     <PackageReference Include="Fusi.Antiquity" Version="3.0.0" />
     <PackageReference Include="Fusi.Text" Version="3.0.0" />
     <PackageReference Include="Fusi.Tools" Version="3.1.1" />

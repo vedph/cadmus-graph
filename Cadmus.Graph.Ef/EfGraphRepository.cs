@@ -8,6 +8,7 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore.Storage;
 using System.Diagnostics;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace Cadmus.Graph.Ef;
 
@@ -17,6 +18,8 @@ namespace Cadmus.Graph.Ef;
 public abstract class EfGraphRepository : IUidBuilder,
     IConfigurable<EfGraphRepositoryOptions>
 {
+    private const string CACHE_KEY_PREFIX = "nm-";
+
     /// <summary>
     /// Gets the connection string.
     /// </summary>
@@ -48,6 +51,7 @@ public abstract class EfGraphRepository : IUidBuilder,
     protected abstract CadmusGraphDbContext GetContext();
 
     #region Namespace Lookup
+#pragma warning disable RCS1155 // Use StringComparison when comparing strings.
     /// <summary>
     /// Gets the specified page of namespaces with their prefixes.
     /// </summary>
@@ -92,7 +96,9 @@ public abstract class EfGraphRepository : IUidBuilder,
         return new DataPage<NamespaceEntry>(filter.PageNumber,
             filter.PageSize, total, results);
     }
+#pragma warning restore RCS1155 // Use StringComparison when comparing strings.
 
+#pragma warning disable RCS1155 // Use StringComparison when comparing strings.
     /// <summary>
     /// Looks up the namespace from its prefix.
     /// </summary>
@@ -173,9 +179,11 @@ public abstract class EfGraphRepository : IUidBuilder,
             context.SaveChanges();
         }
     }
+#pragma warning restore RCS1155 // Use StringComparison when comparing strings.
     #endregion
 
     #region UID Lookup
+#pragma warning disable RCS1155 // Use StringComparison when comparing strings.
     /// <summary>
     /// Adds the specified UID, eventually completing it with a suffix.
     /// </summary>
@@ -239,9 +247,11 @@ public abstract class EfGraphRepository : IUidBuilder,
         context.SaveChanges();
         return unsuffixed + "#" + entry.Id;
     }
+#pragma warning restore RCS1155 // Use StringComparison when comparing strings.
     #endregion
 
     #region URI Lookup
+#pragma warning disable RCS1155 // Use StringComparison when comparing strings.
     private static int AddUri(string uri, CadmusGraphDbContext context)
     {
         // if the URI already exists, just return its ID
@@ -281,6 +291,7 @@ public abstract class EfGraphRepository : IUidBuilder,
         newUri = true;
         return entry.Id;
     }
+#pragma warning restore RCS1155 // Use StringComparison when comparing strings.
 
     /// <summary>
     /// Adds the specified URI in the mapped URIs set.
@@ -315,6 +326,7 @@ public abstract class EfGraphRepository : IUidBuilder,
     /// <param name="uri">The URI.</param>
     /// <returns>The ID, or 0 if not found.</returns>
     /// <exception cref="ArgumentNullException">uri</exception>
+#pragma warning disable RCS1155 // Use StringComparison when comparing strings.
     public int LookupId(string uri)
     {
         if (uri == null) throw new ArgumentNullException(nameof(uri));
@@ -324,9 +336,11 @@ public abstract class EfGraphRepository : IUidBuilder,
             .FirstOrDefault(l => l.Uri.ToLower() == uri.ToLower());
         return entry?.Id ?? 0;
     }
+#pragma warning restore RCS1155 // Use StringComparison when comparing strings.
     #endregion
 
     #region Node
+#pragma warning disable RCS1155 // Use StringComparison when comparing strings.
     private static IQueryable<EfNode> ApplyNodeFilterBase(
         IQueryable<EfNode> nodes, NodeFilterBase filter)
     {
@@ -364,12 +378,10 @@ public abstract class EfGraphRepository : IUidBuilder,
         // sid
         if (!string.IsNullOrEmpty(filter.Sid))
         {
-            if (filter.IsSidPrefix)
-            {
-                nodes = nodes.Where(n => n.Sid != null &&
-                    n.Sid.ToLower().StartsWith(filter.Sid.ToLower()));
-            }
-            else nodes = nodes.Where(n => n.Sid == filter.Sid);
+            nodes = filter.IsSidPrefix
+                ? nodes.Where(n => n.Sid != null &&
+                    n.Sid.ToLower().StartsWith(filter.Sid.ToLower()))
+                : nodes.Where(n => n.Sid == filter.Sid);
         }
 
         // class IDs
@@ -383,6 +395,7 @@ public abstract class EfGraphRepository : IUidBuilder,
 
         return nodes;
     }
+#pragma warning restore RCS1155 // Use StringComparison when comparing strings.
 
     /// <summary>
     /// Gets the requested page of nodes.
@@ -757,6 +770,7 @@ public abstract class EfGraphRepository : IUidBuilder,
         return sb.ToString();
     }
 
+#pragma warning disable RCS1155 // Use StringComparison when comparing strings.
     private IQueryable<EfTriple> GetFilteredTriples(LiteralFilter filter,
         CadmusGraphDbContext context)
     {
@@ -850,17 +864,15 @@ public abstract class EfGraphRepository : IUidBuilder,
         // tag (null if empty)
         if (filter.Tag != null)
         {
-            if (filter.Tag.Length == 0)
-                triples = triples.Where(t => t.Tag == null);
-            else
-            {
-                triples = triples
+            triples = filter.Tag.Length == 0
+                ? triples.Where(t => t.Tag == null)
+                : triples
                     .Where(t => t.Tag!.ToLower() == filter.Tag.ToLower());
-            }
         }
 
         return triples;
     }
+#pragma warning restore RCS1155 // Use StringComparison when comparing strings.
 
     /// <summary>
     /// Gets the literals included in a triple with the specified subject ID
@@ -1030,6 +1042,7 @@ public abstract class EfGraphRepository : IUidBuilder,
     #endregion
 
     #region Node Mappings
+#pragma warning disable RCS1155 // Use StringComparison when comparing strings.
     private IQueryable<EfMapping> GetFilteredMappings(NodeMappingFilter filter,
         CadmusGraphDbContext context)
     {
@@ -1048,19 +1061,38 @@ public abstract class EfGraphRepository : IUidBuilder,
                 .Include(m => m.MetaOutputs)
                 .Include(m => m.NodeOutputs)
                 .Include(m => m.TripleOutputs)
+                .Include(m => m.ChildLinks)
+                .Include(m => m.ParentLinks)
                 .AsNoTracking();
         }
         else
         {
             mappings = context.Mappings
-            .Include(m => m.MetaOutputs)
-            .Include(m => m.NodeOutputs)
-            .Include(m => m.TripleOutputs)
-            .AsNoTracking();
+                .Include(m => m.MetaOutputs)
+                .Include(m => m.NodeOutputs)
+                .Include(m => m.TripleOutputs)
+                .Include(m => m.ChildLinks)
+                .Include(m => m.ParentLinks)
+                .AsNoTracking();
         }
 
         if (filter.ParentId != null)
-            mappings = mappings.Where(m => m.ParentId == filter.ParentId);
+        {
+            mappings = mappings.Where(m => m.ParentLinks != null &&
+                m.ParentLinks.Any(l => l.ParentId == filter.ParentId));
+            //mappings = from m in mappings
+            //           join ml in context.MappingLinks on m.Id equals ml.ChildId
+            //           where ml.ParentId == filter.ParentId
+            //           select m;
+        }
+        else
+        {
+            mappings = mappings.Where(m => m.ParentLinks == null ||
+                m.ParentLinks.Count == 0);
+            //mappings = from m in mappings
+            //           where !context.MappingLinks.Any(ml => ml.ChildId == m.Id)
+            //           select m;
+        }
 
         if (filter.SourceType != null)
             mappings = mappings.Where(m => m.SourceType == filter.SourceType);
@@ -1097,7 +1129,9 @@ public abstract class EfGraphRepository : IUidBuilder,
 
         return mappings;
     }
+#pragma warning restore RCS1155 // Use StringComparison when comparing strings.
 
+#pragma warning disable RCS1155 // Use StringComparison when comparing strings.
     private IQueryable<EfMapping> GetFilteredMappings(
         RunNodeMappingFilter filter, CadmusGraphDbContext context)
     {
@@ -1136,20 +1170,22 @@ public abstract class EfGraphRepository : IUidBuilder,
                 .Include(m => m.MetaOutputs)
                 .Include(m => m.NodeOutputs)
                 .Include(m => m.TripleOutputs)
+                .Include(m => m.ChildLinks)
                 .AsNoTracking();
         }
         else
         {
             mappings = context.Mappings
-            .Include(m => m.MetaOutputs)
-            .Include(m => m.NodeOutputs)
-            .Include(m => m.TripleOutputs)
-            .AsNoTracking();
+                .Include(m => m.MetaOutputs)
+                .Include(m => m.NodeOutputs)
+                .Include(m => m.TripleOutputs)
+                .Include(m => m.ChildLinks)
+                .AsNoTracking();
         }
 
         // only root mappings for the requested source type
-        mappings = mappings.Where(m => m.ParentId == null &&
-            m.SourceType == filter.SourceType);
+        mappings = mappings.Where(m => m.SourceType == filter.SourceType &&
+            !m.ChildLinks!.Any(l => l.ChildId == m.Id));
 
         // facet
         if (!string.IsNullOrEmpty(filter.Facet))
@@ -1183,32 +1219,44 @@ public abstract class EfGraphRepository : IUidBuilder,
 
         return mappings;
     }
+#pragma warning restore RCS1155 // Use StringComparison when comparing strings.
+
+    private static void PopulateMappingChildren(IList<EfMappingLink>? links,
+        NodeMapping mapping, CadmusGraphDbContext context)
+    {
+        if (links == null) return;
+
+        foreach (EfMappingLink link in links)
+        {
+            EfMapping? child = context.Mappings
+                .Include(m => m.MetaOutputs)
+                .Include(m => m.NodeOutputs)
+                .Include(m => m.TripleOutputs)
+                .Include(m => m.ChildLinks)
+                .FirstOrDefault(m => m.Id == link.ChildId);
+            if (child == null) continue;    // defensive
+
+            NodeMapping m = child.ToNodeMapping(mapping.Id);
+            mapping.Children.Add(m);
+            PopulateMappingChildren(child.ChildLinks, m, context);
+        }
+    }
 
     private NodeMapping GetPopulatedMapping(EfMapping mapping,
         CadmusGraphDbContext context)
     {
         // use the cached mapping if any
-        if (Cache != null &&
-            Cache.TryGetValue($"nm-{mapping.Id}", out NodeMapping? m))
+        if (Cache != null && Cache.TryGetValue($"{CACHE_KEY_PREFIX}-{mapping.Id}",
+            out NodeMapping? m))
         {
             return m!;
         }
 
-        mapping.Children = context.Mappings
-            .Include(m => m.MetaOutputs)
-            .Include(m => m.NodeOutputs)
-            .Include(m => m.TripleOutputs)
-            .Where(m => m.ParentId == mapping.Id)
-            .OrderBy(m => m.Name.ToLower())
-            .ThenBy(m => m.Id)
-            .ToList();
+        m = mapping.ToNodeMapping(0);
+        PopulateMappingChildren(mapping.ChildLinks, m, context);
 
-        foreach (EfMapping child in mapping.Children)
-            GetPopulatedMapping(child, context);
-
-        NodeMapping result = mapping.ToNodeMapping();
-        Cache?.Set($"nm-{mapping.Id}", result);
-        return result;
+        Cache?.Set($"{CACHE_KEY_PREFIX}{mapping.Id}", m);
+        return m;
     }
 
     /// <summary>
@@ -1216,9 +1264,12 @@ public abstract class EfGraphRepository : IUidBuilder,
     /// </summary>
     /// <param name="filter">The filter. Set page size=0 to get all
     /// the mappings at once.</param>
+    /// <param name="descendants">True to load the descendants of each mapping.
+    /// </param>
     /// <returns>The page.</returns>
     /// <exception cref="ArgumentNullException">filter</exception>
-    public DataPage<NodeMapping> GetMappings(NodeMappingFilter filter)
+    public DataPage<NodeMapping> GetMappings(NodeMappingFilter filter,
+        bool descendants)
     {
         if (filter == null) throw new ArgumentNullException(nameof(filter));
 
@@ -1240,9 +1291,16 @@ public abstract class EfGraphRepository : IUidBuilder,
             ? mappings.Skip(filter.GetSkipCount()).Take(filter.PageSize).ToList()
             : mappings.Skip(filter.GetSkipCount()).ToList();
 
-        // populate descendants of each mapping, taking advantage of cache
-        return new DataPage<NodeMapping>(filter.PageNumber, filter.PageSize,
-            total, results.ConvertAll(m => GetPopulatedMapping(m, context)));
+        if (descendants)
+        {
+            return new DataPage<NodeMapping>(filter.PageNumber, filter.PageSize,
+                total, results.ConvertAll(m => GetPopulatedMapping(m, context)));
+        }
+        else
+        {
+            return new DataPage<NodeMapping>(filter.PageNumber, filter.PageSize,
+                total, results.ConvertAll(m => m.ToNodeMapping(0)));
+        }
     }
 
     /// <summary>
@@ -1265,8 +1323,129 @@ public abstract class EfGraphRepository : IUidBuilder,
         return GetPopulatedMapping(mapping, context);
     }
 
+    private static void AddOrUpdateChildMapping(NodeMapping mapping,
+        EfMapping parent, CadmusGraphDbContext context)
+    {
+        EfMapping efMapping = new(mapping);
+
+        // upsert the mapping
+        EfMapping? old = context.Mappings
+            .Include(m => m.ParentLinks)
+            .Include(m => m.ChildLinks)
+            .Include(m => m.MetaOutputs)
+            .Include(m => m.NodeOutputs)
+            .Include(m => m.TripleOutputs)
+            .SingleOrDefault(e => e.Name == mapping.Name);
+
+        if (old != null)
+        {
+            old.Ordinal = efMapping.Ordinal;
+            old.Name = efMapping.Name;
+            old.SourceType = efMapping.SourceType;
+            old.FacetFilter = efMapping.FacetFilter;
+            old.GroupFilter = efMapping.GroupFilter;
+            old.FlagsFilter = efMapping.FlagsFilter;
+            old.TitleFilter = efMapping.TitleFilter;
+            old.PartTypeFilter = efMapping.PartTypeFilter;
+            old.PartRoleFilter = efMapping.PartRoleFilter;
+            old.Description = efMapping.Description;
+            old.Source = efMapping.Source;
+            old.Sid = efMapping.Sid;
+            old.ScalarPattern = efMapping.ScalarPattern;
+
+            // parent links: merge
+            if (old.ParentLinks == null)
+            {
+                old.ParentLinks = efMapping.ParentLinks;
+            }
+            else if (efMapping.ParentLinks?.Count > 0)
+            {
+                foreach (EfMappingLink link in efMapping.ParentLinks)
+                {
+                    if (old.ParentLinks.Find(l => l.ParentId == link.ParentId) == null)
+                        old.ParentLinks.Add(link);
+                }
+            }
+
+            // children links: merge
+            if (old.ChildLinks == null)
+            {
+                old.ChildLinks = efMapping.ChildLinks;
+            }
+            else if (efMapping.ChildLinks?.Count > 0)
+            {
+                foreach (EfMappingLink link in efMapping.ChildLinks)
+                {
+                    if (old.ChildLinks.Find(l => l.ChildId == link.ChildId) == null)
+                        old.ChildLinks.Add(link);
+                }
+            }
+
+            // other collections: replace
+            if (old.MetaOutputs == null)
+            {
+                old.MetaOutputs = efMapping.MetaOutputs;
+            }
+            else
+            {
+                old.MetaOutputs.Clear();
+                if (efMapping.MetaOutputs != null)
+                    old.MetaOutputs.AddRange(efMapping.MetaOutputs);
+            }
+
+            if (old.NodeOutputs == null)
+            {
+                old.NodeOutputs = efMapping.NodeOutputs;
+            }
+            else
+            {
+                old.NodeOutputs.Clear();
+                if (efMapping.NodeOutputs != null)
+                    old.NodeOutputs.AddRange(efMapping.NodeOutputs);
+            }
+
+            if (old.TripleOutputs == null)
+            {
+                old.TripleOutputs = efMapping.TripleOutputs;
+            }
+            else
+            {
+                old.TripleOutputs.Clear();
+                if (efMapping.TripleOutputs != null)
+                    old.TripleOutputs.AddRange(efMapping.TripleOutputs);
+            }
+
+            context.SaveChanges();
+            efMapping = old;
+        }
+        else
+        {
+            context.Mappings.Add(efMapping);
+            context.SaveChanges();
+            mapping.Id = efMapping.Id;
+        }
+
+        // add parent-child link
+        if (context.MappingLinks.Find(parent.Id, efMapping.Id) == null)
+        {
+            context.MappingLinks.Add(new EfMappingLink
+            {
+                Parent = parent,
+                Child = efMapping
+            });
+            context.SaveChanges();
+        }
+
+        // recursively add/update children
+        if (mapping.Children?.Count > 0)
+        {
+            foreach (NodeMapping child in mapping.Children)
+                AddOrUpdateChildMapping(child, efMapping, context);
+        }
+    }
+
     /// <summary>
-    /// Adds the mapping.
+    /// Adds the specified root mapping.
     /// </summary>
     /// <param name="mapping">The mapping. Its ID will be updated if newly
     /// added.</param>
@@ -1275,52 +1454,40 @@ public abstract class EfGraphRepository : IUidBuilder,
     public int AddMapping(NodeMapping mapping)
     {
         if (mapping is null) throw new ArgumentNullException(nameof(mapping));
+        if (mapping.ParentId != 0)
+            throw new InvalidOperationException($"Not a root mapping: {mapping}");
 
         using CadmusGraphDbContext context = GetContext();
+        using IDbContextTransaction tr = context.Database.BeginTransaction();
 
-        // replace mapping if existing
-        EfMapping? old = context.Mappings
-            .FirstOrDefault(m => m.Id == mapping.Id);
-        if (old != null) context.Remove(old);
+        try
+        {
+            // remove root mapping with all its links if exists
+            EfMapping? old = context.Mappings.FirstOrDefault(
+                m => m.Name == mapping.Name);
+            if (old != null) context.Remove(old);
 
-        // add new mapping with its children
-        EfMapping newMapping = new(mapping);
-        context.Mappings.Add(newMapping);
+            // add new root mapping
+            EfMapping newMapping = new(mapping);
+            context.Mappings.Add(newMapping);
+            context.SaveChanges();
+            mapping.Id = newMapping.Id;
 
-        context.SaveChanges();
-        mapping.Id = newMapping.Id;
-        return newMapping.Id;
-    }
+            // add all the children recursively or update them when they exist
+            if (mapping.Children?.Count > 0)
+            {
+                foreach (NodeMapping child in mapping.Children)
+                    AddOrUpdateChildMapping(child, newMapping, context);
+            }
 
-    /// <summary>
-    /// Adds the mapping by name. If a mapping with the same name already
-    /// exists, it will be updated. Names are not case sensitive.
-    /// </summary>
-    /// <param name="mapping">The mapping.</param>
-    /// <returns>The ID of the mapping.</returns>
-    /// <exception cref="ArgumentNullException">mapping</exception>
-    /// <exception cref="InvalidOperationException">Adding mappings by name
-    /// requires ID=0</exception>
-    public int AddMappingByName(NodeMapping mapping)
-    {
-        if (mapping is null) throw new ArgumentNullException(nameof(mapping));
-        if (mapping.Id != 0)
-            throw new InvalidOperationException("Adding mappings by name requires ID=0");
-
-        using CadmusGraphDbContext context = GetContext();
-
-        // replace mapping if existing
-        EfMapping? old = context.Mappings
-            .FirstOrDefault(m => m.Name.ToLower() == mapping.Name!.ToLower());
-        if (old != null) context.Remove(old);
-
-        // add new mapping with its children
-        EfMapping newMapping = new(mapping);
-        context.Mappings.Add(newMapping);
-
-        context.SaveChanges();
-        mapping.Id = newMapping.Id;
-        return newMapping.Id;
+            tr.Commit();
+            return newMapping.Id;
+        }
+        catch (Exception)
+        {
+            tr.Rollback();
+            throw;
+        }
     }
 
     /// <summary>
@@ -1403,7 +1570,7 @@ public abstract class EfGraphRepository : IUidBuilder,
     {
         NodeMappingDocument doc = new();
         NodeMappingFilter filter = new();
-        DataPage<NodeMapping> page = GetMappings(filter);
+        DataPage<NodeMapping> page = GetMappings(filter, true);
         do
         {
             doc.DocumentMappings.AddRange(page.Items);
