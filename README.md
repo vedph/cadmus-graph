@@ -50,6 +50,10 @@ docker compose -f docker-compose-api.yml up
 
 ## History
 
+### 4.0.1
+
+- 2023-11-09: updated packages.
+
 ### 4.0.0
 
 - 2023-10-05:
