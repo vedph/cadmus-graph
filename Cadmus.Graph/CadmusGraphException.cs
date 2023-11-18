@@ -34,16 +34,4 @@ public class CadmusGraphException : Exception
         : base(message, innerException)
     {
     }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ChironException"/> class.
-    /// </summary>
-    /// <param name="serializationInfo">The <see cref="SerializationInfo" /> that holds
-    /// the serialized object data about the exception being thrown.</param>
-    /// <param name="streamingContext">The <see cref="StreamingContext" /> that
-    /// contains contextual information about the source or destination.</param>
-    protected CadmusGraphException(SerializationInfo serializationInfo,
-        StreamingContext streamingContext) : base(serializationInfo, streamingContext)
-    {
-    }
 }
