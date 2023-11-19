@@ -50,6 +50,8 @@ docker compose -f docker-compose-api.yml up
 
 ## History
 
+- 2023-11-19: updated test packages.
+
 ### 5.0.1
 
 - 2023-11-18: ⚠️ Upgraded to .NET 8. Please notice that currently this breaks MySql-related components, which anyway are legacy. As soon as an up to date MySql package will be available, this will be fixed.
