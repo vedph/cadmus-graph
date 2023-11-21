@@ -60,7 +60,7 @@ public sealed class TemplateNode
     /// <exception cref="ArgumentNullException">node</exception>
     public void AddChild(TemplateNode node)
     {
-        if (node is null) throw new ArgumentNullException(nameof(node));
+        ArgumentNullException.ThrowIfNull(node);
 
         node.Parent = this;
         node.Depth = Depth + 1;
@@ -76,8 +76,7 @@ public sealed class TemplateNode
     /// used for root node</exception>
     public void ReplaceWith(TemplateNode node)
     {
-        if (node is null)
-            throw new ArgumentNullException(nameof(node));
+        ArgumentNullException.ThrowIfNull(node);
 
         if (Parent == null)
         {
@@ -108,7 +107,7 @@ public sealed class TemplateNode
     /// <exception cref="ArgumentNullException">visitor</exception>
     public void Visit(Func<TemplateNode, bool> visitor)
     {
-        if (visitor is null) throw new ArgumentNullException(nameof(visitor));
+        ArgumentNullException.ThrowIfNull(visitor);
 
         if (!visitor(this)) return;
         if (ChildrenCount > 0)

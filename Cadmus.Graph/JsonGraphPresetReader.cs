@@ -54,7 +54,7 @@ public sealed class JsonGraphPresetReader : IGraphPresetReader
     /// <exception cref="ArgumentNullException">stream</exception>
     public IEnumerable<UriNode> ReadNodes(Stream stream)
     {
-        if (stream == null) throw new ArgumentNullException(nameof(stream));
+        ArgumentNullException.ThrowIfNull(stream);
         return Read<UriNode>(stream);
     }
 
@@ -65,7 +65,7 @@ public sealed class JsonGraphPresetReader : IGraphPresetReader
     /// <returns>Triples.</returns>
     public IEnumerable<UriTriple> ReadTriples(Stream stream)
     {
-        if (stream is null) throw new ArgumentNullException(nameof(stream));
+        ArgumentNullException.ThrowIfNull(stream);
         return Read<UriTriple>(stream);
     }
 
@@ -77,7 +77,7 @@ public sealed class JsonGraphPresetReader : IGraphPresetReader
     /// <exception cref="ArgumentNullException">stream</exception>
     public IEnumerable<Thesaurus> ReadThesauri(Stream stream)
     {
-        if (stream is null) throw new ArgumentNullException(nameof(stream));
+        ArgumentNullException.ThrowIfNull(stream);
         return Read<Thesaurus>(stream);
     }
 
@@ -89,7 +89,7 @@ public sealed class JsonGraphPresetReader : IGraphPresetReader
     /// <exception cref="ArgumentNullException">stream</exception>
     public IList<NodeMapping> LoadMappings(Stream stream)
     {
-        if (stream == null) throw new ArgumentNullException(nameof(stream));
+        ArgumentNullException.ThrowIfNull(stream);
 
         using StreamReader reader = new(stream, Encoding.UTF8);
         return JsonSerializer.Deserialize<IList<NodeMapping>>(

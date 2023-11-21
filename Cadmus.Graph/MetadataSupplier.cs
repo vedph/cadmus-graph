@@ -42,7 +42,7 @@ public class MetadataSupplier
     /// <exception cref="ArgumentNullException">source</exception>
     public MetadataSupplier AddMetadataSource(IMetadataSource source)
     {
-        if (source is null) throw new ArgumentNullException(nameof(source));
+        ArgumentNullException.ThrowIfNull(source);
         _sources.Add(source);
         return this;
     }
@@ -57,8 +57,8 @@ public class MetadataSupplier
     public void Supply(GraphSource source, IDictionary<string, object> metadata,
         object? context = null)
     {
-        if (source is null) throw new ArgumentNullException(nameof(source));
-        if (metadata is null) throw new ArgumentNullException(nameof(metadata));
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(metadata);
 
         foreach (IMetadataSource ms in _sources)
             ms.Supply(source, metadata, _repository, context);

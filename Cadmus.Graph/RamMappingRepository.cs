@@ -150,7 +150,7 @@ public class RamMappingRepository : IMappingRepository
     /// <returns>The mapping ID.</returns>
     public int AddMapping(NodeMapping mapping)
     {
-        if (mapping is null) throw new ArgumentNullException(nameof(mapping));
+        ArgumentNullException.ThrowIfNull(mapping);
 
         if (mapping.Id != 0) DeleteMapping(mapping.Id);
         else mapping.Id = GetNextId();
@@ -171,7 +171,7 @@ public class RamMappingRepository : IMappingRepository
     /// requires ID=0</exception>
     public int AddMappingByName(NodeMapping mapping)
     {
-        if (mapping is null) throw new ArgumentNullException(nameof(mapping));
+        ArgumentNullException.ThrowIfNull(mapping);
         if (mapping.Id != 0)
             throw new InvalidOperationException("Adding mappings by name requires ID=0");
 
@@ -196,7 +196,7 @@ public class RamMappingRepository : IMappingRepository
     /// </exception>
     public int Import(string json)
     {
-        if (json is null) throw new ArgumentNullException(nameof(json));
+        ArgumentNullException.ThrowIfNull(json);
 
         NodeMappingDocument? doc =
             JsonSerializer.Deserialize<NodeMappingDocument>(json,

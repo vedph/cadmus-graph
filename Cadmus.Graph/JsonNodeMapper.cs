@@ -278,8 +278,8 @@ public sealed class JsonNodeMapper : NodeMapper, INodeMapper
     /// <exception cref="ArgumentNullException">mapping or target</exception>
     public void Map(object source, NodeMapping mapping, GraphSet target)
     {
-        if (mapping is null) throw new ArgumentNullException(nameof(mapping));
-        if (target is null) throw new ArgumentNullException(nameof(target));
+        ArgumentNullException.ThrowIfNull(mapping);
+        ArgumentNullException.ThrowIfNull(target);
 
         // reset state
         _sourceType = 0;

@@ -49,8 +49,8 @@ public abstract class JsonGraphSourceAdapter
     public Tuple<object?, RunNodeMappingFilter> Adapt(
         GraphSource source, IDictionary<string, object> metadata)
     {
-        if (source is null) throw new ArgumentNullException(nameof(source));
-        if (metadata is null) throw new ArgumentNullException(nameof(metadata));
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(metadata);
 
         RunNodeMappingFilter filter = new();
         object? result = Adapt(source, filter, metadata);

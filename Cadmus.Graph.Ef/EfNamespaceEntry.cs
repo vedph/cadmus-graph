@@ -13,7 +13,7 @@ public class EfNamespaceEntry
 
     public EfNamespaceEntry(NamespaceEntry entry)
     {
-        if (entry is null) throw new ArgumentNullException(nameof(entry));
+        ArgumentNullException.ThrowIfNull(entry);
         Id = entry.Prefix!;
         Uri = entry.Uri!;
     }

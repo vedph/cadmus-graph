@@ -25,7 +25,7 @@ public class EfTriple : Triple
 
     public EfTriple(Triple triple)
     {
-        if (triple is null) throw new ArgumentNullException(nameof(triple));
+        ArgumentNullException.ThrowIfNull(triple);
 
         Id = triple.Id;
         SubjectId = triple.SubjectId;

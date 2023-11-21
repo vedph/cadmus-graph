@@ -113,7 +113,7 @@ public class EfMapping
 
     public EfMapping(NodeMapping source)
     {
-        if (source is null) throw new ArgumentNullException(nameof(source));
+        ArgumentNullException.ThrowIfNull(source);
 
         // copy source into this object
         Id = source.Id;

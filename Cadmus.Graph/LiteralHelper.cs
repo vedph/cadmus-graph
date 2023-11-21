@@ -42,8 +42,7 @@ public static partial class LiteralHelper
     /// <exception cref="ArgumentNullException">triple</exception>
     public static void AdjustLiteral(Triple triple)
     {
-        if (triple is null)
-            throw new ArgumentNullException(nameof(triple));
+        ArgumentNullException.ThrowIfNull(triple);
 
         if (triple.ObjectLiteral == null) return;
 

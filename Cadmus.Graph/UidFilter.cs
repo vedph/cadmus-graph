@@ -218,7 +218,7 @@ public static class UidFilter
     /// <exception cref="ArgumentNullException">uid</exception>
     public static string Apply(string uid)
     {
-        if (uid is null) throw new ArgumentNullException(nameof(uid));
+        ArgumentNullException.ThrowIfNull(uid);
 
         // ensure the UID is not empty
         if (uid.Length == 0) return "_";

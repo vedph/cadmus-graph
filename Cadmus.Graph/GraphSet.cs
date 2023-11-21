@@ -48,7 +48,7 @@ public class GraphSet
     /// <exception cref="ArgumentNullException">nodes</exception>
     public void AddNodes(IList<UriNode> nodes)
     {
-        if (nodes == null) throw new ArgumentNullException(nameof(nodes));
+        ArgumentNullException.ThrowIfNull(nodes);
 
         foreach (UriNode node in nodes)
         {
@@ -64,7 +64,7 @@ public class GraphSet
     /// <exception cref="ArgumentNullException">nodes</exception>
     public void AddTriples(IList<UriTriple> triples)
     {
-        if (triples == null) throw new ArgumentNullException(nameof(triples));
+        ArgumentNullException.ThrowIfNull(triples);
 
         foreach (UriTriple triple in triples)
         {

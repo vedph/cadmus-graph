@@ -39,9 +39,9 @@ public sealed class ItemEidMetadataSource : IMetadataSource
     public void Supply(GraphSource source, IDictionary<string, object> metadata,
         ICadmusRepository? repository, object? context = null)
     {
-        if (source is null) throw new ArgumentNullException(nameof(source));
-        if (metadata is null) throw new ArgumentNullException(nameof(metadata));
-        if (repository is null) throw new ArgumentNullException(nameof(repository));
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(metadata);
+        ArgumentNullException.ThrowIfNull(repository);
 
         // find metadata part with no role
         MetadataPart? part = source.Part as MetadataPart;

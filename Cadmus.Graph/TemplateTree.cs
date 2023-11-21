@@ -55,8 +55,7 @@ public sealed class TemplateTree
     /// <exception cref="CadmusGraphException">invalid template</exception>
     public static TemplateTree Create(string template)
     {
-        if (template is null)
-            throw new ArgumentNullException(nameof(template));
+        ArgumentNullException.ThrowIfNull(template);
 
         TemplateTree tree = new();
         TemplateNode node = tree.Root;
@@ -158,8 +157,7 @@ public sealed class TemplateTree
     /// <exception cref="ArgumentNullException">fnResolver</exception>
     public string Resolve(Func<TemplateNode, string> fnResolver)
     {
-        if (fnResolver is null)
-            throw new ArgumentNullException(nameof(fnResolver));
+        ArgumentNullException.ThrowIfNull(fnResolver);
 
         // resolve all the fn nodes from the deepest ones
         foreach (TemplateNode? fn in _fnNodes)

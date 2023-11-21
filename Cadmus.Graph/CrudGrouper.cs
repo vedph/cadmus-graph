@@ -54,7 +54,7 @@ public sealed class CrudGrouper<T>
     /// <exception cref="ArgumentNullException">filter</exception>
     public void FilterDeleted(Func<T, bool> filter)
     {
-        if (filter == null) throw new ArgumentNullException(nameof(filter));
+        ArgumentNullException.ThrowIfNull(filter);
 
         for (int i = Deleted.Count - 1; i > -1; i--)
             if (!filter(Deleted[i])) Deleted.RemoveAt(i);
@@ -72,12 +72,9 @@ public sealed class CrudGrouper<T>
     public void Group(IList<T> newItems, IList<T> oldItems,
         Func<T, T, bool> haveSameId)
     {
-        if (newItems == null)
-            throw new ArgumentNullException(nameof(newItems));
-        if (oldItems == null)
-            throw new ArgumentNullException(nameof(oldItems));
-        if (haveSameId == null)
-            throw new ArgumentNullException(nameof(haveSameId));
+        ArgumentNullException.ThrowIfNull(newItems);
+        ArgumentNullException.ThrowIfNull(oldItems);
+        ArgumentNullException.ThrowIfNull(haveSameId);
 
         Clear();
 

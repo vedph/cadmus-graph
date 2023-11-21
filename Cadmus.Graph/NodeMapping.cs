@@ -160,7 +160,7 @@ public class NodeMapping
     /// <exception cref="ArgumentNullException">visitor</exception>
     public void Visit(Func<NodeMapping, bool> visitor)
     {
-        if (visitor is null) throw new ArgumentNullException(nameof(visitor));
+        ArgumentNullException.ThrowIfNull(visitor);
 
         if (!visitor(this)) return;
         if (HasChildren)

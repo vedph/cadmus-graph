@@ -129,7 +129,7 @@ public class GraphUpdater
     /// <exception cref="ArgumentNullException">item</exception>
     public void Update(IItem item)
     {
-        if (item is null) throw new ArgumentNullException(nameof(item));
+        ArgumentNullException.ThrowIfNull(item);
 
         _mapper.Context = new GraphSource(item);
         MetadataSupplier?.Supply(_mapper.Context, Metadata);
@@ -146,8 +146,8 @@ public class GraphUpdater
     /// <exception cref="ArgumentNullException">item or part</exception>
     public void Update(IItem item, IPart part)
     {
-        if (item is null) throw new ArgumentNullException(nameof(item));
-        if (part is null) throw new ArgumentNullException(nameof(part));
+        ArgumentNullException.ThrowIfNull(item);
+        ArgumentNullException.ThrowIfNull(part);
 
         _mapper.Context = new GraphSource(item, part);
         MetadataSupplier?.Supply(_mapper.Context, Metadata);
@@ -164,7 +164,7 @@ public class GraphUpdater
     /// <exception cref="ArgumentNullException">item</exception>
     public GraphUpdaterExplanation? Explain(IItem item)
     {
-        if (item is null) throw new ArgumentNullException(nameof(item));
+        ArgumentNullException.ThrowIfNull(item);
 
         _mapper.Context = new GraphSource(item);
         MetadataSupplier?.Supply(_mapper.Context, Metadata);
@@ -183,8 +183,8 @@ public class GraphUpdater
     /// <exception cref="ArgumentNullException">item or part</exception>
     public GraphUpdaterExplanation? Explain(IItem item, IPart part)
     {
-        if (item is null) throw new ArgumentNullException(nameof(item));
-        if (part is null) throw new ArgumentNullException(nameof(part));
+        ArgumentNullException.ThrowIfNull(item);
+        ArgumentNullException.ThrowIfNull(part);
 
         _mapper.Context = new GraphSource(item, part);
         MetadataSupplier?.Supply(_mapper.Context, Metadata);

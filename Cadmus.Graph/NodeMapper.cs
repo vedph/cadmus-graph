@@ -87,8 +87,8 @@ public abstract class NodeMapper : DataDictionary
     /// <exception cref="ArgumentNullException">key or macro</exception>
     public void AddMacro(string key, INodeMappingMacro macro)
     {
-        if (key is null) throw new ArgumentNullException(nameof(key));
-        if (macro is null) throw new ArgumentNullException(nameof(macro));
+        ArgumentNullException.ThrowIfNull(key);
+        ArgumentNullException.ThrowIfNull(macro);
 
         _macros[key] = macro;
     }
@@ -100,7 +100,7 @@ public abstract class NodeMapper : DataDictionary
     /// <exception cref="ArgumentNullException">key</exception>
     public void DeleteMacro(string key)
     {
-        if (key is null) throw new ArgumentNullException(nameof(key));
+        ArgumentNullException.ThrowIfNull(key);
         _macros.Remove(key);
     }
 
@@ -111,7 +111,7 @@ public abstract class NodeMapper : DataDictionary
     /// <exception cref="ArgumentNullException">macros</exception>
     public void SetMacros(IDictionary<string, INodeMappingMacro> macros)
     {
-        if (macros == null) throw new ArgumentNullException(nameof(macros));
+        ArgumentNullException.ThrowIfNull(macros);
 
         _macros.Clear();
         foreach (var p in macros) _macros[p.Key] = p.Value;
@@ -224,7 +224,7 @@ public abstract class NodeMapper : DataDictionary
     /// the result before returning it.</param>
     public string ResolveTemplate(string template, bool uidFilter)
     {
-        if (template is null) throw new ArgumentNullException(nameof(template));
+        ArgumentNullException.ThrowIfNull(template);
 
         TemplateTree tree = TemplateTree.Create(template);
         string resolved = tree.Resolve(ResolveNode);

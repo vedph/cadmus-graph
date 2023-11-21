@@ -18,7 +18,7 @@ public class EfProperty
 
     public EfProperty(Property property)
     {
-        if (property is null) throw new ArgumentNullException(nameof(property));
+        ArgumentNullException.ThrowIfNull(property);
 
         Id = property.Id;
         DataType = property.DataType;

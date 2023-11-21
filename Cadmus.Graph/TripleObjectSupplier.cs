@@ -91,7 +91,7 @@ public static class TripleObjectSupplier
     /// <exception cref="ArgumentNullException">triple</exception>
     public static void Supply(Triple triple, string? defaultLang = null)
     {
-        if (triple is null) throw new ArgumentNullException(nameof(triple));
+        ArgumentNullException.ThrowIfNull(triple);
 
         if (triple.ObjectLiteral == null) return;
 

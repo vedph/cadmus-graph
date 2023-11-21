@@ -40,7 +40,7 @@ public abstract class EfGraphRepository : IUidBuilder,
     /// <exception cref="ArgumentNullException">options</exception>
     public void Configure(EfGraphRepositoryOptions options)
     {
-        if (options is null) throw new ArgumentNullException(nameof(options));
+        ArgumentNullException.ThrowIfNull(options);
         ConnectionString = options.ConnectionString;
     }
 
@@ -60,7 +60,7 @@ public abstract class EfGraphRepository : IUidBuilder,
     /// <exception cref="ArgumentNullException">filter</exception>
     public DataPage<NamespaceEntry> GetNamespaces(NamespaceFilter filter)
     {
-        if (filter == null) throw new ArgumentNullException(nameof(filter));
+        ArgumentNullException.ThrowIfNull(filter);
 
         using CadmusGraphDbContext context = GetContext();
 
@@ -107,7 +107,7 @@ public abstract class EfGraphRepository : IUidBuilder,
     /// <exception cref="ArgumentNullException">prefix</exception>
     public string? LookupNamespace(string prefix)
     {
-        if (prefix is null) throw new ArgumentNullException(nameof(prefix));
+        ArgumentNullException.ThrowIfNull(prefix);
 
         using CadmusGraphDbContext context = GetContext();
         EfNamespaceEntry? lookup = context.NamespaceEntries
@@ -125,8 +125,8 @@ public abstract class EfGraphRepository : IUidBuilder,
     /// <exception cref="ArgumentNullException">prefix or uri</exception>
     public void AddNamespace(string prefix, string uri)
     {
-        if (prefix == null) throw new ArgumentNullException(nameof(prefix));
-        if (uri == null) throw new ArgumentNullException(nameof(uri));
+        ArgumentNullException.ThrowIfNull(prefix);
+        ArgumentNullException.ThrowIfNull(uri);
 
         using CadmusGraphDbContext context = GetContext();
         EfNamespaceEntry? old = context.NamespaceEntries
@@ -150,7 +150,7 @@ public abstract class EfGraphRepository : IUidBuilder,
     /// <exception cref="ArgumentNullException">prefix</exception>
     public void DeleteNamespaceByPrefix(string prefix)
     {
-        if (prefix == null) throw new ArgumentNullException(nameof(prefix));
+        ArgumentNullException.ThrowIfNull(prefix);
 
         using CadmusGraphDbContext context = GetContext();
         EfNamespaceEntry? entry = context.NamespaceEntries
@@ -168,7 +168,7 @@ public abstract class EfGraphRepository : IUidBuilder,
     /// <param name="uri">The namespace URI.</param>
     public void DeleteNamespaceByUri(string uri)
     {
-        if (uri is null) throw new ArgumentNullException(nameof(uri));
+        ArgumentNullException.ThrowIfNull(uri);
 
         using CadmusGraphDbContext context = GetContext();
         IEnumerable<EfNamespaceEntry> entries = context.NamespaceEntries
@@ -197,8 +197,8 @@ public abstract class EfGraphRepository : IUidBuilder,
     /// <returns>The UID, eventually suffixed.</returns>
     public string BuildUid(string unsuffixed, string sid)
     {
-        if (unsuffixed == null) throw new ArgumentNullException(nameof(unsuffixed));
-        if (sid == null) throw new ArgumentNullException(nameof(sid));
+        ArgumentNullException.ThrowIfNull(unsuffixed);
+        ArgumentNullException.ThrowIfNull(sid);
 
         using CadmusGraphDbContext context = GetContext();
 
@@ -301,7 +301,7 @@ public abstract class EfGraphRepository : IUidBuilder,
     /// <exception cref="ArgumentNullException">uri</exception>
     public int AddUri(string uri)
     {
-        if (uri == null) throw new ArgumentNullException(nameof(uri));
+        ArgumentNullException.ThrowIfNull(uri);
 
         using CadmusGraphDbContext context = GetContext();
         return AddUri(uri, context);
@@ -329,7 +329,7 @@ public abstract class EfGraphRepository : IUidBuilder,
 #pragma warning disable RCS1155 // Use StringComparison when comparing strings.
     public int LookupId(string uri)
     {
-        if (uri == null) throw new ArgumentNullException(nameof(uri));
+        ArgumentNullException.ThrowIfNull(uri);
 
         using CadmusGraphDbContext context = GetContext();
         EfUriEntry? entry = context.UriEntries.AsNoTracking()
@@ -405,7 +405,7 @@ public abstract class EfGraphRepository : IUidBuilder,
     /// <exception cref="ArgumentNullException">filter</exception>
     public DataPage<UriNode> GetNodes(NodeFilter filter)
     {
-        if (filter == null) throw new ArgumentNullException(nameof(filter));
+        ArgumentNullException.ThrowIfNull(filter);
 
         using CadmusGraphDbContext context = GetContext();
         IQueryable<EfNode> nodes = filter.LinkedNodeId > 0
@@ -484,7 +484,7 @@ public abstract class EfGraphRepository : IUidBuilder,
     /// <returns>List of nodes (or null), one per ID.</returns>
     public IList<UriNode?> GetNodes(IList<int> ids)
     {
-        if (ids is null) throw new ArgumentNullException(nameof(ids));
+        ArgumentNullException.ThrowIfNull(ids);
 
         using CadmusGraphDbContext context = GetContext();
         IList<EfNode> nodes = context.Nodes
@@ -532,7 +532,7 @@ public abstract class EfGraphRepository : IUidBuilder,
     /// <exception cref="ArgumentNullException">uri</exception>
     public UriNode? GetNodeByUri(string uri)
     {
-        if (uri == null) throw new ArgumentNullException(nameof(uri));
+        ArgumentNullException.ThrowIfNull(uri);
 
         using CadmusGraphDbContext context = GetContext();
         return GetNodeByUri(uri, context);
@@ -629,7 +629,7 @@ public abstract class EfGraphRepository : IUidBuilder,
     /// <exception cref="ArgumentNullException">node</exception>
     public void AddNode(Node node, bool noUpdate = false)
     {
-        if (node == null) throw new ArgumentNullException(nameof(node));
+        ArgumentNullException.ThrowIfNull(node);
 
         AddNode(node, noUpdate, true, null);
     }
@@ -643,7 +643,7 @@ public abstract class EfGraphRepository : IUidBuilder,
     /// <param name="nodes">The nodes.</param>
     public void ImportNodes(IEnumerable<UriNode> nodes)
     {
-        if (nodes is null) throw new ArgumentNullException(nameof(nodes));
+        ArgumentNullException.ThrowIfNull(nodes);
 
         using CadmusGraphDbContext context = GetContext();
         (int aId, int subId) = GetASubIds();
@@ -704,7 +704,7 @@ public abstract class EfGraphRepository : IUidBuilder,
     /// <exception cref="ArgumentNullException">filter</exception>
     public DataPage<UriNode> GetLinkedNodes(LinkedNodeFilter filter)
     {
-        if (filter is null) throw new ArgumentNullException(nameof(filter));
+        ArgumentNullException.ThrowIfNull(filter);
 
         using CadmusGraphDbContext context = GetContext();
         IQueryable<EfNode> nodes;
@@ -883,7 +883,7 @@ public abstract class EfGraphRepository : IUidBuilder,
     /// <exception cref="ArgumentNullException">filter</exception>
     public DataPage<UriTriple> GetLinkedLiterals(LinkedLiteralFilter filter)
     {
-        if (filter is null) throw new ArgumentNullException(nameof(filter));
+        ArgumentNullException.ThrowIfNull(filter);
 
         using CadmusGraphDbContext context = GetContext();
 
@@ -920,7 +920,7 @@ public abstract class EfGraphRepository : IUidBuilder,
     /// <returns>Page.</returns>
     public DataPage<UriProperty> GetProperties(PropertyFilter filter)
     {
-        if (filter == null) throw new ArgumentNullException(nameof(filter));
+        ArgumentNullException.ThrowIfNull(filter);
 
         using CadmusGraphDbContext context = GetContext();
         IQueryable<EfProperty> properties = context.Properties
@@ -986,7 +986,7 @@ public abstract class EfGraphRepository : IUidBuilder,
     /// <exception cref="ArgumentNullException">uri</exception>
     public UriProperty? GetPropertyByUri(string uri)
     {
-        if (uri == null) throw new ArgumentNullException(nameof(uri));
+        ArgumentNullException.ThrowIfNull(uri);
 
         using CadmusGraphDbContext context = GetContext();
         EfProperty? property = context.Properties
@@ -1004,7 +1004,7 @@ public abstract class EfGraphRepository : IUidBuilder,
     /// <exception cref="ArgumentNullException">property</exception>
     public void AddProperty(Property property)
     {
-        if (property is null) throw new ArgumentNullException(nameof(property));
+        ArgumentNullException.ThrowIfNull(property);
 
         using CadmusGraphDbContext context = GetContext();
         EfProperty? old = context.Properties
@@ -1271,7 +1271,7 @@ public abstract class EfGraphRepository : IUidBuilder,
     public DataPage<NodeMapping> GetMappings(NodeMappingFilter filter,
         bool descendants)
     {
-        if (filter == null) throw new ArgumentNullException(nameof(filter));
+        ArgumentNullException.ThrowIfNull(filter);
 
         using CadmusGraphDbContext context = GetContext();
         IQueryable<EfMapping> mappings = GetFilteredMappings(filter, context);
@@ -1453,7 +1453,7 @@ public abstract class EfGraphRepository : IUidBuilder,
     /// <exception cref="ArgumentNullException">mapping</exception>
     public int AddMapping(NodeMapping mapping)
     {
-        if (mapping is null) throw new ArgumentNullException(nameof(mapping));
+        ArgumentNullException.ThrowIfNull(mapping);
         if (mapping.ParentId != 0)
             throw new InvalidOperationException($"Not a root mapping: {mapping}");
 
@@ -1511,7 +1511,7 @@ public abstract class EfGraphRepository : IUidBuilder,
     /// <exception cref="ArgumentNullException">filter</exception>
     public IList<NodeMapping> FindMappings(RunNodeMappingFilter filter)
     {
-        if (filter is null) throw new ArgumentNullException(nameof(filter));
+        ArgumentNullException.ThrowIfNull(filter);
 
         using CadmusGraphDbContext context = GetContext();
 
@@ -1546,7 +1546,7 @@ public abstract class EfGraphRepository : IUidBuilder,
     /// </exception>
     public int Import(string json)
     {
-        if (json is null) throw new ArgumentNullException(nameof(json));
+        ArgumentNullException.ThrowIfNull(json);
 
         NodeMappingDocument? doc =
             JsonSerializer.Deserialize<NodeMappingDocument>(json,
@@ -1591,7 +1591,7 @@ public abstract class EfGraphRepository : IUidBuilder,
     /// <exception cref="ArgumentNullException">filter</exception>
     public DataPage<UriTriple> GetTriples(TripleFilter filter)
     {
-        if (filter == null) throw new ArgumentNullException(nameof(filter));
+        ArgumentNullException.ThrowIfNull(filter);
 
         using CadmusGraphDbContext context = GetContext();
         IQueryable<EfTriple> triples = GetFilteredTriples(filter, context);
@@ -1702,7 +1702,7 @@ public abstract class EfGraphRepository : IUidBuilder,
     /// <exception cref="ArgumentNullException">triple</exception>
     public void AddTriple(Triple triple)
     {
-        if (triple == null) throw new ArgumentNullException(nameof(triple));
+        ArgumentNullException.ThrowIfNull(triple);
 
         using CadmusGraphDbContext context = GetContext();
         AddTriple(triple, context);
@@ -1718,7 +1718,7 @@ public abstract class EfGraphRepository : IUidBuilder,
     /// <exception cref="ArgumentNullException">triples</exception>
     public void ImportTriples(IEnumerable<UriTriple> triples)
     {
-        if (triples is null) throw new ArgumentNullException(nameof(triples));
+        ArgumentNullException.ThrowIfNull(triples);
 
         using CadmusGraphDbContext context = GetContext();
         List<int> nodeIds = new();
@@ -1828,8 +1828,8 @@ public abstract class EfGraphRepository : IUidBuilder,
     public DataPage<TripleGroup> GetTripleGroups(TripleFilter filter,
         string sort = "Cu")
     {
-        if (filter is null) throw new ArgumentNullException(nameof(filter));
-        if (sort is null) throw new ArgumentNullException(nameof(sort));
+        ArgumentNullException.ThrowIfNull(filter);
+        ArgumentNullException.ThrowIfNull(sort);
 
         using CadmusGraphDbContext context = GetContext();
         // inner query:
@@ -1905,7 +1905,7 @@ public abstract class EfGraphRepository : IUidBuilder,
     public void AddThesaurus(Thesaurus thesaurus, bool includeRoot,
         string? prefix = null)
     {
-        if (thesaurus is null) throw new ArgumentNullException(nameof(thesaurus));
+        ArgumentNullException.ThrowIfNull(thesaurus);
 
         // nothing to do for aliases
         if (thesaurus.TargetId != null) return;
@@ -2060,7 +2060,7 @@ public abstract class EfGraphRepository : IUidBuilder,
     /// <exception cref="ArgumentNullException">sourceId</exception>
     public GraphSet GetGraphSet(string sourceId)
     {
-        if (sourceId is null) throw new ArgumentNullException(nameof(sourceId));
+        ArgumentNullException.ThrowIfNull(sourceId);
 
         using CadmusGraphDbContext context = GetContext();
 
@@ -2095,7 +2095,7 @@ public abstract class EfGraphRepository : IUidBuilder,
     /// <exception cref="ArgumentNullException">sourceId</exception>
     public void DeleteGraphSet(string sourceId)
     {
-        if (sourceId == null) throw new ArgumentNullException(nameof(sourceId));
+        ArgumentNullException.ThrowIfNull(sourceId);
 
         using CadmusGraphDbContext context = GetContext();
 
@@ -2245,7 +2245,7 @@ public abstract class EfGraphRepository : IUidBuilder,
     /// <exception cref="ArgumentNullException">set</exception>
     public void UpdateGraph(GraphSet set)
     {
-        if (set is null) throw new ArgumentNullException(nameof(set));
+        ArgumentNullException.ThrowIfNull(set);
 
         using CadmusGraphDbContext context = GetContext();
         using IDbContextTransaction trans = context.Database.BeginTransaction();
