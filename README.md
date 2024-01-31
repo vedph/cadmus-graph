@@ -1,5 +1,7 @@
 # Cadmus.Graph
 
+⚠️ The projects from this solution have been merged into [Cadmus core](https://github.com/vedph/cadmus_core). Please refer to that repository for up-to-date versions.
+
 This library represents a enhanced graph mapping tool for Cadmus, bypassing pins and directly using JSON-encoded objects, whatever their type.
 
 For more information see the [documentation](docs/index.md) (still incomplete).
